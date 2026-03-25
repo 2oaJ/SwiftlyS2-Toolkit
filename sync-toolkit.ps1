@@ -22,9 +22,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$srcRoot  = "d:\个人\ZombiEden\.github"
-$dstRoot  = "d:\个人\SwiftlyS2-Toolkit"
-$zeRoot   = "d:\个人\ZombiEden"
+# Derive all paths from $PSScriptRoot to avoid encoding issues with non-ASCII paths
+$dstRoot  = $PSScriptRoot                                      # .../SwiftlyS2-Toolkit
+$zeRoot   = Join-Path (Split-Path $dstRoot -Parent) "ZombiEden"
+$srcRoot  = Join-Path $zeRoot ".github"
 
 # ── Toolkit file patterns (relative to ZombiEden repo root) ──────────────────
 $toolkitPatterns = @(
