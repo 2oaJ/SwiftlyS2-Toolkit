@@ -1,0 +1,17 @@
+# Binaries and build output
+bin/
+obj/
+*.user
+
+# VS Code local settings (workspace-specific, not part of public toolkit)
+.vscode/settings.json
+.vscode/launch.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp files
+*.tmp
+*.bak
