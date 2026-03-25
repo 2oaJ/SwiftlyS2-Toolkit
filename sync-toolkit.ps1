@@ -95,10 +95,13 @@ $scope = if ($scopeParts) { $scopeParts -join ", " } else { "toolkit" }
 
 # Determine change type from scope for prefix
 $prefix = switch -Regex ($scope) {
-    "agents.*prompts.*skills" { "sync" }
-    "agents"                  { "sync(agents)" }
-    "prompts"                 { "sync(prompts)" }
-    "skills"                  { "sync(skills)" }
+    "agents.*prompts.*skills" { "sync"; break }
+    "agents.*prompts"         { "sync(agents,prompts)"; break }
+    "agents.*skills"          { "sync(agents,skills)"; break }
+    "prompts.*skills"         { "sync(prompts,skills)"; break }
+    "^agents$"                { "sync(agents)"; break }
+    "^prompts$"               { "sync(prompts)"; break }
+    "^skills$"                { "sync(skills)"; break }
     default                   { "sync" }
 }
 
