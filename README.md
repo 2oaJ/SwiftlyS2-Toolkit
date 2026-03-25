@@ -43,7 +43,7 @@ Or clone directly:
 
 ```bash
 # Clone into a temp folder, then copy into your .github/
-git clone https://github.com/<owner>/SwiftlyS2-Toolkit temp-toolkit
+git clone https://github.com/2oaJ/SwiftlyS2-Toolkit temp-toolkit
 cp -r temp-toolkit/agents   your-workspace/.github/
 cp -r temp-toolkit/prompts  your-workspace/.github/
 cp -r temp-toolkit/skills   your-workspace/.github/
