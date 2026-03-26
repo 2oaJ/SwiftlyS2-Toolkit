@@ -1,34 +1,34 @@
-# SwiftlyS2 Plugin Audit Report Template
+# SwiftlyS2 插件审计报告模板
 
-## Audit scope
-- Target repository:
-- Target plugin:
-- Audit type: performance / compatibility / refactor / lifecycle / thread-safety / comprehensive
+## 审计范围
+- 目标仓库：
+- 目标插件：
+- 审计类型：性能 / 兼容 / 重构 / 生命周期 / 线程安全 / 综合
 
-## Summary conclusion
-- Architecture classification: modular gameplay / DI-service / hybrid
-- Overall risk level:
-- Key conclusion:
+## 总结结论
+- 架构判定：模块化 gameplay / DI-service / 混合
+- 总体风险等级：
+- 关键结论：
 
-## Findings
+## 发现列表
 
 ### P0 / P1 / P2 / P3
-- **Issue**:
-- **Impact**:
-- **Location**: file + method
-- **Basis**:
-- **Suggested direction**:
-- **Involves main-thread synchronous blocking**: yes / no
-- **Involves main-thread JSON serialization / deserialization**: yes / no
+- **问题**：
+- **影响**：
+- **定位**：文件 + 方法
+- **依据**：
+- **建议方向**：
+- **是否涉及主线程同步阻塞**：是 / 否
+- **是否涉及主线程 JSON 序列化/反序列化**：是 / 否
 
-## Repair priority
+## 修复优先级
 1. 
 2. 
 3. 
 
-## Regression matrix
+## 回归矩阵
 - build
-- lifecycle
-- high-frequency hooks
+- 生命周期
+- 高频 hook
 - schema / protobuf
-- bot / long-lived runtime state (if relevant)
+- bot / 长生命周期运行态（如相关）

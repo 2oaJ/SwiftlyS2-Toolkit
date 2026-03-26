@@ -1,34 +1,34 @@
 # SwiftlyS2 Scheduler vs Background Worker
 
-Official docs sections:
+对应官方文档：
 - `Scheduler`
 - `Thread Safety`
 
-Use this to avoid mixing up the official `Scheduler` tick/timer semantics with background `Task.Run`, queue, flush, and cancel worker semantics.
+用于：避免把官方 `Scheduler` 的 tick/timer 语义，与后台 `Task.Run` / queue / flush / cancel worker 混为一谈。
 
-## Scenarios that should prefer Scheduler
+## 优先用 Scheduler 的场景
 
-- `NextTick` / next-tick execution
-- lightweight delayed tasks
-- low-frequency periodic tasks
-- logic strongly tied to map lifecycle and suitable for `StopOnMapChange`
+- `NextTick` / 下一 Tick 执行
+- 轻量延迟任务
+- 低频周期任务
+- 与地图生命周期强相关、适合 `StopOnMapChange` 的逻辑
 
-## Scenarios that should prefer background workers
+## 优先用后台 Worker 的场景
 
-- JSON serialization / deserialization
-- disk IO / network IO / database batch work
-- producer / consumer decoupling
-- cancelable background polling
-- long-running work that must not block the main thread
+- JSON 序列化 / 反序列化
+- 磁盘 IO / 网络 IO / 数据库批处理
+- producer / consumer 解耦
+- 可取消的后台轮询
+- 不应阻塞主线程的持续性工作
 
-## Decision questions
+## 决策问题
 
-- Is this a “next-tick semantic” or real background async work?
-- Does it need to access main-thread-sensitive APIs?
-- Does it need stop / flush / cancel / drain queue semantics?
-- Will it handle JSON, IO, or large batch work?
+- 这里是“下一 Tick 语义”，还是“真正的后台异步工作”？
+- 这里是否需要访问主线程敏感 API？
+- 这里是否需要 stop / flush / cancel / drain 队列语义？
+- 这里是否会处理 JSON / IO / 大量批处理？
 
-## Routing suggestion
+## 路线建议
 
-- If it is lightweight delayed work on the main thread, continue with the official `Scheduler` guidance.
-- If it is background queue or batch processing, go to `../../patterns/background-workers/worker-template.cs.md`.
+- 若是主线程轻量延迟：继续看官方 `Scheduler`
+- 若是后台队列/批处理：转 `../../patterns/background-workers/worker-template.cs.md`

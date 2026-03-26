@@ -1,19 +1,19 @@
-# SwiftlyS2 Service-Owned Command Template
+# SwiftlyS2 Service 自持命令模板
 
-Official docs sections:
+对应官方文档：
 - `Commands`
 - `Dependency Injection`
 - `Thread Safety`
 
-Suitable for: scenarios where a service owns the lifecycle of commands, aliases, client-chat hooks, or client-command hooks itself.
+适用于：由 service 自己持有命令 / alias / client chat hook / client command hook 生命周期的场景。
 
-## Usage principles
+## 适用原则
 
-- The root should assemble the service, not manage local command handles on its behalf.
-- Whatever the service registers must be unregistered by that same service.
-- Prefer this pattern when dynamic start / stop, stored `Guid` values, or conditional install / uninstall are required.
+- root 负责装配 service，不代管局部命令句柄
+- service 注册了什么，就由该 service 自己卸载什么
+- 需要动态启停、保存 `Guid`、条件挂卸时，优先选择这一模式
 
-## Example skeleton
+## 示例骨架
 
 ```csharp
 using System;
@@ -41,7 +41,7 @@ public sealed class MyCommandService(ISwiftlyCore core) : IMyCommandService
             OnMyCommand,
             registerRaw: false,
             permission: "myplugin.commands.use",
-            helpText: "My module command");
+            helpText: "我的模块命令");
 
         core.Command.RegisterCommandAlias("mycommand", "mc");
         _clientChatHookGuid = core.Command.HookClientChat(OnClientChat);
@@ -62,7 +62,7 @@ public sealed class MyCommandService(ISwiftlyCore core) : IMyCommandService
 
     private void OnMyCommand(ICommandContext context)
     {
-        context.Reply("[Plugin] Command triggered.");
+        context.Reply("[插件] 命令已触发。");
     }
 
     private HookResult OnClientChat(int playerId, string text, bool teamonly)
@@ -74,7 +74,7 @@ public sealed class MyCommandService(ISwiftlyCore core) : IMyCommandService
 
 ## Checklist
 
-- Does the owning service store the `Guid` values and reclaim them precisely in `Uninstall()`?
-- Is an independent lifecycle or dynamic start / stop actually required?
-- Are command implementation and command registration closed within the same service?
-- Does it distinguish the different uninstall paths of `RegisterCommandAlias`, `HookClientChat`, and `HookClientCommand`?
+- 是否由 owning service 保存 `Guid` 并在 `Uninstall()` 精确回收？
+- 是否真的需要动态启停或独立生命周期？
+- 是否把命令实现和命令注册放在同一个 service 中闭环？
+- 是否区分 `RegisterCommandAlias`、`HookClientChat`、`HookClientCommand` 的不同卸载路径？

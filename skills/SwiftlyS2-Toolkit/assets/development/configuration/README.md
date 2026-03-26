@@ -1,26 +1,26 @@
-# Configuration Entry Notes
+# Configuration 入口说明
 
-Official docs section:
+对应官方文档：
 - `Configuration`
 
-Prioritize:
+优先关注：
 - `Core.Configuration`
 - `InitializeJsonWithModel<T>` / `InitializeTomlWithModel<T>`
 - `Configure(builder => ...)`
 - `IOptionsMonitor<T>`
 - `reloadOnChange`
 
-This directory contains:
-- `config-hot-reload-template.cs.md`: full template for Config + IOptionsMonitor hot reload
+本目录包含：
+- `config-hot-reload-template.cs.md`：Config + IOptionsMonitor 热加载完整模板
 
-Configuration scenarios are commonly used together with:
+配置场景通常与以下联动使用：
 - `guides/dependency-injection/di-service-plugin-template.cs.md`
 - `guides/dependency-injection/service-template.cs.md`
 
-## Division of responsibility between Config and ConVar
+## Config 与 ConVar 的分工
 
-- **Config (JSONC)**: structured configuration, nested objects, arrays, default-value management, and file persistence
-- **ConVar**: immediate runtime console tuning and temporary administrator adjustments
-- When mixed: use ConVar for switches / fine-tuning, and Config for structured defaults
+- **Config (JSONC)**：结构化配置、嵌套对象、数组、默认值管理、文件持久化
+- **ConVar**：运行时控制台即时调参、管理员临时调整
+- 混用时：ConVar 做开关/微调，Config 做结构化默认值
 
-For ConVar-related guidance, see `../convars/convar-template.cs.md`.
+ConVar 相关文档见 `../convars/convar-template.cs.md`。

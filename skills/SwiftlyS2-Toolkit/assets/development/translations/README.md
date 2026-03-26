@@ -1,14 +1,14 @@
-# Translations Entry Notes
+# Translations 入口说明
 
-Official docs section:
+对应官方文档：
 - `Translations`
 
-Prioritize:
+优先关注：
 - `resources/translations/*.jsonc`
 - `Core.Translation.GetPlayerLocalizer(player)`
-- `en.jsonc` as the fallback language
-- `category.subcategory.key` naming style
+- `en.jsonc` 兜底语言
+- `category.subcategory.key` 命名方式
 
-If the scenario involves menus or HTML text, also see:
+若场景涉及菜单或 HTML 文本，请联动：
 - `../menus/menu-template.cs.md`
 - `../../guides/html-styling/README.md`

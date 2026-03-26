@@ -1,43 +1,43 @@
-# SwiftlyS2 Core Service Entry Quick Reference
+# SwiftlyS2 Core 服务入口速查
 
-Official docs section:
+对应官方文档：
 - `Swiftly Core`
 
-Use this when the agent already knows what it wants to do but is not yet sure which `ISwiftlyCore` service entry point to start from.
+用于：当 agent 已经知道要做什么，但还不确定该从 `ISwiftlyCore` 的哪个服务入口进入时，快速分流。
 
-## High-frequency entry points
+## 高频入口
 
 - `Core.Command`
-  - command registration, aliases, client command/chat hooks
+  - 命令注册、别名、client command/chat hook
 - `Core.Event`
-  - Core Events, tick, map, player, and entity lifecycle listeners
+  - Core Events、tick、map、player、entity 生命周期监听
 - `Core.GameEvent`
   - Game Event fire / hook
 - `Core.NetMessage`
-  - typed netmessage send / hook
+  - typed netmessage 发送与 hook
 - `Core.EntitySystem`
-  - entity creation, lookup, and handle acquisition
+  - 实体创建、查找、handle 获取
 - `Core.ConVar`
-  - cvar creation, lookup, and client replication
+  - cvar 创建、查找、复制到客户端
 - `Core.Configuration`
-  - plugin config initialization, config sources, and hot reload
+  - 插件配置初始化、配置源、热重载
 - `Core.Translation`
-  - localization and player-language localizers
+  - 本地化、玩家语言 localizer
 - `Core.Permission`
-  - permissions, groups, sub-permissions, and wildcards
+  - 权限、组、子权限、wildcard
 - `Core.Scheduler`
-  - NextTick, Delay, Repeat, StopOnMapChange
+  - NextTick、Delay、Repeat、StopOnMapChange
 - `Core.Database`
-  - global database connection
+  - 全局数据库连接
 - `Core.Profiler`
-  - lightweight performance sampling
+  - 轻量性能采样
 - `Core.Registrator`
-  - attribute registration on non-main-class objects
+  - 非主类对象 attribute 注册
 - `Core.Menus` / `Core.MenusAPI`
-  - menu builders, open / close, and menu events
+  - 菜单 builder、打开/关闭、菜单事件
 
-## Usage suggestions
+## 使用建议
 
-- If the entry point is unclear, first determine whether the task is about commands, events, menus, entities, NetMessages, configuration, or cross-plugin interfaces.
-- Then go to `references/swiftlys2-kb-index.md` for a scenario-oriented route.
-- If a more specific official page is needed, continue into `references/swiftlys2-official-docs-map.md`.
+- 不确定入口时，先定“我要做的是命令、事件、菜单、实体、NetMessage、配置还是跨插件接口”。
+- 再去 `references/swiftlys2-kb-index.md` 找场景化路线。
+- 需要更细的官方页面时，再转 `references/swiftlys2-official-docs-map.md`。

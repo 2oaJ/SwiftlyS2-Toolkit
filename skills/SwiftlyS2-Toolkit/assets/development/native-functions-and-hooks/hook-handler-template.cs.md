@@ -1,20 +1,20 @@
-# SwiftlyS2 Hook Handler Template
+# SwiftlyS2 Hook Handler 模板
 
-Official docs sections:
+对应官方文档：
 - `Native Functions and Hooks`
 - `Thread Safety`
 - `Profiler`
 
-Suitable for: high-frequency hooks, movement sampling, engine callback dispatch, and lightweight sampling followed by module delegation.
+适用于：高频 Hook、movement 采样、引擎回调分发、轻量采样 + 模块委托。
 
-## Usage principles
+## 适用原则
 
-- Do fast routing first inside hooks.
-- Do not perform heavy IO, heavy serialization, or heavy logging directly inside hooks.
-- Hooks should own sampling and delegation, not accumulated business logic.
-- When `IPlayer`, `Pawn`, or `Controller` are involved, validate first.
+- Hook 内优先做快速分流
+- Hook 内不要直接做重 IO、重序列化、重日志
+- Hook 负责采样与委托，不负责堆业务逻辑
+- 涉及 `IPlayer` / `Pawn` / `Controller` 时，必须先做有效性检查
 
-## Example skeleton
+## 示例骨架
 
 ```csharp
 using SwiftlyS2.Shared;
@@ -55,15 +55,15 @@ public partial class MyPlugin
 
 ## Checklist
 
-- Are invalid players, invalid pawns, fake clients, and dead players filtered first?
-- Is direct logging inside hooks avoided?
-- Are IO, HTTP, DB, and JSON operations avoided inside hooks?
-- Is complex logic pushed down into modules, services, or workers?
-- Has the 64-tick / 15ms frame budget been considered?
+- 是否先过滤无效 player / pawn / fake client / dead player？
+- 是否避免在 Hook 内直接打日志？
+- 是否避免在 Hook 内做 IO / HTTP / DB / JSON？
+- 是否将复杂逻辑下沉到 module / service / worker？
+- 是否考虑 64 tick / 15ms 帧预算？
 
-## GameData patch pattern
+## GameData Patch 模式
 
-Some fixes do not need hooks and can directly patch gamedata in memory:
+某些修复不需要 Hook，而是直接 patch 内存中的 gamedata：
 
 ```csharp
 public class GameDataPatchService(ISwiftlyCore core, ILogger logger, string patchName)
@@ -77,13 +77,13 @@ public class GameDataPatchService(ISwiftlyCore core, ILogger logger, string patc
         logger.LogInformation("{PatchName} applied", patchName);
     }
 
-    public void Uninstall() { }  // Patches are one-way and not reversible
+    public void Uninstall() { }  // Patch 是单向的，无撤销
 }
 ```
 
-## Multi-hook service pattern
+## 多 Hook 服务模式
 
-When one service needs to install multiple hooks, each hook should manage its own `IUnmanagedFunction` + `Guid` pair:
+当一个服务需要安装多个 Hook 时，每个 Hook 独立管理 `IUnmanagedFunction` + `Guid`：
 
 ```csharp
 public class MultiHookService : IGameFixService
@@ -112,18 +112,18 @@ public class MultiHookService : IGameFixService
 }
 ```
 
-**Key points**:
-- Each hook has its own `Guid? + IUnmanagedFunction` pair
-- Install registers them all; Uninstall removes them all
-- Failure to install one hook should not affect the others that were already installed
+**关键点**：
+- 每个 Hook 有独立的 `Guid? + IUnmanagedFunction` 对
+- Install 全部安装，Uninstall 全部移除
+- 任何一个 Hook 安装失败不应影响已安装的其他 Hook
 
-## Hook installation timing
+## Hook 安装时机
 
-Not every hook should be installed in `Load()`:
+不是所有 Hook 都应在 `Load()` 安装：
 
-- ✅ **Install in `Load()`**: core hooks needed for the full plugin lifecycle
-- ✅ **Install in `OnMapLoad` / `OnActivate`**: map-scoped or conditional hooks
-- ✅ **Install after specific events**: for example, install a Sellback Hook after warmup ends
-- ❌ Do not repeatedly install hooks inside high-frequency callbacks
+- ✅ **Load() 安装**：全生命周期需要的核心 Hook
+- ✅ **OnMapLoad / OnActivate 安装**：map-scoped 或条件性 Hook
+- ✅ **特定事件后安装**：如热身结束后安装 Sellback Hook
+- ❌ 不要在高频回调中重复安装
 
-The matching uninstall must be completed in `Unload()` / `OnMapUnload` / `OnDeactivate` / the corresponding symmetrical event.
+对应的卸载必须在 `Unload()` / `OnMapUnload` / `OnDeactivate` / 对称事件中完成。

@@ -1,22 +1,22 @@
-# SwiftlyS2 HTML Styling Guide
+# SwiftlyS2 HTML Styling 指南
 
-Official docs sections:
+对应官方文档：
 - `HTML Styling`
 - `Menus`
 
-This page is not meant to merely remind you that “HTML is supported”. Its real purpose is to distill the **practical, directly usable rules for SwiftlyS2 / Panorama rich text** so an agent can apply them directly when generating `SendCenterHTML`, menu formatting, dynamic text, and prompt-style UI.
+本页的目标不是简单提醒“能写 HTML”，而是把 **SwiftlyS2 / Panorama 富文本真正可直接落地的规则** 提炼出来，方便 agent 在写 `SendCenterHTML`、菜单格式化、动态文本、提示类 UI 时直接套用。
 
-## Three conclusions to remember first
+## 先记住三个结论
 
-1. **Panorama is not a browser.** Do not copy ordinary web HTML/CSS habits verbatim.
-2. **Styling is not `style="..."`.** Panorama UI usually uses direct attributes plus built-in classes.
-3. **Complex effects must be tested in game.** A fragment being parseable does not guarantee that it renders as expected.
+1. **Panorama 不是浏览器。** 不要把普通网页 HTML/CSS 的经验原样搬过来。
+2. **样式不是 `style="..."`。** Panorama UI 里常用的是“直接属性 + 内建 class”。
+3. **复杂效果必须进游戏实测。** 能被解析，不代表显示就符合预期。
 
-## Supported scope
+## 支持范围
 
-### Common tags explicitly listed by the official docs
+### 官方列出的常用标签
 
-The official `HTML Styling` page clearly lists the common Panorama UI tags that are usually available:
+官方 `HTML Styling` 页明确列出 Panorama UI 常见可用标签：
 
 - `div`
 - `span`
@@ -33,76 +33,76 @@ The official `HTML Styling` page clearly lists the common Panorama UI tags that 
 - `u`
 - `pre`
 
-### Recommended default tags
+### 推荐默认标签
 
-If there is no special need, prefer using only:
+如果没有特殊需求，优先只用：
 
-- `span`: inline color, font size, emphasis
-- `br`: line breaks
-- `div` / `p`: block segmentation
+- `span`：行内着色、字号、强调
+- `br`：换行
+- `div` / `p`：块级分段
 
-Why:
+原因：
 
-- `span + br` covers most center prompts, menu helper text, and status text.
-- Fewer tags usually means less rendering drift.
-- The agent is more likely to generate stable, usable fragments.
+- `span + br` 足以覆盖大部分中心提示、菜单附加文本、状态信息
+- 标签越少，渲染偏差越小
+- agent 更容易稳定生成可用片段
 
-### Patterns you should not use by default
+### 不要默认使用的写法
 
-- Do not default to ordinary web-style `style="..."`
-- Do not default to tags not explicitly listed by the official docs
-- Do not assume `<font>` is always reliable
+- 不要默认使用网页常见的 `style="..."`
+- 不要默认使用未在官方列出的标签
+- 不要假设 `<font>` 一定可靠
 
-> Toolkit convention: if the task is only text coloring, font sizing, or emphasis, prefer `<span ...>` and do not generate `<font ...>`.
+> 工具包约定：若只是文字着色/字号/强调，优先使用 `<span ...>`，不要生成 `<font ...>`。
 
-## Panorama styling syntax
+## Panorama 样式语法
 
-### 1) Use direct attributes instead of `style="..."`
+### 1）直接属性，而不是 `style="..."`
 
-Correct example:
-
-```csharp
-var html = "<span color=\"red\">Danger prompt</span>";
-```
-
-Incorrect example:
+正确示例：
 
 ```csharp
-var html = "<span style=\"color:red\">Danger prompt</span>";
+var html = "<span color=\"red\">危险提示</span>";
 ```
 
-The official docs emphasize that Panorama UI styling is usually written as direct tag attributes rather than packed into `style`.
-
-### 2) Prefer built-in classes
-
-Correct example:
+错误示例：
 
 ```csharp
-var html = "<span class=\"fontSize-l fontWeight-bold\">Large bold text</span>";
+var html = "<span style=\"color:red\">危险提示</span>";
 ```
 
-Common benefits:
+官方强调：Panorama UI 的样式属性通常直接写成标签属性，而不是塞进 `style`。
 
-- more stable than manually scattering style attributes
-- more consistent with the built-in game styling system
-- easier to adjust consistently when the UI evolves
+### 2）优先使用内建 class
 
-### 3) Attributes and classes can be combined
+正确示例：
 
 ```csharp
-var html = "<span color=\"green\" class=\"fontSize-l\">Ready</span>";
+var html = "<span class=\"fontSize-l fontWeight-bold\">大号粗体</span>";
 ```
 
-Typical use:
+常见好处：
 
-- use `class` for font size / style
-- use `color` for dynamic color changes
+- 比手写零散属性更稳定
+- 与游戏内置样式体系更一致
+- 升级时更容易统一调整
 
-## Common styling elements
+### 3）属性与 class 可以组合
 
-### Colors
+```csharp
+var html = "<span color=\"green\" class=\"fontSize-l\">就绪</span>";
+```
 
-Common colors shown in the official examples and page include:
+适合场景：
+
+- 用 `class` 管字号/风格
+- 用 `color` 管动态颜色
+
+## 常用样式元素
+
+### 颜色
+
+官方示例与页面中出现的常见颜色包括：
 
 - `red`
 - `green`
@@ -119,20 +119,20 @@ Common colors shown in the official examples and page include:
 - `lime`
 - `lightred`
 
-Hex colors can also be used, for example:
+也可以使用十六进制颜色，例如：
 
 ```csharp
 var html = "<span color=\"#5E98D9\">CT</span>";
 ```
 
-Suggestions:
+建议：
 
-- if the color is tied to team or status semantics, prefer explicit hex values
-- for ordinary success / failure / warning text, semantic color names are usually sufficient
+- 需要和阵营、状态绑定时，优先用显式 hex
+- 普通成功/失败/警告文案，优先用语义色名
 
-### Common font-size classes
+### 常见字号 class
 
-The official page lists these font-size classes:
+官方页面列出的字号 class：
 
 - `fontSize-xs`
 - `fontSize-sm`
@@ -141,87 +141,87 @@ The official page lists these font-size classes:
 - `fontSize-xl`
 - `fontSize-xxl`
 
-Recommended convention:
+推荐约定：
 
-- body text: `fontSize-m`
-- secondary description: `fontSize-sm`
-- important prompt: `fontSize-l`
-- countdown / large numeric display: `fontSize-xl` / `fontSize-xxl`
+- 正文：`fontSize-m`
+- 次级说明：`fontSize-sm`
+- 重要提示：`fontSize-l`
+- 倒计时/大数字：`fontSize-xl` / `fontSize-xxl`
 
-### Common style classes
+### 常见风格 class
 
-Common classes listed on the official page include:
+官方页面列出的常见 class 包括：
 
 - `fontStyle-m`
 - `fontWeight-bold`
 - `CriticalText`
 
-Recommended use:
+推荐用法：
 
-- `fontWeight-bold`: emphasis
-- `CriticalText`: risk / warning / failure state
-- `fontStyle-m`: consistent standard body style
+- `fontWeight-bold`：强调
+- `CriticalText`：风险/警告/失败态
+- `fontStyle-m`：普通统一字体风格
 
-## Typical landing scenarios
+## 典型落地场景
 
-### 1) Center prompts / countdown / status broadcast
+### 1）中心提示 / 倒计时 / 状态播报
 
-Suitable for:
+适合：
 
 - `Core.PlayerManager.SendCenterHTML(...)`
-- round prompts
-- ready-state summaries
-- countdowns
+- 轮次提示
+- ready 状态统计
+- 倒计时
 
-Example:
+示例：
 
 ```csharp
 var timeLeft = 8;
 var color = timeLeft <= 3 ? "red" : timeLeft <= 5 ? "yellow" : "green";
-var html = $"<span class=\"fontSize-l\">Round starting soon</span><br><span color=\"{color}\" class=\"fontSize-xxl\">{timeLeft}</span>";
+var html = $"<span class=\"fontSize-l\">回合即将开始</span><br><span color=\"{color}\" class=\"fontSize-xxl\">{timeLeft}</span>";
 
 Core.PlayerManager.SendCenterHTML(html, 1);
 ```
 
-Generation rules:
+生成规则：
 
-- put the title and the value on separate lines
-- keep changing parts confined to the color and number
-- design duration and refresh frequency together; do not chase visuals while ignoring spam risk
+- 标题和数值分两行
+- 变化部分只放到颜色/数字里
+- 持续时间和刷新频率一起设计，不要只顾视觉不顾刷屏
 
-### 2) Extra menu description / dynamic summary
+### 2）菜单附加说明 / 动态摘要
 
-Suitable for:
+适合：
 
 - `TextMenuOption`
 - `BindingText`
-- top-of-menu summaries
+- 菜单顶部摘要
 
-Example:
+示例：
 
 ```csharp
 var option = new TextMenuOption
 {
-	BindingText = () => $"<span class=\"fontSize-sm\">Mode: <span color=\"green\">{runtime.ModeName}</span><br>Volume: <span color=\"yellow\">{runtime.Volume}</span></span>"
+	BindingText = () => $"<span class=\"fontSize-sm\">模式：<span color=\"green\">{runtime.ModeName}</span><br>音量：<span color=\"yellow\">{runtime.Volume}</span></span>"
 };
 ```
 
-Suggestions:
+建议：
 
-- wrap dynamic values in inner `span` tags
-- isolate frequently changing fields with their own color span
-- keep `BindingText` limited to lightweight string assembly; no IO, DB, or JSON work there
+- 动态值放内层 `span`
+- 容易变的字段单独包颜色
+- `BindingText` 内只做轻量字符串拼装，不做 IO / 数据库 / JSON
 
-### 3) Menu `BeforeFormat` / `AfterFormat`
+### 3）菜单 `BeforeFormat` / `AfterFormat`
 
-The official menu docs state that menu options support `BeforeFormat` and `AfterFormat`. These two events often interact with HTML Styling.
+官方菜单文档说明菜单选项支持 `BeforeFormat` / `AfterFormat`。这两个事件经常会和 HTML Styling 联动。
 
-Recommended split:
+推荐：
 
-- `BeforeFormat`: adjust the semantic text
-- `AfterFormat`: add the HTML presentation layer
+- `BeforeFormat`：改“语义文本”
+- `AfterFormat`：补“HTML 表现”
 
-Example:
+示例：
 
 ```csharp
 option.BeforeFormat += (_, args) =>
@@ -235,134 +235,134 @@ option.AfterFormat += (_, args) =>
 };
 ```
 
-Notes:
+注意：
 
-- even inside `AfterFormat`, prefer `<span>` and do not default to `<font>`
-- do not query remote data from formatting events
+- `AfterFormat` 里也优先用 `<span>`，不要默认生成 `<font>`
+- 不要在格式化事件里查询远端数据
 
-## Common string-assembly suggestions
+## 常见字符串拼装建议
 
-### Prefer `$"..."`
+### 优先使用 `$"..."`
 
 ```csharp
-var html = $"<span color=\"green\">{playerName}</span> is ready";
+var html = $"<span color=\"green\">{playerName}</span> 已就绪";
 ```
 
-It is clearer than string concatenation and easier for the agent to extend safely.
+比字符串相加更清晰，也更适合 agent 扩展。
 
-### Split title / detail / value first, then compose
+### 拆标题 / 明细 / 数值，再组合
 
 ```csharp
-var title = "<span color=\"yellow\" class=\"fontSize-l\">Server Rules</span>";
-var line1 = "<span>• No cheating</span>";
-var line2 = "<span>• No malicious boosting</span>";
+var title = "<span color=\"yellow\" class=\"fontSize-l\">服务器规则</span>";
+var line1 = "<span>• 禁止作弊</span>";
+var line2 = "<span>• 禁止恶意卡点</span>";
 var html = $"{title}<br><br>{line1}<br>{line2}";
 ```
 
-This is better for:
+这样更适合：
 
-- translation replacement
-- conditional assembly
-- inserting or removing a specific line based on player state
+- 翻译替换
+- 条件拼装
+- 根据玩家状态插入/删除某一行
 
-### Compute dynamic color first, then interpolate it
+### 动态颜色先算变量，再插值
 
 ```csharp
 var statusColor = isReady ? "green" : "red";
-var html = $"<span>{playerName}</span>: <span color=\"{statusColor}\">{statusText}</span>";
+var html = $"<span>{playerName}</span>：<span color=\"{statusColor}\">{statusText}</span>";
 ```
 
-Do not bury complex ternary logic directly inside the HTML fragment unless you want readability to tumble into the basement.
+不要把复杂三元表达式直接塞进 HTML 片段里，易读性会掉到地下室。
 
-## Interaction with other assets
+## 与其他资产的联动
 
-### Menus
+### 菜单
 
-- Menu template: `../../development/menus/menu-template.cs.md`
-- Focus points: `BindingText`, `BeforeFormat`, `AfterFormat`, and async callback validity checks
+- 菜单模板：`../../development/menus/menu-template.cs.md`
+- 关注点：`BindingText`、`BeforeFormat`、`AfterFormat`、异步回调有效性校验
 
-### Translations
+### 翻译
 
-- Translation entry: `../../development/translations/README.md`
+- 翻译入口：`../../development/translations/README.md`
 
-Suggestions:
+建议：
 
-- keep translation keys focused on semantic text fragments; apply colors and classes at the final assembly layer
-- if translated text must contain HTML, define clearly which placeholders are safe to inject
+- 翻译 key 尽量保留“语义片段”，颜色和 class 在最终拼装层处理
+- 若翻译文本中必须包含 HTML，需明确约定哪些占位符可安全注入
 
-### Thread safety
+### 线程安全
 
-- HTML string assembly itself is usually not the thread-sensitive part
-- but **the player / entity data used to produce that HTML** may involve thread-sensitive APIs
-- when building UI text inside async callbacks, confirm first that the consumed state has already been snapshotted safely
+- HTML 字符串拼装本身通常不是线程敏感点
+- 但**用于生成 HTML 的玩家/实体数据**可能涉及线程敏感 API
+- 若在异步回调中拼装 UI 文本，先确认所读取状态是否已快照化
 
-## Where to discover classes
+## class 发现路径
 
-The official HTML Styling page points to this extension reference:
+官方 HTML Styling 页给出的扩展入口是：
 
 - `https://github.com/SteamDatabase/GameTracking-CS2/tree/master/game/core/pak01_dir/panorama/styles`
 
-That directory can be used to:
+该目录可用于：
 
-- inspect built-in Panorama classes
-- observe naming patterns in files such as `panorama_base.css` and `gamestyles.css`
-- recheck whether new classes appear after CS2 updates
+- 查内建 Panorama class
+- 观察 `panorama_base.css`、`gamestyles.css` 等文件中的命名风格
+- 跟随 CS2 更新确认新 class 是否出现
 
-Recommended lookup order:
+推荐查找顺序：
 
-1. first use the common classes listed on this page
-2. if they are not enough, inspect the SteamDatabase styles directory, especially `panorama_base.css` / `gamestyles.css`
-3. before truly adopting a new class, validate it in game
+1. 先用本页列出的常用 class
+2. 不够用时去 SteamDatabase styles 目录查 `panorama_base.css` / `gamestyles.css`
+3. 真正采用新 class 前，先进游戏验证
 
-## Agent generation rules
+## agent 生成规则
 
-When the agent needs to output an HTML fragment, prefer the following rules:
+当 agent 需要输出 HTML 片段时，优先遵守以下规则：
 
-1. default to `span + br`
-2. default to `<span color="..."></span>` and do not generate `style="..."`
-3. prefer `fontSize-*` classes for sizing rather than hand-written complex font attributes
-4. prefer `fontWeight-bold` or `CriticalText` for emphasis
-5. prefer `BindingText` for dynamic menu text
-6. keep formatting events limited to lightweight string transformation
-7. for complex layouts, explicitly note that in-game validation is required
+1. 默认使用 `span + br`
+2. 默认使用 `<span color="..."></span>`，不要生成 `style="..."`
+3. 字号优先使用 `fontSize-*` class，不手写复杂字体属性
+4. 强调优先使用 `fontWeight-bold` 或 `CriticalText`
+5. 菜单动态文本优先 `BindingText`
+6. 格式化事件里只做轻量字符串变换
+7. 复杂布局要提示“需进游戏验证”
 
-## Common anti-patterns
+## 常见反模式
 
-### Anti-pattern 1: copying web CSS habits directly
-
-```csharp
-"<span style=\"color:red;font-size:24px\">Warning</span>"
-```
-
-Use this instead:
+### 反模式 1：把网页 CSS 写法搬进来
 
 ```csharp
-"<span color=\"red\" class=\"fontSize-xl\">Warning</span>"
+"<span style=\"color:red;font-size:24px\">警告</span>"
 ```
 
-### Anti-pattern 2: heavy logic inside `BindingText` / `AfterFormat`
+应改为：
 
-Do not:
+```csharp
+"<span color=\"red\" class=\"fontSize-xl\">警告</span>"
+```
 
-- query databases
-- issue HTTP requests
-- serialize / deserialize large objects
-- repeatedly build large complex HTML fragments inside hot-refresh UI paths
+### 反模式 2：在 `BindingText` / `AfterFormat` 里做重逻辑
 
-### Anti-pattern 3: deeply nested HTML for showmanship
+不要：
 
-Panorama being able to parse it does not mean the client will display it stably.
+- 访问数据库
+- 发 HTTP
+- 做大对象序列化/反序列化
+- 在热刷新 UI 中反复拼大段复杂结构
 
-For prompt-style UI, prefer:
+### 反模式 3：为了炫技生成深层嵌套 HTML
 
-- one title layer
-- one value / status layer
-- line breaks with `br`
+Panorama 能解析，不代表玩家端一定稳定显示。
 
-## Final checklist
+对于提示类 UI，优先：
 
-- [ ] Is `style="..."` avoided?
-- [ ] Are `span`, `br`, and built-in classes preferred?
-- [ ] Are dynamic values assembled separately from fixed text?
-- [ ] Is heavy logic avoided inside dynamic text callbacks?
-- [ ] Is it clear whether in-game validation is required?
+- 一层标题
+- 一层数值/状态
+- `br` 分行
+
+## 最后检查清单
+
+- [ ] 是否避免了 `style="..."`？
+- [ ] 是否优先用了 `span`、`br`、内建 class？
+- [ ] 是否把动态值和固定文案分开拼装？
+- [ ] 是否避免在动态文本回调里做重逻辑？
+- [ ] 是否明确需要进游戏实测？

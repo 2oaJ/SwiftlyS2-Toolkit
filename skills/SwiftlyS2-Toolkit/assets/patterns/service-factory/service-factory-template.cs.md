@@ -1,15 +1,15 @@
-# SwiftlyS2 Service Factory / Keyed Service Pattern
+# SwiftlyS2 Service Factory / Keyed Service 模式
 
-Official docs section:
+对应官方文档：
 - `Dependency Injection`
 
-Suitable for: plugins where one interface has multiple implementations, strategies must be selected, or services need to be resolved dynamically by key / type.
+适用于：同一接口有多个实现、需要策略选择、或需要按 key/type 动态解析服务的插件。
 
-## 1. Service Factory pattern
+## 一、Service Factory 模式
 
-Suitable for: one feature interface has multiple strategy implementations and selection must happen at runtime by name / type.
+适合：一个功能接口有多个策略实现，需要在运行时按名称/类型选择。
 
-### Interface definition
+### 接口定义
 
 ```csharp
 public interface IMyService
@@ -26,7 +26,7 @@ public interface IMyServiceFactory
 }
 ```
 
-### Factory implementation
+### 工厂实现
 
 ```csharp
 public class MyServiceFactory : IMyServiceFactory
@@ -48,7 +48,7 @@ public class MyServiceFactory : IMyServiceFactory
 }
 ```
 
-### DI registration
+### DI 注册
 
 ```csharp
 var services = new ServiceCollection();
@@ -65,11 +65,11 @@ foreach (var svc in sp.GetServices<IMyService>())
 }
 ```
 
-## 2. Keyed Singleton pattern
+## 二、Keyed Singleton 模式
 
-Suitable for: multiple instances of the same interface that need independent configuration (for example, multiple GameData patches or multiple fixes).
+适合：同一接口的多个实例需要独立配置（如多个 GameData Patch、多个修复项）。
 
-### Registration
+### 注册
 
 ```csharp
 services.AddKeyedSingleton<IGameFixService>("FixA",
@@ -78,14 +78,14 @@ services.AddKeyedSingleton<IGameFixService>("FixB",
     (sp, key) => new GameDataPatchService(Core, sp.GetRequiredService<ILogger<GameDataPatchService>>(), "FixB"));
 ```
 
-### Resolution
+### 解析
 
 ```csharp
 var fixA = sp.GetRequiredKeyedService<IGameFixService>("FixA");
 var fixB = sp.GetRequiredKeyedService<IGameFixService>("FixB");
 ```
 
-### Batch management
+### 批量管理
 
 ```csharp
 var allFixes = new IGameFixService[]
@@ -94,52 +94,52 @@ var allFixes = new IGameFixService[]
     sp.GetRequiredKeyedService<IGameFixService>("FixB"),
 };
 
-// Install together
+// 统一安装
 foreach (var fix in allFixes)
 {
     try { fix.Install(); }
-    catch (Exception ex) { Logger.LogError(ex, "Failed to install {Name}", fix.ServiceName); }
+    catch (Exception ex) { Logger.LogError(ex, "安装 {Name} 失败", fix.ServiceName); }
 }
 
-// Uninstall together
+// 统一卸载
 foreach (var fix in allFixes)
 {
     try { fix.Uninstall(); }
-    catch (Exception ex) { Logger.LogError(ex, "Failed to uninstall {Name}", fix.ServiceName); }
+    catch (Exception ex) { Logger.LogError(ex, "卸载 {Name} 失败", fix.ServiceName); }
 }
 ```
 
-## 3. Multi-implementation resolution (`GetServices<T>()`)
+## 三、Multi-Implementation 解析（`GetServices<T>()`）
 
-Suitable for: all implementations of an interface need to be invoked (for example, multiple trigger-type services).
+适合：一个接口的所有实现都需要被调用（如多种触发器类型服务）。
 
 ```csharp
-// Register multiple implementations under the same interface
+// 注册多个实现到同一接口
 services.AddSingleton<ITriggerTypeService, AreaTeleportService>();
 services.AddSingleton<ITriggerTypeService, AreaPushService>();
 services.AddSingleton<ITriggerTypeService, AirWallService>();
 
-// Resolve all implementations
+// 解析所有实现
 var sp = services.BuildServiceProvider();
 foreach (var triggerService in sp.GetServices<ITriggerTypeService>())
 {
     triggerService.Install();
-    _typeIndex[triggerService.TriggerType] = triggerService;  // Build an index by trigger type
+    _typeIndex[triggerService.TriggerType] = triggerService;  // 按类型建索引
 }
 ```
 
-## 4. Pattern comparison
+## 四、模式对比
 
-| Pattern | Best for | Resolution |
+| 模式 | 适合场景 | 解析方式 |
 |------|---------|---------|
-| Factory | choose a strategy by name / config at runtime | `factory.GetService(key)` |
-| Keyed Singleton | multiple independently configured instances of the same interface | `sp.GetRequiredKeyedService(key)` |
-| `GetServices<T>()` | all implementations must be traversed and invoked | `sp.GetServices<T>()` |
+| Factory | 运行时按名称/配置选择策略 | `factory.GetService(key)` |
+| Keyed Singleton | 同接口多个独立配置实例 | `sp.GetRequiredKeyedService(key)` |
+| `GetServices<T>()` | 所有实现都需遍历调用 | `sp.GetServices<T>()` |
 
 ## Checklist
 
-- [ ] Was the correct DI pattern chosen for multiple implementations (factory / keyed / multi-resolve)?
-- [ ] Is factory registration completed after `ServiceProvider` has been built?
-- [ ] Does batch management isolate exceptions so one failure does not affect others?
-- [ ] Do all implementations follow the `Install() / Uninstall()` lifecycle closure?
-- [ ] Do keyed services use business-meaningful keys that are unlikely to conflict?
+- [ ] 多实现是否选择了正确的 DI 模式（factory / keyed / multi-resolve）？
+- [ ] 工厂注册是否在 `ServiceProvider` 构建后完成？
+- [ ] 批量管理是否有异常隔离（一个失败不影响其他）？
+- [ ] 各实现是否都遵循 `Install() / Uninstall()` 生命周期闭环？
+- [ ] Keyed 服务的 key 是否具有业务语义且不易冲突？

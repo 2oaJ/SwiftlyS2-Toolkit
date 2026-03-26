@@ -1,19 +1,19 @@
-# SwiftlyS2 ClientCommandHookHandler Template
+# SwiftlyS2 ClientCommandHookHandler 模板
 
-Official docs sections:
+对应官方文档：
 - `Commands`
 - `Native Functions and Hooks`
 
-Suitable for: intercepting raw commands sent by clients (such as `jointeam` or radio commands) and deciding whether to allow or block them before they enter the normal processing pipeline.
+适用于：拦截客户端发送的原始命令（如 jointeam、radio 命令等），在命令到达正常处理流程前决定放行或拦截。
 
-## Suitable scenarios
+## 适用场景
 
-- Intercept and restrict `jointeam` (for example, prevent non-admins from switching to spectator)
-- Intercept and replace radio commands (for example, custom `cheer`, `roger`, and similar behavior)
-- Intercept purchase commands
-- Any scenario that requires global interception at the command layer
+- 拦截并限制 `jointeam`（禁止非管理员切观察者）
+- 拦截并替换无线电命令（自定义 cheer、roger 等行为）
+- 拦截购买命令
+- 任何需要在命令层面全局拦截的场景
 
-## Basic pattern
+## 基本模式
 
 ```csharp
 using SwiftlyS2.Shared.Hooks;
@@ -22,15 +22,15 @@ namespace MyNamespace;
 
 public partial class MyPlugin
 {
-    // 1. Optional: declaratively register the command (to ensure low-level recognition)
+    // 1. 可选：声明式注册命令（确保底层识别）
     [Command("jointeam", registerRaw: true)]
     public void OnJoinTeamCommand(ICommandContext context) { }
 
-    // 2. Install the global command-interception hook
+    // 2. 安装全局命令拦截 Hook
     [ClientCommandHookHandler]
     public HookResult OnClientCommandHook(int playerId, string commandLine)
     {
-        // Fast routing: only handle the commands you care about
+        // 快速分流：只处理关心的命令
         if (!commandLine.StartsWith("jointeam"))
             return HookResult.Continue;
 
@@ -38,20 +38,20 @@ public partial class MyPlugin
         if (player is null || !player.IsValid)
             return HookResult.Continue;
 
-        // Example: prevent non-admins from switching to spectator
+        // 示例：禁止非管理员切观察者
         if (commandLine.StartsWith("jointeam 1")
             && !Core.Permission.PlayerHasPermission(player.SteamID, "admin.spectate"))
         {
-            player.SendMessage(MessageType.Chat, "[Plugin] Non-admins cannot switch to spectator.");
-            return HookResult.Stop;  // Block the command
+            player.SendMessage(MessageType.Chat, "[插件] 非管理员无法切换到观察者");
+            return HookResult.Stop;  // 拦截命令
         }
 
-        return HookResult.Continue;  // Allow it through
+        return HookResult.Continue;  // 放行
     }
 }
 ```
 
-## Multi-command interception pattern
+## 多命令拦截模式
 
 ```csharp
 private static readonly HashSet<string> InterceptedCommands =
@@ -68,7 +68,7 @@ public void OnRadioCommand(ICommandContext context) { }
 [ClientCommandHookHandler]
 public HookResult OnClientCommandHook(int playerId, string commandLine)
 {
-    // Extract the command name
+    // 提取命令名
     var spaceIndex = commandLine.IndexOf(' ');
     var commandName = spaceIndex < 0 ? commandLine : commandLine[..spaceIndex];
 
@@ -79,7 +79,7 @@ public HookResult OnClientCommandHook(int playerId, string commandLine)
     if (player is null || !player.IsValid)
         return HookResult.Continue;
 
-    // Dispatch by command name
+    // 按命令名分发
     return commandName switch
     {
         "cheer" => HandleCheerCommand(player),
@@ -88,19 +88,19 @@ public HookResult OnClientCommandHook(int playerId, string commandLine)
 }
 ```
 
-## Key points
+## 关键点
 
-- `registerRaw: true` ensures the command is recognized at the low level so `ClientCommandHookHandler` can intercept it correctly.
-- `HookResult.Stop` completely blocks the command from propagating further.
-- `HookResult.Continue` lets the command execute normally.
-- `commandLine` is a raw string, so arguments must be parsed manually.
-- This hook runs at the earliest stage of the command pipeline, so higher-level wrappers such as `ICommandContext` may not yet be available.
-- Intercepting high-frequency commands (such as movement-related commands) requires performance awareness.
+- `registerRaw: true` 确保命令在底层被识别，`ClientCommandHookHandler` 才能正确拦截
+- `HookResult.Stop` 完全阻止命令继续传播
+- `HookResult.Continue` 让命令正常执行
+- commandLine 是原始字符串，需自行解析参数
+- 该 Hook 在命令处理流水线的最早期，`ICommandContext` 等高级包装可能尚不可用
+- 高频命令（如移动类）的拦截要注意性能
 
 ## Checklist
 
-- [ ] Are unrelated commands filtered out as early as possible so not every command goes through the full logic?
-- [ ] Does the hook validate `player is not null && player.IsValid` first?
-- [ ] Have all commands that need `registerRaw: true` been declared?
-- [ ] Is `HookResult.Stop` used only in scenarios that truly need interception?
-- [ ] Does argument parsing safely handle empty arguments and malformed input?
+- [ ] 是否尽早过滤不关心的命令（避免每个命令都走完整逻辑）？
+- [ ] 是否在 Hook 内先校验 `player is not null && player.IsValid`？
+- [ ] 需要 `registerRaw: true` 的命令是否都已声明？
+- [ ] `HookResult.Stop` 是否只用于确实需要拦截的场景？
+- [ ] 参数解析是否安全处理了空参数/异常格式？

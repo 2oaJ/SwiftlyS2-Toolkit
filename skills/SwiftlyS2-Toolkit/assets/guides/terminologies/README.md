@@ -1,14 +1,14 @@
-# Terminologies Entry Notes
+# Terminologies 入口说明
 
-Official docs section:
+对应官方文档：
 - `Terminologies`
 
-This page is a good first stop in the following scenarios:
-- when you are not sure about the distinction between `controller / pawn / player object / slot / playerId`
-- when you are not sure about the boundary between `managed / native`
-- when you are not sure why long-term entity tracking should use handles
+本页适合在以下场景先看：
+- 不确定 `controller / pawn / player object / slot / playerId` 的区别
+- 不确定 `managed / native` 的边界
+- 不确定为什么长期实体跟踪应使用 handle
 
-Common related references:
-- lifecycle and entity validity: `../../development/core-events/lifecycle-checklist.md`
-- Schema / entity write-back: `../../development/entity/schema-write-checklist.md`
-- Shared API / service design: `../../guides/dependency-injection/service-template.cs.md`
+常见联动：
+- 生命周期与实体有效性：`../../development/core-events/lifecycle-checklist.md`
+- Schema / entity 写回：`../../development/entity/schema-write-checklist.md`
+- Shared API / service 设计：`../../guides/dependency-injection/service-template.cs.md`

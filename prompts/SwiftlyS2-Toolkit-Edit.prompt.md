@@ -1,6 +1,6 @@
-# SwiftlyS2-Toolkit Edit Prompt
+﻿# swiftlys2-toolkit Edit Prompt
 
-Use the `SwiftlyS2-Toolkit` skill to directly handle **add feature / modify feature / remove feature** scenarios in SwiftlyS2 plugins.
+Use the `swiftlys2-toolkit` skill to directly handle **add feature / modify feature / remove feature** scenarios in SwiftlyS2 plugins.
 
 This prompt is meant for requests where the user explicitly wants to **land code changes directly**, rather than first doing a full audit or producing a long-form plan.
 
@@ -8,12 +8,12 @@ This prompt is meant for requests where the user explicitly wants to **land code
 
 Prefer this prompt when the user asks for things like:
 
-- “add a feature”
-- “modify this feature”
-- “remove this feature”
-- “edit the code directly”
-- “wire this logic in”
-- “fix this feature, but don’t start with a huge plan”
+- 鈥渁dd a feature鈥?
+- 鈥渕odify this feature鈥?
+- 鈥渞emove this feature鈥?
+- 鈥渆dit the code directly鈥?
+- 鈥渨ire this logic in鈥?
+- 鈥渇ix this feature, but don鈥檛 start with a huge plan鈥?
 
 ## Goal
 
@@ -53,7 +53,7 @@ Even in direct-edit scenarios, keep SwiftlyS2 agent development quality high:
 
 ## Mandatory rules
 
-1. Do not force every “direct edit” request to become a full audit.
+1. Do not force every 鈥渄irect edit鈥?request to become a full audit.
 2. But before editing, you must complete at least one round of **minimum necessary localization**.
 3. If the task requires consistency with a historical implementation, all player-visible capabilities are core and must not be silently removed.
 4. Direct editing must still preserve the current architecture boundaries. Do not shove logic back into the main class or write across layers just for convenience.
@@ -64,59 +64,59 @@ Even in direct-edit scenarios, keep SwiftlyS2 agent development quality high:
 7. For dynamic menu text, evaluate `BindingText` first.
 8. If bots / fakeclients / auto-controlled entities or mixed bot-human storage are involved, do not directly equate bot identity keys with human identity strategy.
 9. On hot paths or in high-frequency data passing, if SwiftlyS2 / the current API already provides parameters by `ref`, prefer continuing to use `ref`; if small high-frequency data passing is needed, you may evaluate `Span<T>` / `ReadOnlySpan<T>`, but do not misuse them across `await` or thread boundaries.
-10. All comments must follow the repository’s existing conventions. If there is no extra convention, they must be meaningful and explain non-obvious intent.
+10. All comments must follow the repository鈥檚 existing conventions. If there is no extra convention, they must be meaningful and explain non-obvious intent.
 11. High-risk changes must include build and scenario-regression notes.
-12. If mixed bot / human storage is involved, prefer `SessionId` as the runtime lookup key by default, and do not treat a bot’s `SteamID` as a reliable primary key.
+12. If mixed bot / human storage is involved, prefer `SessionId` as the runtime lookup key by default, and do not treat a bot鈥檚 `SteamID` as a reliable primary key.
 
 ## Minimum navigation before use
 
 Based on task content, prioritize these supporting assets:
 
 ### Command-related
-- `./skills/SwiftlyS2-Toolkit/assets/development/commands/command-attribute-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/commands/command-service-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/commands/client-command-hook-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/using-attributes/attribute-registration-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/commands/command-attribute-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/commands/command-service-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/commands/client-command-hook-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/using-attributes/attribute-registration-checklist.md`
 
 ### Menu-related
-- `./skills/SwiftlyS2-Toolkit/assets/development/menus/menu-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/menus/menu-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 
 ### Hook / runtime / hot-path work
-- `./skills/SwiftlyS2-Toolkit/assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/profiler/hotpath-gc-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/profiler/hotpath-gc-checklist.md`
 
 ### Schema / entity write-back
-- `./skills/SwiftlyS2-Toolkit/assets/development/entity/schema-write-checklist.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/entity/schema-write-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 
 ### Configuration / ConVar
-- `./skills/SwiftlyS2-Toolkit/assets/development/configuration/config-hot-reload-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/convars/convar-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/configuration/config-hot-reload-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/convars/convar-template.cs.md`
 
 ### Worker / async persistence / background tasks
-- `./skills/SwiftlyS2-Toolkit/assets/development/scheduler/scheduler-vs-worker-guide.md`
-- `./skills/SwiftlyS2-Toolkit/assets/patterns/background-workers/worker-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/patterns/async-patterns/async-safety-guide.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/core-events/lifecycle-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/scheduler/scheduler-vs-worker-guide.md`
+- `./skills/swiftlys2-toolkit/assets/patterns/background-workers/worker-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/patterns/async-patterns/async-safety-guide.md`
+- `./skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
 
 ### DI / service
-- `./skills/SwiftlyS2-Toolkit/assets/guides/dependency-injection/di-service-plugin-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/guides/dependency-injection/service-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/patterns/service-factory/service-factory-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/guides/dependency-injection/di-service-plugin-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/guides/dependency-injection/service-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/patterns/service-factory/service-factory-template.cs.md`
 
 ### Resource precache / lifecycle
-- `./skills/SwiftlyS2-Toolkit/assets/development/core-events/precache-resource-template.cs.md`
-- `./skills/SwiftlyS2-Toolkit/assets/development/core-events/lifecycle-checklist.md`
+- `./skills/swiftlys2-toolkit/assets/development/core-events/precache-resource-template.cs.md`
+- `./skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
 
 ### Player runtime state
-- `./skills/SwiftlyS2-Toolkit/assets/patterns/per-player-state/player-state-management-guide.md`
+- `./skills/swiftlys2-toolkit/assets/patterns/per-player-state/player-state-management-guide.md`
 
 ### When higher-level engineering rules are needed
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-plugin-playbook.md`
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-kb-index.md`
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-asset-inventory.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
 ## Direct-edit workflow
 
@@ -142,26 +142,26 @@ At minimum, answer:
 - Is there avoidable high-frequency object copying that requires evaluating `ref` / `Span`?
 
 ### 4. Choose the appropriate assets
-- command (attribute) → command attribute template + attribute checklist
-- command (service-owned) → command service template
-- command (client command hook) → client-command-hook-template + hook-handler-template
-- menu → menu template + thread checklist
-- hook → hook template + thread checklist + hotpath checklist
-- schema → schema checklist
-- worker → scheduler-vs-worker guide + worker template + lifecycle checklist
-- service / DI → service template / DI template
-- service factory / keyed DI → service-factory-template + di-service-plugin-template
-- config / hot configuration reload → config-hot-reload-template
-- convar → convar-template
-- precache / resource precache → precache-resource-template + lifecycle-checklist
-- per-player state / player runtime → player-state-management-guide
-- async safety → async-safety-guide + lifecycle-checklist
+- command (attribute) 鈫?command attribute template + attribute checklist
+- command (service-owned) 鈫?command service template
+- command (client command hook) 鈫?client-command-hook-template + hook-handler-template
+- menu 鈫?menu template + thread checklist
+- hook 鈫?hook template + thread checklist + hotpath checklist
+- schema 鈫?schema checklist
+- worker 鈫?scheduler-vs-worker guide + worker template + lifecycle checklist
+- service / DI 鈫?service template / DI template
+- service factory / keyed DI 鈫?service-factory-template + di-service-plugin-template
+- config / hot configuration reload 鈫?config-hot-reload-template
+- convar 鈫?convar-template
+- precache / resource precache 鈫?precache-resource-template + lifecycle-checklist
+- per-player state / player runtime 鈫?player-state-management-guide
+- async safety 鈫?async-safety-guide + lifecycle-checklist
 
 ### 5. Requirements during implementation
 - make the smallest possible change
 - do not alter unrelated formatting
 - do not copy-paste logic across layers
-- do not introduce “temporary TODO logic” into the main flow
+- do not introduce 鈥渢emporary TODO logic鈥?into the main flow
 - re-check whether player / entity is valid across every `await` / delayed task
 - if this is only dynamic text updating, prefer `BindingText`
 - for thread-sensitive calls in async contexts, prefer `Async` APIs
@@ -217,8 +217,10 @@ If any of the following is true, switch to plan or audit thinking first:
 
 ## Example uses
 
-- “Directly add a settings menu to this SwiftlyS2 plugin and wire in the save logic.”
-- “Change this command’s permission and prompts without touching other behavior.”
-- “Remove the old reward entry and complete the cleanup logic.”
-- “Convert the existing menu to dynamic text binding with BindingText.”
-- “Change this thread-sensitive synchronous call into a more appropriate async-safe approach.”
+- 鈥淒irectly add a settings menu to this SwiftlyS2 plugin and wire in the save logic.鈥?
+- 鈥淐hange this command鈥檚 permission and prompts without touching other behavior.鈥?
+- 鈥淩emove the old reward entry and complete the cleanup logic.鈥?
+- 鈥淐onvert the existing menu to dynamic text binding with BindingText.鈥?
+- 鈥淐hange this thread-sensitive synchronous call into a more appropriate async-safe approach.鈥?
+
+

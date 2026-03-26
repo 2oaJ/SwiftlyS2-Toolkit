@@ -1,20 +1,20 @@
-# SwiftlyS2 Background Worker Template
+# SwiftlyS2 Background Worker 模板
 
-Related official docs sections:
+对应官方文档关联：
 - `Thread Safety`
-- `Scheduler` (only for responsibility routing against workers; it does not mean a worker is the same thing as a scheduler)
+- `Scheduler`（仅用于与 Worker 做职责分流，不表示 Worker 等于 Scheduler）
 
-Suitable for: background persistence, batch processing, async computation, and producer / consumer decoupling.
+适用于：后台持久化、批处理、异步计算、producer / consumer 解耦。
 
-## Usage principles
+## 适用原则
 
-- Workers should only handle computation / serialization / persistence that is safe to run asynchronously.
-- Main-thread-sensitive APIs must not be accessed directly on worker threads.
-- Workers must have explicit Start / Stop / Flush / Cancel semantics.
-- Before writing back on the main thread, revalidate player / entity / generation state.
-- For lightweight periodic tasks, prefer the built-in SwiftlyS2 Scheduler first.
+- Worker 只处理可异步的计算 / 序列化 / 持久化
+- 主线程敏感 API 不直接在 Worker 线程访问
+- Worker 必须有明确的 Start / Stop / Flush / Cancel 语义
+- 回主线程写回前要重新校验 player / entity / generation
+- 轻量周期任务优先考虑 SwiftlyS2 自带 Scheduler
 
-## Example skeleton
+## 示例骨架
 
 ```csharp
 using System.Collections.Concurrent;
@@ -92,14 +92,14 @@ public sealed class MyBackgroundWorker(ILogger<MyBackgroundWorker> logger)
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to process background work item");
+                _logger.LogError(ex, "处理后台任务失败");
             }
         }
     }
 
     private void Process(MyWorkItem item, CancellationToken cancellationToken)
     {
-        // Only do async-safe work here, such as JSON, batch processing, disk IO, or network IO.
+        // 这里只做异步安全工作，例如 JSON、批处理、磁盘 / 网络 IO。
     }
 
     private void FlushRemainingQueue()
@@ -112,7 +112,7 @@ public sealed class MyBackgroundWorker(ILogger<MyBackgroundWorker> logger)
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to flush remaining work items");
+                _logger.LogError(ex, "Flush 剩余任务失败");
             }
         }
     }
@@ -123,8 +123,8 @@ public sealed record MyWorkItem(ulong SteamId, string Payload);
 
 ## Checklist
 
-- Is there a Start / Stop / Flush / Cancel lifecycle closure?
-- Does it avoid accessing main-thread-sensitive APIs from background threads?
-- Does it avoid infinite fire-and-forget patterns?
-- Does it revalidate current session / generation before write-back?
-- If the task is only a lightweight main-thread periodic task, would Scheduler actually be a better fit?
+- 是否具备 Start / Stop / Flush / Cancel 闭环？
+- 是否避免后台线程访问主线程敏感 API？
+- 是否避免无限 fire-and-forget？
+- 是否在回写前重新校验当前会话 / generation？
+- 若只是轻量主线程周期任务，是否其实更适合 Scheduler？

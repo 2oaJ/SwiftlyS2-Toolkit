@@ -1,20 +1,20 @@
 # SwiftlyS2 Knowledge Base Quick Index
 
-This index is used for quickly locating **publicly citable** SwiftlyS2 reference entry points.
+本索引用于快速定位 **公开可引用** 的 SwiftlyS2 资料入口。
 
-If the current workspace also has local reference repositories, project mappings, historical reference projects, or custom experience, record them in `../../knowledge-base.md` and `../../copilot-instructions.md` instead of writing them back here.
+若当前工作区还有本地参考仓库、项目映射、历史参考项目或定制经验，请改去 `../../knowledge-base.md` 与 `../../copilot-instructions.md` 中登记，不要把它们写回这里。
 
-## 1. SwiftlyS2 official docs entry points
+## 1. SwiftlyS2 官网入口
 
-### Main entry points
+### 总入口
 
-- Docs Root: `https://swiftlys2.net/docs/`
-- Docs Map (condensed navigation in this toolkit): `./swiftlys2-official-docs-map.md`
-- API Reference: `https://swiftlys2.net/docs/api/`
+- Docs Root：`https://swiftlys2.net/docs/`
+- Docs Map（本工具包精简导航）：`./swiftlys2-official-docs-map.md`
+- API Reference：`https://swiftlys2.net/docs/api/`
 
-### Main Development entry points
+### Development 区主入口
 
-- Getting Started: `https://swiftlys2.net/docs/development/getting-started/`
+- Getting Started：`https://swiftlys2.net/docs/development/getting-started/`
 - Swiftly Core：`https://swiftlys2.net/docs/development/swiftly-core/`
 - Using attributes：`https://swiftlys2.net/docs/development/using-attributes/`
 - Thread Safety：`https://swiftlys2.net/docs/development/thread-safety/`
@@ -37,33 +37,33 @@ If the current workspace also has local reference repositories, project mappings
 - Sound Events：`https://swiftlys2.net/docs/development/soundevents/`
 - Steamworks：`https://swiftlys2.net/docs/development/steamworks/`
 
-### Main Guides entry points
+### Guides 区主入口
 
-- Dependency Injection: `https://swiftlys2.net/docs/guides/dependency-injection/`
-- Development Flow (the current official page is still a placeholder `todo`): `https://swiftlys2.net/docs/guides/development-flow/`
-- HTML Styling: `https://swiftlys2.net/docs/guides/html-styling/`
-- Porting from CounterStrikeSharp: `https://swiftlys2.net/docs/guides/porting-from-css/`
-- Terminologies: `https://swiftlys2.net/docs/guides/terminologies/`
+- Dependency Injection：`https://swiftlys2.net/docs/guides/dependency-injection/`
+- Development Flow（当前官网仍为占位 todo）：`https://swiftlys2.net/docs/guides/development-flow/`
+- HTML Styling：`https://swiftlys2.net/docs/guides/html-styling/`
+- Porting from CounterStrikeSharp：`https://swiftlys2.net/docs/guides/porting-from-css/`
+- Terminologies：`https://swiftlys2.net/docs/guides/terminologies/`
 
-### API Reference usage suggestions
+### API Reference 使用建议
 
-- This toolkit does not embed a full extraction of the complete API Reference, to avoid unnecessary bloat.
-- First read the API Reference slim navigation in `./swiftlys2-official-docs-map.md`.
-- Then do online deep dives by section, such as `commands`, `netmessages`, `players`, `schemas`, or `services`.
+- 本工具包不内置完整 API Reference 全量提取，避免体积膨胀。
+- 先看：`./swiftlys2-official-docs-map.md` 中的 API Reference 瘦导航。
+- 再按栏目联网深挖：如 `commands`、`netmessages`、`players`、`schemas`、`services`。
 
-## 2. Asset navigation for this toolkit
+## 2. 本工具包 assets 导航
 
-- Assets Root: `../assets/README.md`
-- Development assets: `../assets/development/`
-- Guides assets: `../assets/guides/`
-- Non-official engineering patterns: `../assets/patterns/`
-- Workflow templates: `../assets/workflows/`
+- Assets Root：`../assets/README.md`
+- Development 主题资产：`../assets/development/`
+- Guides 主题资产：`../assets/guides/`
+- 非官方工程模式：`../assets/patterns/`
+- 工作流模板：`../assets/workflows/`
 
-## 3. sw2-mdwiki quick entry points
+## 3. sw2-mdwiki 快速入口
 
-Repository: `https://github.com/himenekocn/sw2-mdwiki`
+仓库：`https://github.com/himenekocn/sw2-mdwiki`
 
-### Frequently consulted categories
+### 常查分类
 
 - `SwiftlyS2/Shared/Players/IPlayer.md`
 - `SwiftlyS2/Shared/Players/IPlayerManagerService.md`
@@ -80,226 +80,226 @@ Repository: `https://github.com/himenekocn/sw2-mdwiki`
 - `SwiftlyS2/Shared/Menus/`
 - `SwiftlyS2/Core/Menus/OptionsBase/`
 
-## 4. SwiftlyS2 official repository entry
+## 4. SwiftlyS2 官方仓库入口
 
-Repository: `https://github.com/swiftly-solution/swiftlys2`
+仓库：`https://github.com/swiftly-solution/swiftlys2`
 
-### Structure at a glance
+### 结构速览
 
-- `src/`: C++ core framework
-- `managed/src/`: C# managed layer
-- `natives/`: native definitions
-- `generator/`: code generation tools
-- `plugin_files/`: plugin/package assets
+- `src/`：C++ core framework
+- `managed/src/`：C# managed layer
+- `natives/`：native definitions
+- `generator/`：code generation tools
+- `plugin_files/`：plugin/package assets
 
-## 5. Decide first, then check the docs
+## 5. 先决策，再查文档
 
-- **I want to register commands / aliases / chat hooks** → `Commands`
-- **I want to listen to map / player / entity lifecycle** → `Core Events`
-- **I want to write high-frequency hooks / native hooks / movement sampling** → `Native Functions and Hooks`
-- **I want to send typed protobuf / netmessages** → `Network Messages`
-- **I want to build cross-plugin interfaces** → `Shared API`
-- **I am deciding between await / NextTick / thread-sensitive APIs** → `Thread Safety`
-- **I am sorting out controller / pawn / player / entity handle concepts** → `Terminologies` + `Entity`
+- **我要注册命令 / alias / chat hook** → `Commands`
+- **我要监听地图 / 玩家 / 实体生命周期** → `Core Events`
+- **我要写高频 Hook / native hook / movement 采样** → `Native Functions and Hooks`
+- **我要发送 typed protobuf / netmessage** → `Network Messages`
+- **我要做跨插件接口** → `Shared API`
+- **我在纠结 await / NextTick / 线程敏感 API** → `Thread Safety`
+- **我在纠结 controller / pawn / player / entity handle** → `Terminologies` + `Entity`
 
-## 6. Scenario-oriented index (detailed version)
+## 6. 场景化索引（细化版）
 
-### I want to write commands
+### 我要写命令
 
-#### 1) I want to write partial / attribute commands
+#### 1）我要写 partial / attribute 命令
 
-- Read the official docs first:
+- 先看官方：
 	1. `Commands`
 	2. `Using attributes`
 	3. `Thread Safety`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/commands/command-attribute-template.cs.md`
 	- `../assets/development/using-attributes/attribute-registration-checklist.md`
-- Common APIs / keywords:
+- 常用 API / 关键词：
 	- `ICommandContext`
 	- `[Command]`
 	- `[CommandAlias]`
 	- `Reply` / `ReplyAsync`
-- Common pitfalls:
-	- using attributes on non-main-class objects without calling `Core.Registrator.Register(this)`
-	- piling business logic directly into command entry points
-	- misusing synchronous thread-sensitive APIs in async contexts
+- 常见坑：
+	- 非主类对象用了 attribute 却没 `Core.Registrator.Register(this)`
+	- 命令入口直接堆业务逻辑
+	- 异步上下文里误用同步线程敏感 API
 
-#### 2) I want to write service-owned commands
+#### 2）我要写 service 自持命令
 
-- Read the official docs first:
+- 先看官方：
 	1. `Commands`
 	2. `Dependency Injection`
 	3. `Thread Safety`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/commands/command-service-template.cs.md`
 	- `../assets/guides/dependency-injection/service-template.cs.md`
-- Common APIs / keywords:
+- 常用 API / 关键词：
 	- `RegisterCommand`
 	- `RegisterCommandAlias`
 	- `UnregisterCommand`
 	- `HookClientChat`
 	- `HookClientCommand`
-- Common pitfalls:
-	- not saving the `Guid`
-	- registering commands in the root while assuming the service will clean them automatically
-	- inconsistent cleanup paths for aliases and the primary command
+- 常见坑：
+	- 没保存 `Guid`
+	- 命令由 root 注册，却在 service 里想当然清理
+	- alias 清理与主命令清理路径不一致
 
-#### 3) I want to add permissions to commands
+#### 3）我要给命令加权限
 
-- Read the official docs first:
+- 先看官方：
 	1. `Commands`
 	2. `Permissions`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/permissions/README.md`
 	- `../assets/development/commands/command-attribute-template.cs.md`
-- Common pitfalls:
-	- applying only UI restrictions without real permission checks
-	- leaving wildcard / sub-permission relationships unclear
+- 常见坑：
+	- 只做 UI 限制，没做真实权限检查
+	- wildcard / sub-permission 关系没有梳理清楚
 
-### I want to write menus
+### 我要写菜单
 
-#### 1) I want menu entry points / submenus / save flows
+#### 1）我要做菜单入口 / 子菜单 / 保存流程
 
-- Read the official docs first:
+- 先看官方：
 	1. `Menus`
 	2. `Thread Safety`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/menus/menu-template.cs.md`
 	- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
-- Common APIs / keywords:
+- 常用 API / 关键词：
 	- `IMenuManagerAPI`
 	- `ButtonMenuOption`
 	- `ToggleMenuOption`
 	- `ChoiceMenuOption`
 	- `SubmenuMenuOption`
-- Common pitfalls:
-	- blocking IO directly inside callbacks
-	- failing to revalidate the player after `await`
-	- storing state inside the menu instead of runtime / service layers
+- 常见坑：
+	- 回调里直接阻塞 IO
+	- 跨 `await` 后不重校验 player
+	- 状态保存在菜单里而非 runtime / service 中
 
-#### 2) I want dynamic text with `BindingText`
+#### 2）我要做 BindingText 动态文本
 
-- Read the official docs first:
+- 先看官方：
 	1. `Menus`
-	2. `HTML Styling` (if the text includes HTML)
-- Then read local assets:
+	2. `HTML Styling`（若文本涉及 HTML）
+- 再看本地资产：
 	- `../assets/development/menus/menu-template.cs.md`
 	- `../assets/guides/html-styling/README.md`
-- Common pitfalls:
-	- refreshing `Text` manually instead of using binding
-	- placing heavy computation or heavy IO inside binding evaluation
+- 常见坑：
+	- 用手工刷新 `Text` 代替绑定
+	- 在绑定求值里塞重计算 / 重 IO
 
-### I want to write hooks
+### 我要写 Hook
 
-#### 1) I want typed core events / high-frequency runtime hooks
+#### 1）我要写 typed core event / 高频运行态 Hook
 
-- Read the official docs first:
+- 先看官方：
 	1. `Core Events`
 	2. `Thread Safety`
 	3. `Profiler`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
 	- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
 	- `../assets/development/profiler/hotpath-gc-checklist.md`
-- Common pitfalls:
-	- doing JSON / IO / high-frequency logging on hot paths
-	- failing to filter players / pawns / fakeclients
-	- stuffing complex logic directly into the hook callback
+- 常见坑：
+	- 热路径中做 JSON / IO / 高频日志
+	- 不做 player / pawn / fakeclient 过滤
+	- 把复杂逻辑直接塞进 Hook 回调
 
-#### 2) I want native function hooks / mid-hooks
+#### 2）我要写 native function hook / mid-hook
 
-- Read the official docs first:
+- 先看官方：
 	1. `Native Functions and Hooks`
 	2. `Thread Safety`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
-- Common pitfalls:
-	- delegate prototype mismatch
-	- not understanding the difference between `Call()` and `CallOriginal()`
-	- corrupting registers in mid-hooks
+- 常见坑：
+	- delegate 原型不匹配
+	- 不知道 `Call()` 与 `CallOriginal()` 的差异
+	- mid-hook 乱改寄存器
 
-### I want to write NetMessages / Protobuf
+### 我要写 NetMessage / Protobuf
 
-#### 1) I want to send typed netmessages
+#### 1）我要发送 typed netmessage
 
-- Read the official docs first:
+- 先看官方：
 	1. `Network Messages`
 	2. `Thread Safety`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/netmessages/protobuf-handler-template.cs.md`
-- Common APIs / keywords:
+- 常用 API / 关键词：
 	- `Core.NetMessage.Send<T>`
 	- `Core.NetMessage.Create<T>`
 	- `Recipients`
-- Common pitfalls:
-	- forgetting to dispose reusable messages
-	- using magic numbers instead of typed APIs
+- 常见坑：
+	- 忘记释放可复用 message
+	- 用 magic number 代替 typed API
 
-#### 2) I want to hook client / server messages
+#### 2）我要 hook client/server message
 
-- Read the official docs first:
+- 先看官方：
 	1. `Network Messages`
-	2. `INetMessageService` in API Reference
-- Then read local assets:
+	2. API Reference 的 `INetMessageService`
+- 再看本地资产：
 	- `../assets/development/netmessages/protobuf-handler-template.cs.md`
 	- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
-- Common pitfalls:
-	- passing protobuf handles directly to background threads
-	- not distinguishing between client-message and server-message hooks
+- 常见坑：
+	- 直接把 protobuf handle 丢给后台线程
+	- 不区分 hook client message 与 server message
 
-### I want to write Shared API
+### 我要写 Shared API
 
-#### 1) I want to provide a shared interface
+#### 1）我要提供 shared interface
 
-- Read the official docs first:
+- 先看官方：
 	1. `Shared API`
 	2. `Dependency Injection`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/shared-api/shared-interface-template.cs.md`
 	- `../assets/guides/dependency-injection/di-service-plugin-template.cs.md`
-- Common pitfalls:
-	- not using a contracts DLL
-	- overly vague key naming
-	- not considering versioning
+- 常见坑：
+	- 不做 contracts DLL
+	- key 命名过于模糊
+	- 没考虑版本化
 
-#### 2) I want to consume a shared interface
+#### 2）我要消费 shared interface
 
-- Read the official docs first:
+- 先看官方：
 	1. `Shared API`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/shared-api/shared-interface-template.cs.md`
-- Common pitfalls:
-	- not calling `HasSharedInterface(...)` first
-	- assuming the provider has already loaded
-	- continuing to hold old interface references after unload
+- 常见坑：
+	- 不先 `HasSharedInterface(...)`
+	- provider 未加载就假定接口已存在
+	- unload 后继续持有旧接口引用
 
-### I want to write Scheduler / Worker / background tasks
+### 我要写 Scheduler / Worker / 后台任务
 
-#### 1) I want to decide between Scheduler and a background worker
+#### 1）我要决定用 Scheduler 还是后台 Worker
 
-- Read the official docs first:
+- 先看官方：
 	1. `Scheduler`
 	2. `Thread Safety`
-- Then read local assets:
+- 再看本地资产：
 	- `../assets/development/scheduler/scheduler-vs-worker-guide.md`
 	- `../assets/patterns/background-workers/worker-template.cs.md`
 	- `../assets/development/core-events/lifecycle-checklist.md`
-- Common pitfalls:
-	- treating a background worker as if it were Scheduler
-	- accessing main-thread-sensitive APIs directly from worker threads
-	- having no stop / flush / cancel lifecycle closure
+- 常见坑：
+	- 把后台 worker 当成 Scheduler
+	- 在 worker 线程直接访问主线程敏感 API
+	- 没有 stop / flush / cancel 闭环
 
-## 7. Recommended lookup keywords
+## 7. 推荐检索关键词
 
-### Lifecycle
+### 生命周期
 
 - `OnClientPutInServer`
 - `OnClientDisconnected`
 - `OnMapLoad`
 - `OnMapUnload`
 
-### Commands
+### 命令
 
 - `ICommandContext`
 - `Command`
@@ -344,10 +344,10 @@ Repository: `https://github.com/swiftly-solution/swiftlys2`
 - `SubmenuMenuOption`
 - `BindingText`
 
-## 8. Usage suggestions
+## 8. 使用建议
 
-- **Choose the scenario first, then choose the reference source.**
-- **Read the official docs and mdwiki first, then decide whether workspace-specific additions are needed.**
-- **For official details, enter through `swiftlys2-official-docs-map.md` first and only then drill down online as needed.**
-- **For local templates and checklists, enter through `../assets/README.md` first instead of guessing filenames.**
-- **Public docs should cover API and framework boundaries; the workspace knowledge base should cover workspace-specific experience.**
+- **先定场景，再定资料源。**
+- **先看官网与 mdwiki，再决定是否需要当前工作区定制补充。**
+- **官网细节优先从 `swiftlys2-official-docs-map.md` 进入，再按需联网下钻到具体页面。**
+- **本地模板与 checklist 优先从 `../assets/README.md` 进入，不要直接猜文件名。**
+- **公共文档负责 API 与框架边界；工作区知识库负责当前工作区经验。**

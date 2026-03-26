@@ -1,19 +1,19 @@
-# SwiftlyS2 Protobuf / NetMessage Template
+# SwiftlyS2 Protobuf / NetMessage 模板
 
-Official docs sections:
+对应官方文档：
 - `Network Messages`
 - `Thread Safety`
 
-Suitable for: `CSGOUserCmdPB`, typed netmessages, user-message hooks, and command snapshot sampling.
+适用于：`CSGOUserCmdPB`、typed netmessage、用户消息 hook、命令快照采样。
 
-## Usage principles
+## 适用原则
 
-- Treat protobuf / usercmd reads and writes as main-thread-sensitive by default.
-- Before entering async work, prefer converting them into plain C# snapshots.
-- Do not pass protobuf handles or entity handles directly across threads.
-- Prefer typed protobuf / typed netmessage APIs over hard-coded message IDs.
+- protobuf / usercmd 读写默认按主线程敏感处理
+- 进入异步线程前，优先快照化为普通 C# 模型
+- 不要把 protobuf handle / entity handle 直接跨线程传递
+- typed protobuf / typed netmessage 优先于硬编码 message id
 
-## Example skeleton
+## 示例骨架
 
 ```csharp
 using SwiftlyS2.Shared.Protobufs;
@@ -56,8 +56,8 @@ public sealed record UserCmdSnapshot(
 
 ## Checklist
 
-- Is protobuf being read and written on the main thread?
-- Is snapshot conversion completed before entering async work?
-- Are protobuf handles prevented from crossing threads?
-- Are typed APIs preferred?
-- Has usercmd / subtick timing consistency been considered?
+- 是否在主线程读取/写入 protobuf？
+- 是否在异步前完成快照化？
+- 是否避免跨线程传递 protobuf handle？
+- 是否优先使用 typed API？
+- 是否考虑 usercmd / subtick 时序一致性？

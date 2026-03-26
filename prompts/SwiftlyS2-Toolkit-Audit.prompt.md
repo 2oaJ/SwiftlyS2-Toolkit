@@ -1,10 +1,10 @@
-# SwiftlyS2-Toolkit Audit Prompt
+﻿# swiftlys2-toolkit Audit Prompt
 
-Use the `SwiftlyS2-Toolkit` skill to perform a **general audit** on a SwiftlyS2 plugin project.
+Use the `swiftlys2-toolkit` skill to perform a **general audit** on a SwiftlyS2 plugin project.
 
 ## Audit objective
 
-When the user asks to “audit” a SwiftlyS2 plugin or subsystem, do not look only at code style. Cover:
+When the user asks to 鈥渁udit鈥?a SwiftlyS2 plugin or subsystem, do not look only at code style. Cover:
 
 1. whether the architecture matches the project size and responsibility
 2. whether lifecycle handling is closed properly
@@ -16,22 +16,22 @@ When the user asks to “audit” a SwiftlyS2 plugin or subsystem, do not look o
 
 ## Mandatory rules
 
-- Player-visible historical behavior differences must be listed separately and must not be hidden inside “optimization items”.
+- Player-visible historical behavior differences must be listed separately and must not be hidden inside 鈥渙ptimization items鈥?
 - Every risk must be labeled with a severity level: P0 / P1 / P2 / P3.
 - Audit conclusions must be actionable rather than vague advice.
-- If comment issues are found, evaluate them against the repository’s comment conventions. If there is no extra convention, review them against the standard of being meaningful and explaining non-obvious semantics.
+- If comment issues are found, evaluate them against the repository鈥檚 comment conventions. If there is no extra convention, review them against the standard of being meaningful and explaining non-obvious semantics.
 - You must explicitly check for synchronous blocking and main-thread JSON overhead.
 - If the audit recommends `Span<T>`, `ReadOnlySpan<T>`, `stackalloc`, or `ref`, you must audit their safety boundaries at the same time.
 - If historical repositories exist in the workspace, they may only be treated as temporary experience sources and must not be assumed to exist forever.
-- If mixed bot / human storage exists, identity-key design must be audited separately, with special focus on whether a bot’s `SteamID` is misused.
+- If mixed bot / human storage exists, identity-key design must be audited separately, with special focus on whether a bot鈥檚 `SteamID` is misused.
 
 ## Priority references
 
 ### Skill reference documents
 
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-plugin-playbook.md`
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-kb-index.md`
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-asset-inventory.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
 ### Public sources
 
@@ -90,7 +90,7 @@ Check especially:
 
 ### 6. Bot / fakeclient identity-key audit
 - whether `SteamID` is incorrectly used to look up bots / fakeclients
-- whether it is clearly understood that a bot’s `SteamID` should practically be treated as `0`
+- whether it is clearly understood that a bot鈥檚 `SteamID` should practically be treated as `0`
 - whether `SessionId` is preferred as the lookup key for mixed bot / human runtime state
 - whether mixed storage correctly distinguishes human and bot identity keys
 
@@ -109,7 +109,7 @@ Check especially:
 ### 2. Summary conclusions
 - current architecture classification
 - overall risk level
-- the most critical 3–10 issues
+- the most critical 3鈥?0 issues
 
 ### 3. Issue list
 For each issue, output:
@@ -136,7 +136,9 @@ For each issue, output:
 
 ## Example uses
 
-- “Audit this SwiftlyS2 plugin’s thread safety and lifecycle closure.”
-- “Audit the behavioral gap between the historical implementation and the current implementation, focusing on state synchronization / high-frequency loops / persistence paths.”
-- “Audit whether a SwiftlyS2 plugin should continue using modular gameplay architecture or should be changed to DI/service architecture.”
-- “Audit high-frequency Hook performance hotspots and give optimization directions, but do not edit code directly.”
+- 鈥淎udit this SwiftlyS2 plugin鈥檚 thread safety and lifecycle closure.鈥?
+- 鈥淎udit the behavioral gap between the historical implementation and the current implementation, focusing on state synchronization / high-frequency loops / persistence paths.鈥?
+- 鈥淎udit whether a SwiftlyS2 plugin should continue using modular gameplay architecture or should be changed to DI/service architecture.鈥?
+- 鈥淎udit high-frequency Hook performance hotspots and give optimization directions, but do not edit code directly.鈥?
+
+

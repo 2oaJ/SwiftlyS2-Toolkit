@@ -1,22 +1,22 @@
-# SwiftlyS2 Menu Template
+# SwiftlyS2 Menu 模板
 
-Official docs sections:
+对应官方文档：
 - `Menus`
 - `Thread Safety`
 - `HTML Styling`
 
-> Notes: official docs examples often use `Core.Menus`; if the current project exposes `IMenuManagerAPI` through `Core.MenusAPI`, follow the actual Core property used by the current project.
+> 说明：官方文档示例常写 `Core.Menus`；若当前项目通过 `Core.MenusAPI` 暴露 `IMenuManagerAPI`，以当前项目实际 Core 属性为准。
 
-## Design highlights
+## 设计要点
 
-- Menu entry methods should only validate and open the menu, not accumulate business details.
-- Prefer splitting submenus into standalone `BuildXxxMenuAsync` / `GetXxxMenu` methods.
-- `BindingText` is a high-priority capability: for dynamic text, prefer binding instead of manually refreshing `Text`.
-- Treat `Click`, `ValueChanged`, and `Submenu` delegates as async-context code.
-- In async contexts, prefer existing `Async` APIs instead of defaulting to `NextTick` / `NextWorldUpdate`.
-- State reads and writes should be pushed down into services, modules, or runtime contexts where possible.
+- 菜单入口方法只做校验与打开，不堆积业务细节。
+- 子菜单优先拆成独立 `BuildXxxMenuAsync` / `GetXxxMenu` 方法。
+- `BindingText` 是高优先级能力：动态文本优先用绑定，而不是手工刷新 `Text`。
+- `Click` / `ValueChanged` / `Submenu` 委托按异步上下文处理。
+- 在异步上下文中，优先使用已有 `Async` API，而不是默认套 `NextTick` / `NextWorldUpdate`。
+- 状态读写尽量下沉到 service / module / runtime context。
 
-## Template skeleton
+## 模板骨架
 
 ```csharp
 using SwiftlyS2.Core.Menus;
@@ -54,18 +54,18 @@ public partial class ExamplePlugin
         }
 
         var menu = Core.MenusAPI.CreateBuilder()
-            .Design.SetMenuTitle("Example Settings")
+            .Design.SetMenuTitle("示例设置")
             .EnableSound()
             .SetPlayerFrozen(false)
             .Build();
 
         var txtSummary = new TextMenuOption
         {
-            BindingText = () => $"Current style: {runtime.SelectedStyle} | Volume: {runtime.Volume} | Feature: {(runtime.Enabled ? "On" : "Off")}" 
+            BindingText = () => $"当前方案: {runtime.SelectedStyle} | 音量: {runtime.Volume} | 功能: {(runtime.Enabled ? "开启" : "关闭")}"
         };
         menu.AddOption(txtSummary);
 
-        var toggleEnable = new ToggleMenuOption("Feature Toggle", runtime.Enabled, onText: "On", offText: "Off");
+        var toggleEnable = new ToggleMenuOption("功能开关", runtime.Enabled, onText: "开启", offText: "关闭");
         toggleEnable.ValueChanged += async (_, args) =>
         {
             if (args.Player == null || !args.Player.IsValid)
@@ -75,11 +75,11 @@ public partial class ExamplePlugin
 
             await _settingsService.SetEnabledAsync(args.Player, args.NewValue);
             runtime.Enabled = args.NewValue;
-            await args.Player.SendMessageAsync(MessageType.Chat, $"{{green}}[Settings]{{default}} Feature {(args.NewValue ? "enabled" : "disabled")}");
+            await args.Player.SendMessageAsync(MessageType.Chat, $"{{green}}[设置]{{default}} 功能已{(args.NewValue ? "开启" : "关闭")}");
         };
         menu.AddOption(toggleEnable);
 
-        var btnSave = new ButtonMenuOption("Save Settings") { CloseAfterClick = true };
+        var btnSave = new ButtonMenuOption("保存设置") { CloseAfterClick = true };
         btnSave.Click += async (_, args) =>
         {
             if (args.Player == null || !args.Player.IsValid)
@@ -88,7 +88,7 @@ public partial class ExamplePlugin
             }
 
             await _settingsService.SaveAsync(args.Player, runtime.SelectedStyle, runtime.Volume, runtime.Enabled);
-            await args.Player.SendMessageAsync(MessageType.Chat, "{green}[Settings]{default} Your settings have been saved.");
+            await args.Player.SendMessageAsync(MessageType.Chat, "{green}[设置]{default} 你的设置已保存");
         };
         menu.AddOption(btnSave);
 
@@ -97,17 +97,17 @@ public partial class ExamplePlugin
 }
 ```
 
-## Menu implementation checkpoints
+## 菜单实现检查点
 
-- Was `BindingText` evaluated first?
-- Are callbacks handled as async-context logic?
-- Is `player.IsValid` rechecked in every callback?
-- Are heavy IO, blocking work, and excessive allocations avoided inside menu callbacks?
-- Is actual state write-back kept inside services or runtime contexts?
+- 是否优先评估了 `BindingText`？
+- 是否把回调按异步上下文处理？
+- 是否在每个回调里重新检查 `player.IsValid`？
+- 是否避免在菜单回调里做重 IO / 阻塞 / 大量分配？
+- 是否把真实状态写回留在 service / runtime context 中？
 
-## Advanced menu patterns
+## 进阶菜单模式
 
-### Dynamic countdown with BindingText
+### BindingText 动态倒计时
 
 ```csharp
 var btnTimer = new TextMenuOption
@@ -116,16 +116,16 @@ var btnTimer = new TextMenuOption
     {
         var remaining = _deadline - DateTime.Now;
         return remaining.TotalSeconds > 0
-            ? $"Time remaining: {remaining.TotalSeconds:0.0} seconds"
-            : "Expired";
+            ? $"剩余时间: {remaining.TotalSeconds:0.0} 秒"
+            : "已超时";
     }
 };
 menu.AddOption(btnTimer);
 ```
 
-### Tag-based data association
+### Tag 数据关联
 
-Use the `Tag` property to associate menu options with business data objects so callbacks and statistics are easier to implement:
+使用 `Tag` 属性将菜单项与业务数据对象关联，便于回调和统计：
 
 ```csharp
 foreach (var item in availableItems)
@@ -142,16 +142,16 @@ foreach (var item in availableItems)
 }
 ```
 
-### Real-time vote-count updates
+### 投票计数实时更新
 
-In voting scenarios, update the displayed vote count of all options after a selection:
+投票场景中，选择后更新所有选项的票数显示：
 
 ```csharp
 btn.Click += async (sender, args) =>
 {
     _votes.AddOrUpdate(steamId, selectedItem, (_, __) => selectedItem);
 
-    // Update the display text of all options
+    // 遍历更新所有选项的显示文本
     foreach (var option in menu.Options)
     {
         if (option.Tag is MyItem tagItem)
@@ -163,9 +163,9 @@ btn.Click += async (sender, args) =>
 };
 ```
 
-### ConfirmMenu (confirmation dialog)
+### ConfirmMenu（确认对话框）
 
-The official API achieves async waiting through `CreateBuilder()` + `OpenMenuForPlayer(player, menu, onClosed)` + `TaskCompletionSource`:
+官方 API 通过 `CreateBuilder()` + `OpenMenuForPlayer(player, menu, onClosed)` + `TaskCompletionSource` 实现异步等待：
 
 ```csharp
 private async Task<bool> OpenConfirmMenuAsync(IPlayer player, string message)
@@ -173,17 +173,17 @@ private async Task<bool> OpenConfirmMenuAsync(IPlayer player, string message)
     var tcs = new TaskCompletionSource<bool>();
 
     var menu = Core.MenusAPI.CreateBuilder()
-        .Design.SetMenuTitle("Please confirm")
+        .Design.SetMenuTitle("请确认操作")
         .EnableSound()
         .SetPlayerFrozen(false)
         .Build();
 
 
-    menu.Tag = false; // Use Tag as the result container
+    menu.Tag = false; // 用 Tag 作为结果容器
 
     menu.AddOption(new TextMenuOption(message));
 
-    var btnOK = new ButtonMenuOption("Confirm") { CloseAfterClick = true };
+    var btnOK = new ButtonMenuOption("确定") { CloseAfterClick = true };
     btnOK.Click += async (sender, args) =>
     {
         if (args.Player?.IsValid == true)
@@ -191,34 +191,34 @@ private async Task<bool> OpenConfirmMenuAsync(IPlayer player, string message)
     };
     menu.AddOption(btnOK);
 
-    var btnCancel = new ButtonMenuOption("Cancel") { CloseAfterClick = true };
+    var btnCancel = new ButtonMenuOption("取消") { CloseAfterClick = true };
     menu.AddOption(btnCancel);
 
     Core.MenusAPI.OpenMenuForPlayer(player, menu, (_player, _menu) =>
     {
-        // Note: Tag must be exclusively owned by this method and must not be overwritten externally after Build()
+        // 注意：此处 Tag 须由本方法独占管理，不得在 Build() 后外部覆写
         tcs.TrySetResult((bool)_menu.Tag!);
     });
 
     return await tcs.Task;
 }
 
-// Call site
-var confirmed = await OpenConfirmMenuAsync(player, "Are you sure you want to perform this action?");
+// 调用
+var confirmed = await OpenConfirmMenuAsync(player, "您确定要执行此操作吗？");
 if (confirmed)
 {
     await ExecuteDangerousAction(player);
 }
 ```
 
-> Tip: if timeout handling is needed, start `Task.Delay(timeoutMs)` together with the wait and race it against `tcs.Task` using `Task.WhenAny`.
+> 提示：若需要剪断超时，可在开始等待同时启动 `Task.Delay(timeoutMs)` 并用 `Task.WhenAny` 与 `tcs.Task` 竞争。
 
-### Cross-plugin menu jump
+### 跨插件菜单跳转
 
-Use `ExecuteCommand` for a loosely coupled jump into another plugin’s menu:
+通过 ExecuteCommand 松耦合跳转到其他插件菜单：
 
 ```csharp
-var btnSkin = new ButtonMenuOption("Character Skin Menu") { CloseAfterClick = true };
+var btnSkin = new ButtonMenuOption("角色模型菜单") { CloseAfterClick = true };
 btnSkin.Click += async (sender, args) =>
 {
     Core.Scheduler.NextWorldUpdate(() =>
@@ -229,12 +229,12 @@ btnSkin.Click += async (sender, args) =>
 menu.AddOption(btnSkin);
 ```
 
-### InputMenuOption (text input)
+### InputMenuOption（输入框）
 
-Menu option that allows players to enter text:
+允许玩家输入文本的菜单项：
 
 ```csharp
-var inputOption = new InputMenuOption("Enter Name");
+var inputOption = new InputMenuOption("输入名称");
 inputOption.ValueChanged += async (sender, args) =>
 {
     if (args.Player is null || !args.Player.Valid()) return;

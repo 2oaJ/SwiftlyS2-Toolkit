@@ -1,6 +1,6 @@
-# SwiftlyS2-Toolkit Plan Prompt
+﻿# swiftlys2-toolkit Plan Prompt
 
-Use the `SwiftlyS2-Toolkit` skill to generate an **actionable, method-level implementation plan with reference sources** for SwiftlyS2 plugin tasks.
+Use the `swiftlys2-toolkit` skill to generate an **actionable, method-level implementation plan with reference sources** for SwiftlyS2 plugin tasks.
 
 ## Goal
 
@@ -14,7 +14,7 @@ When the user wants to create, modify, optimize, refactor, migrate, or audit a S
 ## Mandatory rules
 
 1. If the task requires behavior to stay consistent with a historical implementation, **all player-visible capabilities are core features** and must not be marked as deferrable.
-2. The current project’s architectural boundaries must be preserved. Do not simply roll back the directory structure for “quick alignment”.
+2. The current project鈥檚 architectural boundaries must be preserved. Do not simply roll back the directory structure for 鈥渜uick alignment鈥?
 3. Every plan must be detailed down to:
    - file
    - method
@@ -22,19 +22,19 @@ When the user wants to create, modify, optimize, refactor, migrate, or audit a S
    - modification action
    - regression point
 4. When high-frequency hooks, Schema, Protobuf, or `IPlayer` lifecycle are involved, thread / lifecycle boundaries must be stated explicitly.
-5. All code comments must follow the repository’s existing conventions. If there is no additional convention, comments must remain meaningful and must not add noise.
-6. You must consider the CS2 server’s 64-tick frame budget and avoid producing plans that would slow the main thread.
+5. All code comments must follow the repository鈥檚 existing conventions. If there is no additional convention, comments must remain meaningful and must not add noise.
+6. You must consider the CS2 server鈥檚 64-tick frame budget and avoid producing plans that would slow the main thread.
 7. If the plan suggests using `Span<T>`, `ReadOnlySpan<T>`, `stackalloc`, or `ref` for hot-path optimization, it must also describe the safety boundaries clearly.
 8. If historical repositories exist in the workspace, they may only be used as temporary references and must not be written in as long-term dependencies.
-9. If the task involves mixed bot / human storage, the identity-key strategy must be explicitly designed. By default, prefer `SessionId` as the runtime lookup key, and do not treat a bot’s `SteamID` as a stable key.
+9. If the task involves mixed bot / human storage, the identity-key strategy must be explicitly designed. By default, prefer `SessionId` as the runtime lookup key, and do not treat a bot鈥檚 `SteamID` as a stable key.
 
 ## Reference materials (must be prioritized before generating the plan)
 
 ### Reference documents inside the skill
 
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-plugin-playbook.md`
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-kb-index.md`
-- `./skills/SwiftlyS2-Toolkit/references/swiftlys2-asset-inventory.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
 ### Public sources
 
@@ -102,9 +102,9 @@ If the task involves the following areas, the plan must explicitly state the han
 
 ### 5. `IPlayer` lifecycle
 - how connect / disconnect / map change / player-state reconstruction will be closed properly
-- which identity key will manage this feature’s state
+- which identity key will manage this feature鈥檚 state
 - if bots / fakeclients are involved, whether `SessionId` is explicitly used as the runtime lookup key
-- whether the code incorrectly relies on a bot’s `SteamID`
+- whether the code incorrectly relies on a bot鈥檚 `SteamID`
 - whether detach / cleanup / generation checks are needed to prevent stale writes
 - whether delayed code may reference a destroyed `IPlayer`
 
@@ -147,7 +147,9 @@ At minimum cover:
 
 ## Example uses
 
-- “Add a DI-based state synchronization module to a SwiftlyS2 plugin and generate a method-level plan.”
-- “Audit a SwiftlyS2 plugin’s RuntimeLoop and Hook hot path and give me an optimization plan.”
-- “Migrate behavioral experience from a historical SwiftlyS2 plugin into the new architecture, and all core features must remain non-deferrable.”
-- “Choose between modular gameplay and DI/service architecture for a new plugin and give me a landing plan.”
+- 鈥淎dd a DI-based state synchronization module to a SwiftlyS2 plugin and generate a method-level plan.鈥?
+- 鈥淎udit a SwiftlyS2 plugin鈥檚 RuntimeLoop and Hook hot path and give me an optimization plan.鈥?
+- 鈥淢igrate behavioral experience from a historical SwiftlyS2 plugin into the new architecture, and all core features must remain non-deferrable.鈥?
+- 鈥淐hoose between modular gameplay and DI/service architecture for a new plugin and give me a landing plan.鈥?
+
+

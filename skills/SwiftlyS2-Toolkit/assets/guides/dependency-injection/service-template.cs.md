@@ -1,13 +1,13 @@
-# SwiftlyS2 Service Template
+# SwiftlyS2 Service 模板
 
-Official docs sections:
+对应官方文档：
 - `Dependency Injection`
 - `Swiftly Core`
 - `Thread Safety`
 
-Suitable for: extracting shared business logic, integrating external dependencies, reusing capabilities across modules, and building the service layer in DI / service or hybrid architectures.
+适用于：抽取共享业务逻辑、外部依赖集成、模块间复用能力，以及 DI / service 或混合架构下的 service 层。
 
-## Suggested directory layout
+## 目录建议
 
 ```text
 Interface/
@@ -17,7 +17,7 @@ Impl/
 └── MyFeatureService.cs
 ```
 
-## Interface example
+## 接口示例
 
 ```csharp
 namespace MyNamespace.Interface;
@@ -30,7 +30,7 @@ public interface IMyFeatureService
 }
 ```
 
-## Implementation example
+## 实现示例
 
 ```csharp
 using System;
@@ -60,10 +60,10 @@ public sealed class MyFeatureService(ISwiftlyCore core, ILogger<MyFeatureService
         }
 
         _core.Event.OnConVarValueChanged += OnConVarValueChanged;
-        _commandGuid = _core.Command.RegisterCommand("myfeature", OnMyFeatureCommand, helpText: "MyFeatureService command");
+        _commandGuid = _core.Command.RegisterCommand("myfeature", OnMyFeatureCommand, helpText: "MyFeatureService 命令");
         _clientCommandHookGuid = _core.Command.HookClientCommand(OnClientCommand);
         _installed = true;
-        _logger.LogInformation("MyFeatureService installed.");
+        _logger.LogInformation("MyFeatureService 安装完成");
     }
 
     public void Uninstall()
@@ -78,7 +78,7 @@ public sealed class MyFeatureService(ISwiftlyCore core, ILogger<MyFeatureService
         _core.Command.UnhookClientCommand(_clientCommandHookGuid);
         UnhookRuntimeEvent();
         _installed = false;
-        _logger.LogInformation("MyFeatureService uninstalled.");
+        _logger.LogInformation("MyFeatureService 卸载完成");
     }
 
     public bool TryHandlePlayerAction(ulong steamId)
@@ -130,7 +130,7 @@ public sealed class MyFeatureService(ISwiftlyCore core, ILogger<MyFeatureService
 
 ## Checklist
 
-- Is there a clear interface boundary?
-- Is there an `Install / Uninstall` or `Initialize / Cleanup` lifecycle closure?
-- Does the owning service register and clean up its own commands, events, and hooks?
-- Does it avoid holding invalidatable `IPlayer` / entity wrappers for too long?
+- 是否有清晰接口边界
+- 是否具备 Install / Uninstall 或 Initialize / Cleanup 闭环
+- 是否由 owning service 自己注册并清理命令、事件、Hook
+- 是否避免长期持有会失效的 `IPlayer` / entity wrapper

@@ -1,25 +1,25 @@
-# SwiftlyS2 Async Safety Pattern Guide
+# SwiftlyS2 异步安全模式指南
 
-Official docs sections:
+对应官方文档：
 - `Thread Safety`
 - `Scheduler`
 - `Core Events`
 
-Suitable for: async callbacks, delayed tasks, background write-back, generation validation, and `CancellationToken` management.
+适用于：异步回调、延迟任务、后台写回、generation 校验、CancellationToken 管理。
 
-## 1. Fire-and-forget from synchronous entry points
+## 一、同步入口当 fire-and-forget
 
-When SwiftlyS2 uses async tasks from synchronous entry points such as commands, event callbacks, or menu callbacks, calling `_ = SomeAsync()` directly will swallow exceptions. It is recommended to define a small helper method inside the plugin:
+SwiftlyS2 常与同步入口（命令、事件回调、菜单回调）配合异步任务使用时，直接 `_ = SomeAsync()` 会吐掉异常。推荐在插件内定义一个小工具方法：
 
 ```csharp
-// Define once inside the plugin and reuse in many places
+// 在插件内定义一次，多处复用
 private static async void FireAndForget(Task task, ILogger logger, string context)
 {
     try { await task; }
-    catch (Exception ex) { logger.LogError(ex, "[{Context}] Unobserved async exception", context); }
+    catch (Exception ex) { logger.LogError(ex, "[{Context}] 未观察到的异步异常", context); }
 }
 
-// Start async work from a synchronous entry point
+// 同步入口启动异步任务
 [Command("mycommand")]
 public void OnMyCommand(ICommandContext context)
 {
@@ -32,41 +32,41 @@ private async Task OnMyCommandAsync(ICommandContext context)
     if (player is null || !player.IsValid) return;
 
     var data = await FetchDataAsync(player.SteamID);
-    // FireAndForget will automatically log to Logger when an exception occurs
+    // FireAndForget 会在异常时自动记录到 Logger
 }
 ```
 
-**Key points**:
-- `FireAndForget` is a small helper that must be implemented by the plugin itself; the SW2 SDK does not provide it.
-- The inner `async void` layer catches and logs exceptions to avoid process crashes from unobserved task exceptions.
-- Do not operate on return values after `FireAndForget`.
+**关键点**：
+- `FireAndForget` 是需要插件处自行实现的小工具，SW2 SDK 不内置此方法
+- `async void` 次层捕获并记录异常，避免未观察任务异常导致进程崩溃
+- 不要在 `FireAndForget` 之后对返回结果做操作
 
-## 2. Revalidate `IPlayer` after async callbacks
+## 二、异步回调后重新校验 IPlayer
 
-After an `await`, the `IPlayer` may already have disconnected or been replaced. Reacquire and validate it:
+异步方法 `await` 之后，IPlayer 可能已经断线或换了人。必须重取并校验：
 
 ```csharp
 private async Task HandleSomeActionAsync(IPlayer player)
 {
-    var steamId = player.SteamID;  // Snapshot the immutable identifier first
+    var steamId = player.SteamID;  // 先快照不可变标识
 
     var result = await SomeLongRunningCall(steamId);
 
-    // Reacquire the player after async work completes
+    // 异步完成后重新获取玩家
     var currentPlayer = Core.PlayerManager.GetPlayerBySteamId(steamId);
     if (currentPlayer is null || !currentPlayer.IsValid)
     {
-        Logger.LogDebug("Player {SteamId} disconnected during async work", steamId);
+        Logger.LogDebug("玩家 {SteamId} 在异步期间断开", steamId);
         return;
     }
 
-    await currentPlayer.SendMessageAsync(MessageType.Chat, $"Result: {result}");
+    await currentPlayer.SendMessageAsync(MessageType.Chat, $"结果: {result}");
 }
 ```
 
-## 3. StopOnMapChange + CancellationTokenSource
+## 三、StopOnMapChange + CancellationTokenSource
 
-`Core.Scheduler.StopOnMapChange(cts)` binds a `CancellationTokenSource` to the map lifecycle:
+`Core.Scheduler.StopOnMapChange(cts)` 把 `CancellationTokenSource` 与地图生命周期绑定：
 
 ```csharp
 private CancellationTokenSource? _mapCts;
@@ -78,55 +78,55 @@ public void OnMapLoad(IOnMapLoadEvent @event)
     _mapCts?.Dispose();
     _mapCts = new CancellationTokenSource();
 
-    // Automatically cancel when the map changes
+    // 地图切换时自动 Cancel
     Core.Scheduler.StopOnMapChange(_mapCts);
 
-    // Periodic tasks registered with Scheduler will be canceled automatically
+    // Scheduler 注册的周期任务会被自动取消
     Core.Scheduler.RepeatBySeconds(1.0f, () => PeriodicTask(_mapCts.Token));
 }
 
-// Propagate cancellation with the token in async tasks
+// 异步任务中使用 token 传播取消
 private async Task LoadMapDataAsync(string mapName, CancellationToken cancellationToken)
 {
     var data = await FetchMapDataAsync(mapName).ConfigureAwait(false);
 
     cancellationToken.ThrowIfCancellationRequested();
 
-    // Ensure work does not continue after the map has changed
+    // 确保不在已换图后继续操作
     ApplyMapData(data);
 }
 ```
 
-## 4. Generation Counter (generation validation for async write-back)
+## 四、Generation Counter（异步回写代际校验）
 
-When async tasks need to write state back, use a generation counter to prevent writing into expired slots:
+当异步任务需要回写状态时，用 generation counter 防止回写到已过期的槽位：
 
 ```csharp
-// Capture the current generation when launching async work
+// 发起异步任务时捕获当前代际
 private async Task SavePlayerRecordAsync(int slot, int capturedGeneration, RecordData data)
 {
     await DatabaseService.SaveAsync(data).ConfigureAwait(false);
 
-    // Validate before write-back
+    // 回写前校验
     if (!_registry.ValidateGeneration(slot, capturedGeneration))
     {
-        Logger.LogDebug("Generation invalidated (slot={Slot}); discarding write-back", slot);
+        Logger.LogDebug("代际失效（slot={Slot}），丢弃回写", slot);
         return;
     }
 
-    // Safely write back on the main thread
+    // 安全回写到主线程
     Core.Scheduler.NextWorldUpdate(() =>
     {
-        // Validate again when returning to the main thread
+        // 双重校验（回写到主线程时再确认一次）
         if (!_registry.ValidateGeneration(slot, capturedGeneration)) return;
         _registry.GetBySlot(slot)!.LastSavedRecord = data;
     });
 }
 ```
 
-## 5. Interlocked + Volatile (general async state invalidation)
+## 五、Interlocked + Volatile（通用异步状态失效）
 
-Suitable for simple scenarios where config reload or cache reload should invalidate old results:
+适合简单的"配置重载/缓存重载时使缓存失效"场景：
 
 ```csharp
 private int _cacheGeneration;
@@ -134,7 +134,7 @@ private int _cacheGeneration;
 private void OnConfigChanged(Config newConfig)
 {
     Interlocked.Increment(ref _cacheGeneration);
-    // In-flight async loads will discard their result if the generation no longer matches
+    // 进行中的异步加载如果完成后发现代际不匹配，会自动丢弃
 }
 
 private async Task ReloadCacheAsync()
@@ -144,7 +144,7 @@ private async Task ReloadCacheAsync()
 
     if (Volatile.Read(ref _cacheGeneration) != gen)
     {
-        // Config changed again during loading; discard this result
+        // 加载期间配置又变了，丢弃本次结果
         return;
     }
 
@@ -152,44 +152,44 @@ private async Task ReloadCacheAsync()
 }
 ```
 
-## 6. Key anti-patterns
+## 六、关键反模式
 
-**Do not do this:**
+**不要这样做：**
 ```csharp
-// ❌ Block the main thread
+// ❌ 阻塞主线程
 var result = SomethingAsync().Result;
 var result2 = SomethingAsync().GetAwaiter().GetResult();
 SomethingAsync().Wait();
 
-// ❌ Swallow exceptions
+// ❌ 吞掉异常
 _ = SomethingAsync();
 
-// ❌ Use an old player reference after async work
+// ❌ 异步后使用旧玩家引用
 await Task.Delay(1000);
-player.SendMessage(MessageType.Chat, "Might already be disconnected");  // Dangerous!
+player.SendMessage(MessageType.Chat, "可能已断线");  // 危险！
 
-// ❌ Infinite loop without a cancellation token
+// ❌ 无取消令牌的无限循环
 while (true) { await Task.Delay(1000); DoWork(); }
 ```
 
-**Do this instead:**
+**应该这样做：**
 ```csharp
-// ✅ fire-and-forget with logging (self-implemented FireAndForget helper; see section 1)
+// ✅ fire-and-forget 带日志（自实现 FireAndForget 工具，见本文 一）
 FireAndForget(SomethingAsync(), Logger, "MyPlugin.Context");
 
-// ✅ Reacquire the player after async work
+// ✅ 异步后重取玩家
 var currentPlayer = Core.PlayerManager.GetPlayerBySteamId(steamId);
 if (currentPlayer is not null && currentPlayer.IsValid) { ... }
 
-// ✅ Use a cancellation token
+// ✅ 带取消令牌
 while (!token.IsCancellationRequested) { await Task.Delay(1000, token); }
 ```
 
 ## Checklist
 
-- [ ] Do async tasks launched from synchronous entry points use a self-implemented `FireAndForget` wrapper (see section 1)?
-- [ ] Is `IPlayer` validity rechecked after each async `await`?
-- [ ] Are map-scoped async tasks bound to `StopOnMapChange`?
-- [ ] Does async write-back use a generation counter or similar generation validation?
-- [ ] Are `.Wait()`, `.Result`, and synchronous blocking avoided?
-- [ ] Do background loops carry a `CancellationToken`?
+- [ ] 从同步入口发起的异步任务是否使用自实现的 `FireAndForget` 包装（见本文 一）？
+- [ ] 异步 `await` 后是否重新校验 `IPlayer` 有效性？
+- [ ] map-scoped 异步任务是否绑定 `StopOnMapChange`？
+- [ ] 异步回写是否使用 generation counter 或类似的代际校验？
+- [ ] 是否避免 `.Wait()` / `.Result` / 同步阻塞？
+- [ ] 后台循环是否携带 `CancellationToken`？

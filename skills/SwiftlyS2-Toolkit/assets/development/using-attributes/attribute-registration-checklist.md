@@ -1,36 +1,36 @@
-# SwiftlyS2 Attribute Registration Checklist
+# SwiftlyS2 Attribute 注册检查清单
 
-Official docs sections:
+对应官方文档：
 - `Using attributes`
 - `Commands`
 - `Core Events`
 
-Use this to confirm whether `[Command]`, `[CommandAlias]`, event attributes, hook attributes, and similar constructs are registered on the correct object.
+用于：确认 `[Command]`、`[CommandAlias]`、事件 attribute、Hook attribute 等是否注册在正确对象上。
 
-## Core rules
+## 核心规则
 
-- By default, attributes only take effect directly on the main class that inherits from `BasePlugin`.
-- If attributes are used inside another class, service, or module, call:
+- attribute 默认只在继承 `BasePlugin` 的主类里可直接生效。
+- 若在其他 class / service / module 中使用 attribute，必须先调用：
   - `Core.Registrator.Register(this)`
-- If that object can be unloaded or rebuilt, its lifecycle and registration timing must be checked for compatibility.
+- 若该对象会被卸载或重建，必须确认它的生命周期与注册时机匹配。
 
-## Checklist
+## 检查项
 
-- [ ] Is the current attribute located on the plugin’s main class?
-- [ ] If it is not on the main class, is `Core.Registrator.Register(this)` called explicitly after instantiation?
-- [ ] Can this object be constructed repeatedly? If yes, is duplicate registration prevented?
-- [ ] If the attribute is moved into a service or module, is that really more appropriate than programmatic registration?
-- [ ] If dynamic start / stop, conditional unload, or precise cleanup is needed, should programmatic registration be used instead of attributes?
+- [ ] 当前 attribute 所在类型是否就是插件主类？
+- [ ] 若不是主类，是否在实例化后显式 `Core.Registrator.Register(this)`？
+- [ ] 该对象是否会重复构造？若会，是否避免重复注册？
+- [ ] 若改成 service / module 承载 attribute，是否真的比程序化注册更合适？
+- [ ] 若需要动态启停、条件性卸载、精确回收，是否更应该使用程序化注册而不是 attribute？
 
-## When to prefer attributes
+## 何时优先 attribute
 
-- Small partial plugins
-- Commands or listeners with a fixed lifecycle and unconditional registration
-- Scenarios with simple entry points and clear structure
+- 小型 partial 插件
+- 固定生命周期、无条件注册的命令 / 监听
+- 入口简单、结构清晰的场景
 
-## When to prefer programmatic registration
+## 何时优先程序化注册
 
-- You need to store `Guid` values and uninstall precisely
-- You need config-driven dynamic start / stop
-- A service needs to own its own lifecycle
-- Registration responsibility and business responsibility should be concentrated in the same owning service
+- 需要保存 `Guid` 并精确卸载
+- 需要按配置动态启停
+- 需要由 service 自持生命周期
+- 需要把注册责任和业务责任收拢在同一 owning service 中

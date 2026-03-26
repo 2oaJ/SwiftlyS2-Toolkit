@@ -1,60 +1,60 @@
 # SwiftlyS2 Plugin Agent Development Playbook
 
-This playbook is the core engineering reference of `SwiftlyS2-Toolkit`, intended specifically to consolidate **publicly reusable** SwiftlyS2 development methodology.
+本手册是 `swiftlys2-toolkit` 的核心工程参考，专门收束**可公开复用**的 SwiftlyS2 开发方法论。
 
-Public evidence sources default to:
+公共论据默认来自：
 
-- SwiftlyS2 official documentation: `https://swiftlys2.net/docs/`
-- The condensed docs navigation in this toolkit: `./swiftlys2-official-docs-map.md`
-- sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
-- SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
+- SwiftlyS2 官网文档：`https://swiftlys2.net/docs/`
+- 本工具包的官网精简导航：`./swiftlys2-official-docs-map.md`
+- sw2-mdwiki：`https://github.com/himenekocn/sw2-mdwiki`
+- SwiftlyS2 官方仓库：`https://github.com/swiftly-solution/swiftlys2`
 
-If a workspace also has local reference repositories, current project mappings, historical reference projects, or special experience, record them in `../../copilot-instructions.md` and `../../knowledge-base.md` instead of turning them into permanent hard dependencies here.
+若某个工作区还拥有本地参考仓库、当前项目映射、历史参考项目或专项经验，请把它们登记在 `../../copilot-instructions.md` 与 `../../knowledge-base.md`，不要把它们写成这里的永久硬依赖。
 
-## 1. Three common architecture categories
+## 一、三类常见架构
 
-### A. Modular gameplay plugins
+### A. 模块化 gameplay 插件
 
-Suitable for:
+适用于：
 
-- plugins with substantial gameplay logic inside a single plugin
-- plugins that need `Commands / Events / Hooks / Modules / Workers / Models`
-- plugins that need player runtime state, state synchronization, and persistence to work together
+- 单插件内存在较多玩法逻辑
+- 需要 `Commands / Events / Hooks / Modules / Workers / Models`
+- 需要玩家运行态、状态同步、持久化协同
 
-Typical characteristics:
+典型特点：
 
-- the main plugin class is usually split into partials
-- command, event, and hook entry points are layered separately from business modules
-- high-frequency computation and background write-back are split into workers
-- player runtime state has a unified state object instead of mirrored copies everywhere
+- 插件主类通常拆为 partial
+- 命令、事件、Hook 入口与业务模块分层
+- 高频计算与后台写回拆入 worker
+- 玩家运行态有统一状态对象，不到处镜像复制
 
-### B. DI / service-oriented plugins
+### B. DI / service 导向插件
 
-Suitable for:
+适用于：
 
-- medium or large plugins
-- cases needing interface → implementation layering
-- cases needing explicit install / uninstall / initialize / cleanup lifecycle handling
+- 中大型插件
+- 需要 interface → implementation 分层
+- 需要显式 install / uninstall / initialize / cleanup 生命周期
 
-Typical characteristics:
+典型特点：
 
-- uses `ServiceCollection` and `AddSwiftly(Core)`
-- the root is responsible for composition
-- services manage their own listeners, command registration, conditional hooks, and unload closure
+- 使用 `ServiceCollection` 与 `AddSwiftly(Core)`
+- root 负责装配
+- service 自持监听、命令注册、条件性 hook、卸载闭环
 
-### C. Hybrid architecture
+### C. 混合架构
 
-Suitable for:
+适用于：
 
-- plugins whose overall shape is more like modular gameplay
-- but certain subsystems are better expressed as services
-- cases where a modular gameplay body embeds a small number of DI / service capabilities
+- 主体更像 gameplay 模块化插件
+- 但局部子系统更适合 service 化
+- 需要在模块化主体里嵌入少量 DI / service 子能力
 
-## 2. Main-thread and async boundaries
+## 二、主线程与异步边界
 
-According to the official `Thread Safety` documentation, the following categories of operations should be treated as main-thread-sensitive by default:
+根据官方 `Thread Safety` 文档，以下类型操作默认视为主线程敏感：
 
-- `IPlayer` messaging, control, movement, and entity-related calls
+- `IPlayer` 的消息、控制、移动、实体相关调用
 - `ICommandContext.Reply`
 - `IGameEventService.Fire*`
 - `IEngineService.ExecuteCommand*`
@@ -64,146 +64,146 @@ According to the official `Thread Safety` documentation, the following categorie
 - `CPlayer_ItemServices.*`
 - `CPlayer_WeaponServices.*`
 
-### Engineering rules
+### 工程规则
 
-1. **Writing game state, entities, Schema, or protobuf should return to the main thread by default.**
-2. **Background threads should mainly handle computation, encoding, disk IO, network IO, and batch processing.**
-3. **When already in an async context, prefer `Async` APIs.**
-4. **Do not bring `.Wait()`, `.Result`, synchronous joins, or blocking IO onto the main thread.**
-5. **JSON encoding / decoding should go to background threads by default, not into hooks, runtime loops, or menu callbacks.**
+1. **写游戏状态、写实体、写 Schema、写 protobuf：默认回主线程。**
+2. **后台线程主要做计算、编码、磁盘 IO、网络 IO、批处理。**
+3. **处于异步上下文时优先调用 `Async` API。**
+4. **不要把 `.Wait()`、`.Result`、同步 join、阻塞 IO 带进主线程。**
+5. **JSON 编解码默认放后台，不放 Hook / RuntimeLoop / 菜单回调。**
 
-## 3. Lifecycle closure
+## 三、生命周期闭环
 
-Any SwiftlyS2 plugin change should explicitly check at least:
+任何 SwiftlyS2 插件改动，至少应显式检查：
 
 - map load / unload
 - player connect / disconnect
-- start / stop of long-lived subsystems
+- 长生命周期子系统 start / stop
 - worker start / stop / flush / cancel
 
-### Additional rules
+### 额外规则
 
-- Delayed or async logic must not trust an old `IPlayer` by default.
-- Map-level caches must be explicitly cleaned during map lifecycle events.
-- Cross-object / cross-session two-way mappings must be atomically unbound when stopping.
+- 延迟或异步逻辑不要默认信任旧 `IPlayer`
+- map 级缓存要在地图生命周期显式清理
+- 跨对象 / 跨会话的双向映射要在停止时原子解绑
 
-## 4. `IPlayer` and bot / fakeclient identity
+## 四、IPlayer 与 bot/fakeclient 身份
 
-- Long-term identity for human players usually uses a stable player identifier.
-- Bots / fakeclients must not casually rely on `SteamID`.
-- In practice, a bot’s `SteamID` should be treated as fixed `0` and cannot be used as a reliable lookup key.
-- For mixed bot-human storage, prefer `SessionId` as the runtime lookup key.
-- Mixed storage must explicitly distinguish between human and bot identity-key strategies, instead of applying the human long-term identity strategy to bots by default.
-- Any delayed task must revalidate that the player object is still valid before executing.
+- 真人玩家的长期身份通常用稳定玩家标识
+- bot / fakeclient 不应想当然依赖 `SteamID`
+- bot 的 `SteamID` 在实践上应视为固定为 `0`，不能作为可靠检索键
+- bot 与真人混合存储时，优先使用 `SessionId` 作为运行态检索键
+- 混合存储时应显式区分真人与 bot 的身份键策略，避免把真人长期身份键策略直接套到 bot 上
+- 任何延迟任务执行时都必须重新校验玩家对象是否仍然有效
 
-## 5. Long-lived entity tracking
+## 五、长期实体跟踪
 
-- Across frames, delays, or maps, do not hold raw entity wrappers long-term.
-- Prefer stable handle-based thinking.
-- Perform validity checks before access.
-- Be especially careful about entity-slot reuse in scenarios such as delayed destruction, preview entities, beams, or world text.
+- 跨帧、跨延迟、跨地图时，不要长期持有裸实体 wrapper
+- 优先使用稳定 handle 思维
+- 访问前先做有效性检查
+- 需要延迟销毁、预览实体、beam/world text 之类的场景尤其要小心实体槽位复用问题
 
-## 6. Hook hot paths
+## 六、Hook 热路径
 
-Common rules for high-frequency hooks:
+高频 Hook 的公共准则：
 
-1. filter irrelevant objects as early as possible
-2. avoid unnecessary allocations
-3. avoid JSON, IO, locks, and synchronous waiting
-4. avoid high-frequency logging
-5. prefer producer / consumer separation where appropriate
-6. always remember the 64-tick frame budget
+1. 尽早过滤无关对象
+2. 避免不必要分配
+3. 避免 JSON、IO、锁、同步等待
+4. 避免高频日志
+5. 尽量做 producer / consumer 分离
+6. 牢记 64 tick 帧预算
 
 ### `Span<T>` / `stackalloc` / `ref`
 
-Consider them only when all of the following are true:
+只在满足以下条件时考虑：
 
-- the code is genuinely on a synchronous hot path
-- the data volume is small and the lifetime is short
-- it does not cross `await`
-- it does not cross threads
-- it does not get captured by closures or escape
+- 当前确实位于同步热路径
+- 数据量小且生命周期短
+- 不跨 `await`
+- 不跨线程
+- 不会闭包捕获或逃逸
 
-If the benefit is unproven, do not misuse them just to look “more advanced”.
+若收益没有证据，不要为了“高级一点”而滥用。
 
-## 7. Schema / NetMessages / Protobuf
+## 七、Schema / NetMessages / Protobuf
 
 ### Schema
 
-- Writes should happen on the main thread.
-- Add notifications such as `Updated()` / `SetStateChanged()` when needed.
-- If asynchronous chains need the data, capture a safe snapshot on the main thread first.
+- 写入应在主线程
+- 需要时补 `Updated()` / `SetStateChanged()` 一类通知
+- 若异步链路要用到数据，主线程先采安全快照
 
 ### NetMessages / Protobuf
 
-According to the official `Network Messages` documentation:
+根据官方 `Network Messages` 文档：
 
-- network messages are based on typed protobuf
-- sending, hook, and unhook all have explicit APIs
-- they are best read on the main thread as early as possible, converted into plain models, and only then passed into async pipelines
+- 网络消息基于 typed protobuf
+- 发送、hook、unhook 都有显式 API
+- 适合在主线程尽早读取并转成普通模型后，再交给异步链路处理
 
 ### Native Functions and Hooks
 
-According to the official `Native Functions and Hooks` documentation:
+根据官方 `Native Functions and Hooks` 文档：
 
-- the source of signatures and address resolution must be clear
-- delegate prototypes must match exactly
-- hooks must be unloadable in matched pairs
-- mid-hooks are powerful but high-risk; incorrect register modification will crash the server directly
+- 签名与地址解析要清楚来源
+- delegate 原型必须严格匹配
+- hook 必须能成对卸载
+- mid-hook 功能强但风险高，错误改寄存器会直接崩服
 
-## 8. Menu callbacks
+## 八、Menu 回调
 
-Menu callbacks should be reviewed as async-context code by default:
+菜单回调默认按异步上下文审查：
 
 - `Click`
 - `ValueChanged`
-- `Submenu` construction callbacks
+- `Submenu` 构建回调
 
-Recommended rules:
+推荐规则：
 
-- evaluate `BindingText` first for dynamic text
-- prefer `Async` APIs inside callbacks
-- after wait points, revalidate player / pawn / runtime objects
-- menus are UI shells, so state reads and writes should be pushed down into modules / services where possible
+- 动态文本优先评估 `BindingText`
+- 回调里优先使用 `Async` API
+- 跨等待点后重新校验 player / pawn / runtime 对象
+- 菜单是 UI 壳，状态读写尽量下沉到 module / service
 
-## 9. Worker / Scheduler
+## 九、Worker / Scheduler
 
-### Scenarios better suited for Scheduler
+### 更适合 Scheduler 的场景
 
-- lightweight, low-frequency, main-thread-safe periodic tasks
+- 轻量、低频、主线程安全的周期任务
 
-### Scenarios better suited for background workers or cancelable async loops
+### 更适合后台 worker 或可取消异步循环的场景
 
-- disk / network IO
-- JSON encoding / decoding
-- batch processing
-- intensive polling
-- ongoing work that must not block the main thread
+- 磁盘 / 网络 IO
+- JSON 编解码
+- 批处理
+- 密集轮询
+- 不应阻塞主线程的持续性工作
 
-### Mandatory checks
+### 必查点
 
-- whether Start / Stop / Flush / Cancel are paired properly
-- whether there are dangling fire-and-forget tasks
-- whether objects and generations are revalidated before write-back
+- Start / Stop / Flush / Cancel 是否成对
+- 是否存在悬空 fire-and-forget
+- 回写前是否重新校验对象与代际
 
-## 10. DI recommendations
+## 十、DI 建议
 
-According to the official `Dependency Injection` documentation:
+根据官方 `Dependency Injection` 文档：
 
-- new plugins should prefer DI
-- `ServiceCollection` + `AddSwiftly(Core)` is the basic entry point
-- service constructors can inject `ISwiftlyCore`, logging, configuration, and similar dependencies
-- if a service uses attribute-based registration, it requires explicit registration
+- 新插件优先考虑 DI
+- `ServiceCollection` + `AddSwiftly(Core)` 是基础入口
+- service 构造函数注入 `ISwiftlyCore`、日志、配置等依赖
+- 若 service 使用 attribute 注册机制，需要显式注册
 
-Add three more engineering rules:
+工程上再补三条：
 
-1. the root is responsible for composition, not for owning all local listener state
-2. commands, events, and hooks registered by a service should be unloaded by that service itself
-3. conditional hooks should explicitly maintain start / stop state instead of staying permanently installed and idling in callbacks
+1. root 负责装配，不负责代管所有局部监听状态
+2. service 自己注册的命令、事件、hook，应由自己卸载
+3. 条件性 hook 应显式维护启停状态，而不是永久挂着再在回调里空转
 
-## 11. Configuration hot reload
+## 十一、Configuration 热加载
 
-### Standard initialization flow
+### 标准初始化流程
 
 ```csharp
 Core.Configuration.InitializeJsonWithModel<Config>("config.jsonc", "Main")
@@ -211,81 +211,81 @@ Core.Configuration.InitializeJsonWithModel<Config>("config.jsonc", "Main")
 
 var monitor = ServiceProvider.GetRequiredService<IOptionsMonitor<Config>>();
 Config = monitor.CurrentValue;
-monitor.OnChange(newConfig => { Config = newConfig; /* optional side effects */ });
+monitor.OnChange(newConfig => { Config = newConfig; /* 可选副作用 */ });
 ```
 
-### Engineering rules
+### 工程规则
 
-1. **Fields on Config classes must have default values** so that the first serialization produces a complete config file.
-2. **Use JSONC format** (`config.jsonc`) so comments are supported for maintainability.
-3. **Handle side effects inside hot-reload callbacks**: scheduler restarts, cache cleanup, service reconnection, and similar logic.
-4. **Do not do blocking IO inside hot-reload callbacks**.
+1. **Config 类字段必须给默认值**，确保首次序列化生成完整配置文件。
+2. **使用 JSONC 格式**（`config.jsonc`），支持注释便于维护。
+3. **热加载回调中处理副作用**：Scheduler 重启、缓存清理、服务重连等。
+4. **不要在热加载回调中做阻塞 IO**。
 
-See the template: `../assets/development/configuration/config-hot-reload-template.cs.md`.
+详见模板：`../assets/development/configuration/config-hot-reload-template.cs.md`。
 
-## 12. ConVar
+## 十二、ConVar
 
-According to the official `Convars` documentation:
+根据官方 `Convars` 文档：
 
-- ConVars are used for server parameters that can be adjusted immediately at runtime.
-- Create them with `Core.ConVar.CreateOrFind()`, which is idempotent and reentrant.
-- Supports bool / int / float / string types, and int/float support min/max range constraints.
+- ConVar 用于运行时可即时调整的服务器参数。
+- 使用 `Core.ConVar.CreateOrFind()` 创建，幂等可重入。
+- 支持 bool / int / float / string 类型，int/float 支持 min/max 范围约束。
 
-### ConVar vs Config split
+### ConVar vs Config 分流
 
-- **ConVar**: immediate console tuning by administrators, runtime switches, temporary fine-tuning.
-- **Config**: structured configuration, nested objects, arrays, persistent default values.
-- **Mixed use**: use ConVar for switches / fine-tuning, and Config for structured defaults.
+- **ConVar**：管理员在控制台即时调参、运行时开关、临时微调。
+- **Config**：结构化配置、嵌套对象、数组、持久化默认值。
+- **混用**：ConVar 做开关/微调，Config 做结构化默认值。
 
-### Declarative organization
+### 声明式组织
 
-It is recommended to declare them together in a partial file such as `MyPlugin.ConVars.cs`, using the `required` modifier to force initialization:
+推荐在 partial 文件 `MyPlugin.ConVars.cs` 中集中声明，使用 `required` 修饰符强制初始化：
 
 ```csharp
 public required IConVar<bool> ConVar_Enable { get; set; }
 public required IConVar<int> ConVar_Limit { get; set; }
 ```
 
-### Range conventions
+### 范围惯例
 
-- `-1` = unlimited
-- `0` = disabled
-- `>0` = specific numeric value
+- `-1` = 不限制
+- `0` = 禁用
+- `>0` = 具体数值
 
-See the template: `../assets/development/convars/convar-template.cs.md`.
+详见模板：`../assets/development/convars/convar-template.cs.md`。
 
-## 13. Per-player state management
+## 十三、Per-Player 状态管理
 
-### Pattern gradient
+### 模式梯度
 
-1. **Lightweight key-value**: `ConcurrentDictionary<ulong, T>` (single-value state, small plugins)
-2. **Runtime state object**: `ConcurrentDictionary<ulong, PlayerRuntime>` (multi-field state, medium plugins)
-3. **With DB restoration**: async restore from DB on connect, persistence on disconnect
-4. **Slot array + generation counter**: `PlayerState?[64]` + generation counter (large gameplay plugins, O(1) lookup in high-frequency hooks)
+1. **轻量键值**：`ConcurrentDictionary<ulong, T>`（单值状态、小型插件）
+2. **运行时状态对象**：`ConcurrentDictionary<ulong, PlayerRuntime>`（多字段、中型插件）
+3. **带 DB 恢复**：connect 时异步从 DB 恢复，disconnect 时持久化
+4. **槽位数组 + 代际计数**：`PlayerState?[64]` + generation counter（大型 gameplay、高频 Hook O(1) 查找）
 
-### Identity-key strategy
+### 身份键策略
 
-- long-term human storage → `SteamID (ulong)`
-- bot / fakeclient → `SessionId` (bot SteamID is fixed at 0)
-- lookups inside high-frequency hooks → O(1) slot array
+- 真人长期存储 → `SteamID (ulong)`
+- bot / fakeclient → `SessionId`（bot SteamID 固定为 0）
+- 高频 Hook 内查找 → 槽位数组 O(1)
 
-### Cleanup timing
+### 清理时机
 
-State must be removed in `OnClientDisconnected`, map caches must be cleaned in `OnMapLoad/Unload`, and everything must be cleared in `Unload()`.
+必须在 `OnClientDisconnected` 移除、`OnMapLoad/Unload` 清理 map 缓存、`Unload()` 清空全部。
 
-### Concurrency safety
+### 并发安全
 
-- prefer `TryAdd` / `TryRemove` / `GetOrAdd` / `AddOrUpdate`
-- avoid two-step writes such as `ContainsKey + Add` and `ContainsKey + Remove`
-- use the `AddOrUpdate` merge predicate to prevent state downgrade
+- 优先 `TryAdd` / `TryRemove` / `GetOrAdd` / `AddOrUpdate`
+- 避免 `ContainsKey + Add`、`ContainsKey + Remove` 双步写法
+- `AddOrUpdate` 的 merge predicate 防止状态降级
 
-See the guide: `../assets/patterns/per-player-state/player-state-management-guide.md`.
+详见指南：`../assets/patterns/per-player-state/player-state-management-guide.md`。
 
-## 14. Async safety patterns
+## 十四、异步安全模式
 
-### `.Forget()` pattern
+### `.Forget()` 模式
 
-When starting async work from a synchronous entry point (command, event callback), use `.Forget(Logger, "Context")` instead of `_ = Task`:
+从同步入口（命令、事件回调）发起异步任务时，使用 `.Forget(Logger, "Context")` 而非 `_ = Task`：
 
 ```csharp
 OnMyCommandAsync(context).Forget(Logger, "MyPlugin.OnMyCommand");
@@ -293,104 +293,104 @@ OnMyCommandAsync(context).Forget(Logger, "MyPlugin.OnMyCommand");
 
 ### StopOnMapChange
 
-`Core.Scheduler.StopOnMapChange(cts)` binds a `CancellationTokenSource` to the map lifecycle so that it is canceled automatically during map changes.
+`Core.Scheduler.StopOnMapChange(cts)` 将 `CancellationTokenSource` 绑定到 map 生命周期，map 切换时自动 cancel。
 
-### Re-acquire `IPlayer` after async boundaries
+### 异步后重取 IPlayer
 
-After any `await`, `IPlayer` must be reacquired via `SteamID` and validated with `Valid()`.
+任何 `await` 之后，`IPlayer` 必须通过 `SteamID` 重新获取并校验 `Valid()`。
 
 ### Generation Counter
 
-Before async write-back, use a generation counter (`Interlocked.Increment` + `Volatile.Read`) to validate that the state is still current.
+异步回写前用代际计数（`Interlocked.Increment` + `Volatile.Read`）校验状态是否仍然有效。
 
-See the guide: `../assets/patterns/async-patterns/async-safety-guide.md`.
+详见指南：`../assets/patterns/async-patterns/async-safety-guide.md`。
 
-## 15. Service Factory / Keyed Service / Multi-Implementation
+## 十五、Service Factory / Keyed Service / Multi-Implementation
 
-### Factory pattern
+### 工厂模式
 
-Use it when one feature interface has multiple strategy implementations selected by name or configuration at runtime.
+一个功能接口有多个策略实现，运行时按名称/配置选择。
 
 ### Keyed Singleton
 
-Manage multiple independent configuration instances of the same interface through `AddKeyedSingleton` + `GetRequiredKeyedService`.
+同一接口的多个独立配置实例，通过 `AddKeyedSingleton` + `GetRequiredKeyedService` 管理。
 
-### Multi-implementation resolution with `GetServices<T>()`
+### `GetServices<T>()` 多实现解析
 
-When all implementations must be iterated and invoked (such as multiple trigger types), use `sp.GetServices<T>()` to retrieve them all.
+所有实现都需遍历调用时（如多种触发器类型），用 `sp.GetServices<T>()` 获取全部。
 
-### Batch lifecycle management
+### 批量生命周期管理
 
-All services share `Install() / Uninstall()`, with exception isolation so one failure does not affect the others.
+所有服务统一 `Install() / Uninstall()`，异常隔离（一个失败不影响其他）。
 
-See the template: `../assets/patterns/service-factory/service-factory-template.cs.md`.
+详见模板：`../assets/patterns/service-factory/service-factory-template.cs.md`。
 
-## 16. GameEvent Pre vs Post
+## 十六、GameEvent Pre vs Post
 
-### Pre Hook (`HookMode.Pre`)
+### Pre Hook (HookMode.Pre)
 
-- triggers before the event takes effect
-- may return `HookResult.Stop` to intercept the event
-- suitable for blocking propagation, modifying final behavior, or conditionally canceling
+- 在事件生效前触发
+- 可返回 `HookResult.Stop` 拦截事件
+- 适合：阻止事件传播、修改最终行为、条件性取消
 
-### Post Hook (`HookMode.Post`)
+### Post Hook (HookMode.Post)
 
-- triggers after the event takes effect
-- suitable for follow-up processing based on event results (logging, rewards, state updates)
-- common pattern: Post Hook + `DelayBySeconds` to wait for state stabilization before acting
+- 在事件生效后触发
+- 适合：基于事件结果做后续处理（记录、奖励、状态更新）
+- 常见模式：Post Hook + `DelayBySeconds` 等待状态稳定后操作
 
-### Engineering rules
+### 工程规则
 
-- If you are unsure whether to use Pre or Post, prefer Post because it is safer.
-- Interception in a Pre Hook must be confirmed as genuinely necessary.
-- Entity operations in Post Hooks often need `NextTick` / `DelayBySeconds` to wait for state stabilization.
+- 不确定用 Pre 还是 Post 时，优先 Post（更安全）
+- Pre Hook 中拦截要确认确实需要阻止
+- Post Hook 中涉及实体操作时，常需 NextTick / DelayBySeconds 等待状态稳定
 
-## 17. ClientCommandHookHandler
+## 十七、ClientCommandHookHandler
 
-### Suitable scenarios
+### 适用场景
 
-- globally intercepting client commands (`jointeam`, `radio`, `buy`, etc.)
-- performing permission checks or behavior replacement at the earliest stage of command processing
+- 全局拦截客户端命令（jointeam、radio、buy 等）
+- 在命令处理流水线最早期做权限检查或行为替换
 
-### Key points
+### 关键点
 
-- pair it with `[Command("xxx", registerRaw: true)]` to ensure low-level recognition
-- `HookResult.Stop` blocks the command, `HookResult.Continue` allows it
-- the raw `commandLine` string must be parsed manually
+- 配合 `[Command("xxx", registerRaw: true)]` 确保底层识别
+- `HookResult.Stop` 阻止命令、`HookResult.Continue` 放行
+- 需自行解析 `commandLine` 原始字符串
 
-See the template: `../assets/development/commands/client-command-hook-template.cs.md`.
+详见模板：`../assets/development/commands/client-command-hook-template.cs.md`。
 
-## 18. OnPrecacheResource
+## 十八、OnPrecacheResource
 
-- triggers early in map load for precaching models, sounds, and particle resources
-- resources that are not precached will fail silently when used in calls like `SetModel` or `EmitSound`
-- supports both static resources and dynamically configured resources
-- in multi-service setups, each service may register its own resources
+- 在 map load 早期触发，用于预加载模型、声音、粒子资源。
+- 未 precache 的资源在 `SetModel`、`EmitSound` 等调用时会静默失败。
+- 支持静态资源与配置驱动的动态资源。
+- 多服务场景可委托各服务各自注册资源。
 
-See the template: `../assets/development/core-events/precache-resource-template.cs.md`.
+详见模板：`../assets/development/core-events/precache-resource-template.cs.md`。
 
-## 19. Cross-plugin command jumps
+## 十九、跨插件命令跳转
 
-Mid-sized and large plugin hubs may jump to another plugin’s menu through `player.ExecuteCommand("sw_target-plugin-command")`:
+中大型插件枢纽通过 `player.ExecuteCommand("sw_目标插件命令")` 跳转到其他插件菜单：
 
-- loose coupling: no direct dependency on another plugin’s code
-- may close the current menu before jumping using `CloseAfterClick = true`
-- the target command must already be registered and available to the current player
+- 松耦合：不直接依赖其他插件代码
+- 可通过 `CloseAfterClick = true` 关闭当前菜单后跳转
+- 需确保目标命令已注册且对当前玩家可用
 
-## 20. Comments and output
+## 二十、注释与输出
 
-- Comments should explain intent, thread boundaries, lifecycle reasoning, and engine limitations.
-- Avoid noisy comments.
-- Planning, audit, and implementation records should land at method level whenever possible.
+- 注释应解释意图、线程边界、生命周期原因、引擎限制
+- 避免噪音注释
+- 计划、审计、实施记录应尽量方法级落地
 
-## 21. Public reference entry points
+## 二十一、公开参考入口
 
-- Docs Map: `./swiftlys2-official-docs-map.md`
-- Getting Started: `https://swiftlys2.net/docs/development/getting-started/`
-- Swiftly Core: `https://swiftlys2.net/docs/development/swiftly-core/`
-- Dependency Injection: `https://swiftlys2.net/docs/guides/dependency-injection/`
-- Thread Safety: `https://swiftlys2.net/docs/development/thread-safety/`
-- Native Functions and Hooks: `https://swiftlys2.net/docs/development/native-functions-and-hooks/`
-- Network Messages: `https://swiftlys2.net/docs/development/netmessages/`
-- sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
-- SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
+- Docs Map：`./swiftlys2-official-docs-map.md`
+- Getting Started：`https://swiftlys2.net/docs/development/getting-started/`
+- Swiftly Core：`https://swiftlys2.net/docs/development/swiftly-core/`
+- Dependency Injection：`https://swiftlys2.net/docs/guides/dependency-injection/`
+- Thread Safety：`https://swiftlys2.net/docs/development/thread-safety/`
+- Native Functions and Hooks：`https://swiftlys2.net/docs/development/native-functions-and-hooks/`
+- Network Messages：`https://swiftlys2.net/docs/development/netmessages/`
+- sw2-mdwiki：`https://github.com/himenekocn/sw2-mdwiki`
+- SwiftlyS2 官方仓库：`https://github.com/swiftly-solution/swiftlys2`

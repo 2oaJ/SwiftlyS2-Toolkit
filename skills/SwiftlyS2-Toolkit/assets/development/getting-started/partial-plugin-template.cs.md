@@ -1,13 +1,13 @@
-# SwiftlyS2 Traditional Modular Plugin Template
+# SwiftlyS2 传统模块化插件模板
 
-Official docs sections:
+对应官方文档：
 - `Getting Started`
 - `Swiftly Core`
 - `Using attributes`
 
-Suitable for: gameplay-oriented modular plugins that need `Commands / Events / Hooks / Modules / Workers`.
+适用于：模块化 gameplay 类、需要 `Commands / Events / Hooks / Modules / Workers` 的插件。
 
-## Suggested directory layout
+## 目录建议
 
 ```text
 MyPlugin/
@@ -24,7 +24,7 @@ MyPlugin/
 └── Helpers/
 ```
 
-## Basic skeleton
+## 基本骨架
 
 ```csharp
 using Microsoft.Extensions.Logging;
@@ -38,28 +38,28 @@ namespace MyNamespace
         Name = "My Plugin",
         Author = "YourName",
         Version = "1.0.0",
-        Description = "Plugin description",
+        Description = "插件描述",
         Website = "https://example.com"
     )]
     public partial class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         public override void Load(bool hotReload)
         {
-            Core.Logger.LogInformation("MyPlugin loaded.");
+            Core.Logger.LogInformation("MyPlugin 加载完成");
         }
 
         public override void Unload()
         {
-            Core.Logger.LogInformation("MyPlugin unloaded.");
+            Core.Logger.LogInformation("MyPlugin 卸载完成");
         }
     }
 }
 ```
 
-## Constraints
+## 约束
 
-- Do not pile business logic directly into commands, events, or hooks; prefer pushing it down into modules or services.
-- Direct IO is forbidden on high-frequency paths.
-- When player runtime state is involved, determine the SSOT object as early as possible.
-- In small partial projects, a small number of `Events`, `GameEvents`, and `Hooks` should generally be managed directly with attributes.
-- Only upgrade to a service-owned listener pattern when the listener needs independent install / uninstall, dynamic switches, or strong coupling to a DI lifecycle.
+- 命令、事件、Hooks 不要直接堆业务逻辑，优先下沉到 module / service
+- 高频路径严禁直接做 IO
+- 涉及玩家态时，尽早确定 SSOT 对象
+- 小型 partial 项目中的少量 `Events` / `GameEvents` / `Hooks`，优先直接用 attribute 管理即可
+- 若监听需要独立安装/卸载、动态开关或与 DI 生命周期强绑定，再升级为 service 自持监听模式

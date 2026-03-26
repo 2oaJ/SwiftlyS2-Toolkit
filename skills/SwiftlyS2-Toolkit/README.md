@@ -1,6 +1,6 @@
-# SwiftlyS2-Toolkit
+# swiftlys2-toolkit
 
-`SwiftlyS2-Toolkit` 是基于Copilot开发的面向 SwiftlyS2 插件开发的agent工具包。
+`swiftlys2-toolkit` 是基于Copilot开发的面向 SwiftlyS2 插件开发的agent工具包。
 我们的目标是使用该工具包时，您只需要一句话，即可让agent编写出高性能、高质量的SwiftlyS2插件代码。
 如果您是其它类型的agent cli，可以使用本工具包内的skills+prompts。
 

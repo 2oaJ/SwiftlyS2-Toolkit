@@ -1,29 +1,19 @@
-# SwiftlyS2 Attribute Command Template
+# SwiftlyS2 Attribute 命令模板
 
-Official docs sections:
+对应官方文档：
 - `Commands`
 - `Using attributes`
 - `Thread Safety`
 
-Suitable for: partial / small plugins that use `[Command]` and `[CommandAlias]` to declare fixed command entry points.
+适用于：partial / 小型插件中，使用 `[Command]`、`[CommandAlias]` 声明固定命令入口。
 
-## Usage principles
+## 适用原则
 
-- The command layer should own the entry point, permissions, argument validation, and player feedback.
-- Complex business logic should be pushed down into modules or services.
-- If the feature later needs dynamic install / uninstall, conditional start / stop, or precise cleanup, consider switching to programmatic registration.
+- 命令层负责入口、权限、参数校验、玩家反馈
+- 复杂业务逻辑下沉到 module / service
+- 若未来需要动态挂卸、条件启停、精确回收，考虑改为程序化注册
 
-## Critical constraints
-
-### Handler return type must be `void`
-
-The `[Command]` attribute handler signature is **`void OnMyCommand(ICommandContext context)`**. It must **not** be `async ValueTask`, `async Task`, or any other async return type. The underlying delegate type is `delegate void CommandListener(ICommandContext context);`. If you need to perform async work inside a command handler, you may fire-and-forget an async method from within the `void` handler body, but the handler entry point itself must remain `void`.
-
-### `CommandAlias` is a shorter alias, not a prefixed variant
-
-`[CommandAlias("mc")]` registers **an alternative name** that players can type instead of the full command (e.g., `!mc` instead of `!mycommand`). It is **not** used to add framework prefixes like `sw_` or namespace groupings. Aliases should be short, memorable abbreviations of the canonical command name.
-
-## Example skeleton
+## 示例骨架
 
 ```csharp
 using SwiftlyS2.Shared.Commands;
@@ -39,41 +29,39 @@ public partial class MyPlugin
     {
         if (!context.IsSentByPlayer || context.Sender is null || !context.Sender.IsValid)
         {
-            context.Reply("[Plugin] This command can only be executed by a valid player.");
+            context.Reply("[插件] 该命令只能由有效玩家执行。");
             return;
         }
 
         var args = context.Arguments;
         if (args.Count < 2)
         {
-            context.Reply("[Plugin] Invalid arguments. Please check the input format.");
+            context.Reply("[插件] 参数错误，请检查输入格式。");
             return;
         }
 
         var parsedArg = args[1].Trim();
         if (string.IsNullOrWhiteSpace(parsedArg))
         {
-            context.Reply("[Plugin] The argument cannot be empty.");
+            context.Reply("[插件] 参数不能为空。");
             return;
         }
 
         var success = _myFeatureService.TryHandlePlayerAction(context.Sender.SteamID, parsedArg);
         if (!success)
         {
-            context.Reply("[Plugin] This operation cannot be executed right now.");
+            context.Reply("[插件] 当前无法执行该操作。");
             return;
         }
 
-        context.Reply("[Plugin] Operation completed successfully.");
+        context.Reply("[插件] 操作执行成功。");
     }
 }
 ```
 
 ## Checklist
 
-- Is the handler return type `void` (not `async ValueTask`, `async Task`, or any other async return type)?
-- Are `[Command]` / `[CommandAlias]` being used appropriately instead of mistakenly using programmatic registration?
-- Is `[CommandAlias]` used only for short alternative names, not for framework prefixes or namespace markers?
-- Are `context.IsSentByPlayer`, `context.Sender`, and `Sender.IsValid` validated first?
-- Are the permission semantics and alias semantics preserved?
-- Does the command entry avoid directly writing cross-module internal state?
+- 是否采用 `[Command]` / `[CommandAlias]`，而不是误用程序化注册？
+- 是否先校验 `context.IsSentByPlayer`、`context.Sender`、`Sender.IsValid`？
+- 是否保留权限语义与 alias 语义？
+- 是否避免在命令入口直接写跨模块内部状态？

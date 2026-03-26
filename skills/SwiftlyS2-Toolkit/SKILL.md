@@ -1,12 +1,12 @@
 ---
-name: SwiftlyS2-Toolkit
+name: swiftlys2-toolkit
 description: 'SwiftlyS2 toolkit for creating, modifying, auditing, planning, reviewing, and directly editing C#/.NET SwiftlyS2 plugins. Use when working on SwiftlyS2 plugins involving Commands, Events, Hooks, Modules, Workers, Services, high-frequency runtime loops, NetMessages, Schema access, or IPlayer lifecycle issues.'
 argument-hint: 'Describe the plugin/task, target module or method, and whether historical behavior/reference extraction is required.'
 user-invocable: true
 disable-model-invocation: false
 ---
 
-# SwiftlyS2-Toolkit
+# swiftlys2-toolkit
 
 This is a general-purpose toolkit entry for **SwiftlyS2 C# / .NET plugin development**.
 
@@ -36,6 +36,13 @@ When using this skill, the preferred output should be one of the following:
 - A gap analysis for historical behavior alignment
 - An audit of lifecycle, thread safety, high-frequency hooks, Schema, or Protobuf usage
 - A method-level implementation plan
+
+## Language policy
+
+- Mirror the user's latest request language for analysis, plans, explanations, and delivery notes.
+- If the user writes in Chinese, respond in Chinese.
+- If the user writes in English, respond in English.
+- Code comments generated or modified by the toolkit must use the same language as the response.
 
 ## When to use it
 
@@ -101,9 +108,9 @@ Use this skill when the task involves:
 
 ### Paired prompts
 
-- `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
-- `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
-- `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+- `../../prompts/swiftlys2-toolkit-Plan.prompt.md`
+- `../../prompts/swiftlys2-toolkit-Audit.prompt.md`
+- `../../prompts/swiftlys2-toolkit-Edit.prompt.md`
 
 ## Task routing
 
@@ -112,21 +119,21 @@ Use this skill when the task involves:
 Open these first:
 
 - `./references/swiftlys2-plugin-playbook.md`
-- `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+- `../../prompts/swiftlys2-toolkit-Plan.prompt.md`
 
 ### If the task is mainly “systematically find risks first”
 
 Open these first:
 
 - `./references/swiftlys2-plugin-playbook.md`
-- `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+- `../../prompts/swiftlys2-toolkit-Audit.prompt.md`
 - `./assets/workflows/audit/audit-report-template.md`
 
 ### If the task is mainly “edit code directly”
 
 Open these first:
 
-- `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+- `../../prompts/swiftlys2-toolkit-Edit.prompt.md`
 - `./assets/README.md`
 - The template or checklist closest to the relevant subsystem
 
@@ -242,20 +249,20 @@ When in an async context, prefer the corresponding `Async` APIs instead of mecha
 
 1. `./SKILL.md`
 2. `./references/swiftlys2-plugin-playbook.md`
-3. `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+3. `../../prompts/swiftlys2-toolkit-Plan.prompt.md`
 4. `./assets/workflows/planning/method-level-plan-template.md`
 
 ### For auditing
 
 1. `./SKILL.md`
 2. `./references/swiftlys2-kb-index.md`
-3. `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+3. `../../prompts/swiftlys2-toolkit-Audit.prompt.md`
 4. `./assets/workflows/audit/audit-report-template.md`
 
 ### For direct code edits
 
 1. `./SKILL.md`
-2. `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+2. `../../prompts/swiftlys2-toolkit-Edit.prompt.md`
 3. Relevant subsystem templates / checklists
 
 ## Output requirements

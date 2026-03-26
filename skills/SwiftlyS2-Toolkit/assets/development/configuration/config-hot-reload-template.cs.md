@@ -1,36 +1,36 @@
-# SwiftlyS2 Config Hot-Reload Template
+# SwiftlyS2 Config 热加载模板
 
-Official docs sections:
+对应官方文档：
 - `Configuration`
 - `Dependency Injection`
 
-Suitable for: any SwiftlyS2 plugin that needs runtime configuration changes to take effect automatically.
+适用于：任何需要运行时修改配置并自动生效的 SwiftlyS2 插件。
 
-## Design highlights
+## 设计要点
 
-- Use `Core.Configuration.InitializeJsonWithModel<T>()` to initialize configuration.
-- Use `IOptionsMonitor<T>.OnChange()` to listen for changes and implement hot reload.
-- It is recommended to define the config model in a separate `Config.cs` file.
-- JSONC format (`config.jsonc`) supports comments and is easier to maintain.
-- Hot-reload callbacks may trigger side effects such as cache refresh, scheduler restart, or state reset.
+- 使用 `Core.Configuration.InitializeJsonWithModel<T>()` 初始化配置。
+- 使用 `IOptionsMonitor<T>.OnChange()` 监听变更，实现热加载。
+- Config 类建议定义在单独文件 `Config.cs` 中。
+- JSONC 格式（`config.jsonc`）支持注释，便于维护。
+- 热加载回调中可触发缓存刷新、Scheduler 重启、状态重置等副作用。
 
-## Config definition
+## 配置定义
 
 ```csharp
 namespace MyNamespace;
 
 public class Config
 {
-    // Primitive types
+    // 基础类型
     public bool Enabled { get; set; } = true;
     public int MaxRetries { get; set; } = 3;
     public float UpdateInterval { get; set; } = 1.0f;
     public string ServerName { get; set; } = "Default";
 
-    // Arrays / lists
+    // 数组/列表
     public string[] AllowedMaps { get; set; } = [];
 
-    // Nested objects
+    // 嵌套对象
     public RewardConfig Reward { get; set; } = new();
 }
 
@@ -41,7 +41,7 @@ public class RewardConfig
 }
 ```
 
-## Initialization and hot reload
+## 初始化与热加载
 
 ```csharp
 public partial class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
@@ -50,20 +50,20 @@ public partial class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Load(bool hotReload)
     {
-        // 1. Initialize configuration (create the default file + register the change source)
+        // 1. 初始化配置（创建默认文件 + 注册变更监听来源）
         Core.Configuration.InitializeJsonWithModel<Config>("config.jsonc", "Main")
             .Configure(builder => builder.AddJsonFile("config.jsonc", optional: false, reloadOnChange: true));
 
-        // 2. Get IOptionsMonitor
-        // Prerequisite: register it first through ServiceCollection + AddOptionsWithValidateOnStart<Config>().BindConfiguration("Main")
-        // For the DI plugin skeleton, see: ../../guides/dependency-injection/di-service-plugin-template.cs.md
+        // 2. 获取 IOptionsMonitor
+        // 前提：需先通过 ServiceCollection + AddOptionsWithValidateOnStart<Config>().BindConfiguration("Main") 注册
+        // DI 插件骨架详见：../../guides/dependency-injection/di-service-plugin-template.cs.md
         var monitor = ServiceProvider.GetRequiredService<IOptionsMonitor<Config>>();
         Config = monitor.CurrentValue;
 
-        // 3. Register the hot-reload callback
+        // 3. 注册热加载回调
         monitor.OnChange(OnConfigChanged);
 
-        // 4. Initialize feature logic using Config
+        // 4. 使用 Config 初始化业务
         if (Config.Enabled)
         {
             StartFeature();
@@ -75,7 +75,7 @@ public partial class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
         var oldConfig = Config;
         Config = newConfig;
 
-        // Trigger side effects as needed
+        // 按需触发副作用
         if (oldConfig.Enabled != newConfig.Enabled)
         {
             if (newConfig.Enabled)
@@ -89,16 +89,16 @@ public partial class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
             RestartScheduler(newConfig.UpdateInterval);
         }
 
-        Core.Logger.LogInformation("Configuration hot-reloaded.");
+        Core.Logger.LogInformation("配置已热加载");
     }
 }
 ```
 
 ## Checklist
 
-- [ ] Do all fields on the config model have reasonable default values?
-- [ ] Is `config.jsonc` used so comments are supported?
-- [ ] Are changes monitored through `IOptionsMonitor<T>.OnChange()`?
-- [ ] Does the hot-reload callback correctly handle differences between old and new config values?
-- [ ] Are complex side effects (such as scheduler restart or cache cleanup) triggered correctly inside the callback?
-- [ ] Is blocking IO avoided inside the hot-reload callback?
+- [ ] Config 类字段是否都有合理默认值？
+- [ ] 是否使用 `config.jsonc` 格式（支持注释）？
+- [ ] 是否通过 `IOptionsMonitor<T>.OnChange()` 监听变更？
+- [ ] 热加载回调中是否正确处理新旧配置的差异？
+- [ ] 复杂副作用（Scheduler 重启、缓存清理）是否在回调中正确触发？
+- [ ] 是否避免在热加载回调中做阻塞 IO？

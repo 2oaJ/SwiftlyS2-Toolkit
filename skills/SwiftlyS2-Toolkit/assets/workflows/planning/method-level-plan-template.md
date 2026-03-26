@@ -1,36 +1,36 @@
-# SwiftlyS2 Method-Level Implementation Plan Template
+# SwiftlyS2 方法级实施计划模板
 
-## Task classification
-- Type: create / modify / optimize / refactor / migrate / audit
-- Target plugin:
-- Reference architecture: modular gameplay / DI-service / hybrid
+## 任务归类
+- 类型：创建 / 修改 / 优化 / 重构 / 迁移 / 审计
+- 目标插件：
+- 参考架构：模块化 gameplay / DI-service / 混合
 
-## Subtasks
+## 子任务
 
 ### Gap 1
-- **Problem**:
-- **Impact**:
-- **Historical reference (if applicable)**: file + method
-- **Current target**: file + method
-- **Concrete modification steps**:
+- **问题**：
+- **影响**：
+- **历史参考（如适用）**：文件 + 方法
+- **当前目标**：文件 + 方法
+- **具体修改步骤**：
   1. 
   2. 
   3. 
-- **Thread / lifecycle notes**:
-- **Regression validation points**:
+- **线程/生命周期注意点**：
+- **回归验证点**：
 
 ### Gap 2
-- **Problem**:
-- **Impact**:
-- **Reference source**:
-- **Target file / method**:
-- **Modification steps**:
-- **Regression validation points**:
+- **问题**：
+- **影响**：
+- **参考来源**：
+- **目标文件/方法**：
+- **修改步骤**：
+- **回归验证点**：
 
-## General validation matrix
+## 通用验证矩阵
 - build
 - map load / unload
 - connect / disconnect
-- key state-transition chains (if relevant)
-- bot / long-lived runtime state (if relevant)
-- high-frequency hook hot paths (if relevant)
+- 关键状态切换链路（如相关）
+- bot / 长生命周期运行态（如相关）
+- 高频 hook 热路径（如相关）

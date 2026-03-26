@@ -1,6 +1,6 @@
-# SwiftlyS2-Toolkit
+# swiftlys2-toolkit
 
-`SwiftlyS2-Toolkit` is a Copilot-based agent toolkit for SwiftlyS2 plugin development. Our goal is simple: with just one sentence, the agent can write high-performance, high-quality SwiftlyS2 plugin code. If you are using another kind of agent CLI, you can still use the skills and prompts in this toolkit.
+`swiftlys2-toolkit` is a Copilot-based agent toolkit for SwiftlyS2 plugin development. Our goal is simple: with just one sentence, the agent can write high-performance, high-quality SwiftlyS2 plugin code. If you are using another kind of agent CLI, you can still use the skills and prompts in this toolkit.
 
 - Chinese Version: [`README.md`](./README.md)
 - Skill: [`SKILL.md`](./SKILL.md)

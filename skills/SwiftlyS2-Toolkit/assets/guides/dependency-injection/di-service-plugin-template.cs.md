@@ -1,13 +1,13 @@
-# SwiftlyS2 DI / Service Plugin Template
+# SwiftlyS2 DI / Service 插件模板
 
-Official docs sections:
+对应官方文档：
 - `Dependency Injection`
 - `Swiftly Core`
 - `Using attributes`
 
-Suitable for: medium-to-large plugins in DI / service-oriented, shared-service-oriented, or hybrid architectures.
+适用于：DI / service 导向、共享服务导向、或混合架构中的中/大型插件。
 
-## Suggested directory layout
+## 目录建议
 
 ```text
 MyPlugin/
@@ -19,7 +19,7 @@ MyPlugin/
 └── Config.cs
 ```
 
-## Basic skeleton
+## 基本骨架
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +33,7 @@ namespace MyNamespace
         Name = "My Plugin",
         Author = "YourName",
         Version = "1.0.0",
-        Description = "Plugin description",
+        Description = "插件描述",
         Website = "https://example.com"
     )]
     public class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
@@ -61,40 +61,40 @@ namespace MyNamespace
 }
 ```
 
-## Ownership suggestions for modular listeners
+## 模块型监听所有权建议
 
-- The plugin root should only own `ServiceCollection`, installation order, and unload order.
-- Registration and unregistration of `Event` / `GameEvent` / `Hook` / `Command` should preferably be owned by each service itself.
-- If a hook is only needed when a specific config is enabled, the service should keep its own boolean flag and dynamically install / uninstall it, instead of leaving it installed forever and idling in the callback.
-- The root only orchestrates; each service completes its own listener lifecycle closure.
+- 插件 root 只负责 `ServiceCollection`、安装顺序、卸载顺序
+- `Event` / `GameEvent` / `Hook` / `Command` 的注册与反注册，优先由各自 service 自己持有
+- 若某个 hook 只在特定配置开启时需要，service 应维护自己的布尔标记并动态挂/卸，而不是永久挂着再在回调里空转
+- root 只 orchestrate，service 自己完成监听闭环
 
-## Keyed Singleton and multiple implementations
+## Keyed Singleton 与多实现
 
-When the same interface has multiple independent instances, use Keyed Singleton:
+当同一接口有多个独立实例时，使用 Keyed Singleton：
 
 ```csharp
-// Register
+// 注册
 services.AddKeyedSingleton<IMyService>("VariantA",
     (sp, key) => new MyServiceImpl(core, "VariantA"));
 services.AddKeyedSingleton<IMyService>("VariantB",
     (sp, key) => new MyServiceImpl(core, "VariantB"));
 
-// Resolve
+// 解析
 var a = sp.GetRequiredKeyedService<IMyService>("VariantA");
 var b = sp.GetRequiredKeyedService<IMyService>("VariantB");
 ```
 
-When all implementations need to be traversed, use `GetServices<T>()`:
+当所有实现都需要遍历时，使用 `GetServices<T>()`：
 
 ```csharp
 services.AddSingleton<IMyService, ImplA>();
 services.AddSingleton<IMyService, ImplB>();
 
-// Get all
+// 获取全部
 foreach (var svc in sp.GetServices<IMyService>())
 {
     svc.Install();
 }
 ```
 
-See also: `../../patterns/service-factory/service-factory-template.cs.md`
+详见：`../../patterns/service-factory/service-factory-template.cs.md`

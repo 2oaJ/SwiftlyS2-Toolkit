@@ -1,22 +1,22 @@
 # SwiftlyS2 Thread Sensitivity Checklist
 
-Official docs sections:
+对应官方文档：
 - `Thread Safety`
 - `Using attributes`
 - `Menus`
 
-> Use this to review thread-sensitive APIs, async-context patterns, reasons for scheduler usage, and player / entity lifecycle risks.
+> 用途：检查线程敏感 API、异步上下文写法、scheduler 使用动机，以及 player / entity 生命周期风险。
 
-## 1. Determine first which context the current code is running in
+## 一、先判断当前代码处在什么上下文
 
-- Is it a command entry point, menu callback, event callback, hook, worker, or delayed task?
-- Is the current code already in an `async` / `await` chain?
-- Is it running on a high-frequency hot path?
-- Could it cross threads, frames, maps, or disconnect / reconnect boundaries?
+- 是命令入口、菜单回调、事件回调、hook、worker 还是延迟任务？
+- 当前代码是否已经是 `async` / `await` 链路？
+- 是否运行在高频热路径？
+- 是否可能跨线程、跨帧、跨 map、跨断线重连？
 
-## 2. In async contexts, first check whether an Async API already exists
+## 二、若处于异步上下文，优先检查是否已有 Async API
 
-Prefer using:
+优先使用：
 - `PrintToChatAsync`
 - `PrintToConsoleAsync`
 - `ReplyAsync`
@@ -26,11 +26,11 @@ Prefer using:
 - `KickAsync`
 - `SwitchTeamAsync`
 
-Hard rules:
-- **If an Async API already exists and the current code is already in an async context, prefer using the Async API directly.**
-- **Do not treat `NextTick` / `NextWorldUpdate` as the default solution for thread-sensitivity problems.**
+硬规则：
+- **若 Async API 已存在，且当前已在异步上下文中，优先直接使用 Async API。**
+- **不要把 `NextTick` / `NextWorldUpdate` 当成线程敏感问题的默认解法。**
 
-## 3. Known high-priority thread-sensitive method list
+## 三、已知重点线程敏感方法清单
 
 - `IPlayer.Send* / Kick / ChangeTeam / SwitchTeam / TakeDamage / Teleport / ExecuteCommand`
 - `IGameEventService.Fire*`
@@ -41,7 +41,7 @@ Hard rules:
 - `CCSPlayerController.Respawn`
 - `CPlayer_ItemServices.* / CPlayer_WeaponServices.*`
 
-## 4. Menu callbacks are a high-risk area
+## 四、菜单回调是重点高危区
 
 - `ButtonMenuOption.Click`
 - `ToggleMenuOption.ValueChanged`
@@ -49,16 +49,16 @@ Hard rules:
 - `SliderMenuOption.ValueChanged`
 - `SubmenuMenuOption(async () => ...)`
 
-Review questions:
-- Do callbacks prefer `Async` APIs internally?
-- Is `args.Player.Valid()` rechecked after crossing `await` boundaries?
-- Are blocking IO, `.Wait()`, and `.Result` avoided inside callbacks?
+复核问题：
+- 回调内部是否优先使用 `Async` API？
+- 是否跨 `await` 后重新检查 `args.Player.Valid()`？
+- 是否避免在回调里做阻塞 IO / `.Wait()` / `.Result`？
 
-## 5. Player / entity lifecycle review
+## 五、player / entity 生命周期复核
 
 - `player != null && player.Valid()`
 - `player.PlayerPawn != null`
 - `pawn.Valid()` / `pawn.IsValid`
-- whether the map has already changed
-- whether the current runtime state still belongs to the current session
-- whether long-lived entity references across ticks / delays were converted to `CHandle<T>`
+- map 是否已切换
+- 当前运行态是否仍对应当前会话
+- 跨 tick / 延迟长期持有实体时，是否改用 `CHandle<T>`？

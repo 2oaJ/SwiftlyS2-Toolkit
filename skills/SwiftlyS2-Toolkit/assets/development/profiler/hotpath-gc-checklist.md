@@ -1,40 +1,40 @@
-# SwiftlyS2 Hot Path / Performance / GC Checklist
+# SwiftlyS2 热路径 / 性能 / GC Checklist
 
-Official docs sections:
+对应官方文档：
 - `Profiler`
 - `Thread Safety`
 - `Native Functions and Hooks`
 
-Use this for: hook performance reviews, high-frequency loops, state synchronization, menu callbacks, scheduler periodic tasks, and code audits on main-thread critical paths.
+用于：Hook、高频循环、状态同步、菜单回调、Scheduler 周期任务、主线程关键路径的性能自审与代码审计。
 
-## 1. Decide first whether this code is actually on a hot path
+## 一、先判断这段代码是不是热路径
 
-- [ ] Is it inside a high-frequency Hook, RuntimeLoop, bot-control path, or another high-refresh chain?
-- [ ] Is it executed repeatedly per tick, per frame, or per player?
-- [ ] Does it run on the main thread and directly affect the 64-tick frame budget?
+- [ ] 是否位于高频 Hook / RuntimeLoop / Bot 控制 / 其他高频刷新链路？
+- [ ] 是否会被每 tick、每帧、每玩家反复执行？
+- [ ] 是否运行在主线程，直接影响 64 tick 帧预算？
 
-## 2. Allocation and GC risk
+## 二、分配与 GC 风险
 
-- [ ] Does the hot path frequently allocate `new List<>`, `new Dictionary<>`, or `new[]`?
-- [ ] Does it repeatedly call `ToList()`, `ToArray()`, `OrderBy()`, `Where()`, or `Select()` inside loops?
-- [ ] Does it frequently create `string`, interpolated strings, or `string.Format` results inside loops?
-- [ ] Does it create temporary DTOs, anonymous objects, or lambda closures on the hot path?
-- [ ] Is there implicit boxing?
+- [ ] 是否在热路径里频繁 `new List<>` / `new Dictionary<>` / `new[]`？
+- [ ] 是否在循环内反复 `ToList()` / `ToArray()` / `OrderBy()` / `Where()` / `Select()`？
+- [ ] 是否在循环内频繁构造 `string`、插值字符串、`string.Format`？
+- [ ] 是否在热路径里创建临时 DTO、匿名对象、lambda 闭包？
+- [ ] 是否存在隐式装箱？
 
-## 3. JSON / IO / heavy CPU work
+## 三、JSON / IO / 重 CPU 工作
 
-- [ ] Is JSON avoided in Hooks, high-frequency loops, menu callbacks, and scheduler periodic callbacks?
-- [ ] Are disk IO, network IO, database queries, compression, regex, and large sorts avoided on hot paths?
-- [ ] Have main-thread sampling and background serialization / aggregation been separated?
+- [ ] 是否避免在 Hook / 高频循环 / 菜单回调 / Scheduler 周期回调中做 JSON？
+- [ ] 是否避免在热路径里做磁盘 IO、网络 IO、数据库查询、压缩、正则、大量排序？
+- [ ] 是否已把主线程采样与后台序列化/聚合拆开？
 
-## 4. Algorithms and complexity
+## 四、算法与复杂度
 
-- [ ] Does the hot path repeatedly scan all players or all records in full?
-- [ ] Is `O(n)` / `O(n log n)` work incorrectly placed inside a per-player-per-tick path?
-- [ ] Could it be changed into producer / consumer form, with the hot path only sampling and background logic aggregating?
+- [ ] 是否在热路径里反复全量扫描所有玩家 / 所有记录？
+- [ ] 是否把 `O(n)` / `O(n log n)` 工作错误放在每玩家每 tick 路径？
+- [ ] 是否可改成 producer / consumer：热路径只采样，后台再聚合？
 
-## 5. Landing principles
+## 五、落地原则
 
-- Ensure correctness before optimizing
-- Find real hotspots before optimizing; do not over-micro-optimize low-frequency paths
-- Reduce unnecessary allocations first, and only then consider `Span`, `stackalloc`, or more aggressive techniques
+- 先保证正确性，再优化
+- 先找真正热点，再优化；不要对低频路径过度微优化
+- 先减少不必要分配，再考虑 `Span` / `stackalloc` / 更激进技巧

@@ -1,19 +1,19 @@
-# SwiftlyS2 Per-Player State Management Guide
+# SwiftlyS2 Per-Player 状态管理指南
 
-Official docs sections:
+对应官方文档：
 - `Core Events`
 - `Thread Safety`
 - `Terminologies`
 
-Suitable for: plugins that need to maintain runtime state for each player.
+适用于：需要为每个玩家维护运行时状态的插件。
 
-## Choosing a pattern
+## 模式选型
 
-As plugin complexity increases, the following per-player state management patterns are common:
+按插件复杂度递增，有以下几种 per-player 状态管理模式：
 
-### Level 1: lightweight key-value state (small plugins)
+### Level 1：轻量键值（小型插件）
 
-Suitable for: simple state with only one or two fields.
+适合：状态简单、只有一两个字段。
 
 ```csharp
 private readonly ConcurrentDictionary<ulong, bool> _playerEnabled = new();
@@ -36,9 +36,9 @@ public void OnClientDisconnected(IOnClientDisconnectedEvent @event)
 }
 ```
 
-### Level 2: runtime state objects (medium plugins)
+### Level 2：运行时状态对象（中等插件）
 
-Suitable for: each player has multiple fields that need to be managed together.
+适合：每个玩家有多个字段需要同步管理。
 
 ```csharp
 public class PlayerRuntime
@@ -59,7 +59,7 @@ public void OnClientPutInServer(IOnClientPutInServerEvent @event)
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
         if (player is null || !player.IsValid) return;
 
-        // GetOrAdd guarantees atomicity and avoids races
+        // GetOrAdd 保证原子性，避免竞态
         _playerStates.GetOrAdd(player.SteamID, steamId => new PlayerRuntime
         {
             SteamId = steamId
@@ -72,15 +72,15 @@ public void OnClientDisconnected(IOnClientDisconnectedEvent @event)
 {
     if (_playerStates.TryRemove(@event.SteamID, out var runtime))
     {
-        // Optional: async persistence (implement FireAndForget first; see section 1 of async-safety-guide.md)
+        // 可选：异步持久化（需先实现 FireAndForget，见 async-safety-guide.md 一）
         FireAndForget(PersistPlayerStateAsync(runtime), Logger, "MyPlugin.PersistOnDisconnect");
     }
 }
 ```
 
-### Level 3: state objects with DB restore
+### Level 3：带 DB 恢复的状态对象
 
-Suitable for: restoring player preferences after disconnect / reconnect.
+适合：需要在断线重连后恢复玩家偏好。
 
 ```csharp
 [EventListener<OnClientPutInServer>]
@@ -93,7 +93,7 @@ public void OnClientPutInServer(IOnClientPutInServerEvent @event)
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
         if (player is null || !player.IsValid) return;
 
-        // Restore from DB or a remote source (implement FireAndForget first; see section 1 of async-safety-guide.md)
+        // 从 DB 或远端恢复（需先实现 FireAndForget，见 async-safety-guide.md 一）
         FireAndForget(LoadPlayerStateAsync(player), Logger, "MyPlugin.LoadPlayerState");
     });
 }
@@ -103,7 +103,7 @@ private async Task LoadPlayerStateAsync(IPlayer player)
     var steamId = player.SteamID;
     var dbRecord = await SomeService.GetPlayerDataAsync(steamId);
 
-    // Revalidate the player after async work completes
+    // 异步完成后重新校验玩家
     var currentPlayer = Core.PlayerManager.GetPlayerBySteamId(steamId);
     if (currentPlayer is null || !currentPlayer.IsValid) return;
 
@@ -118,9 +118,9 @@ private async Task LoadPlayerStateAsync(IPlayer player)
 }
 ```
 
-### Level 4: slot array + generation counter (large gameplay plugins)
+### Level 4：槽位数组 + 代际计数（大型 gameplay 插件）
 
-Suitable for: O(1) access inside high-frequency hooks and generation validation for async write-back.
+适合：高频 Hook 中需要 O(1) 访问、异步回写需要代际校验。
 
 ```csharp
 public class PlayerRegistry
@@ -149,13 +149,13 @@ public class PlayerRegistry
         }
     }
 
-    /// <summary>O(1) lookup for high-frequency hooks</summary>
+    /// <summary>O(1) 用于高频 Hook</summary>
     public PlayerState? GetBySlot(int slot)
     {
         return slot >= 0 && slot < 64 ? _slots[slot] : null;
     }
 
-    /// <summary>Validate generation before async write-back</summary>
+    /// <summary>异步回写前校验代际</summary>
     public bool ValidateGeneration(int slot, int capturedGeneration)
     {
         return slot >= 0 && slot < 64
@@ -165,34 +165,34 @@ public class PlayerRegistry
 }
 ```
 
-## Choosing identity keys
+## 身份键选择
 
-| Scenario | Recommended key | Reason |
+| 场景 | 推荐键 | 原因 |
 |------|--------|------|
-| Long-term storage for real players | `SteamID` (ulong) | Stable across sessions |
-| Fast runtime lookup | `SteamID` or `Slot` | Depends on hot-path needs |
-| bot / fakeclient | `SessionId` | Bots have a fixed SteamID of 0, which is unreliable |
-| Lookup inside high-frequency hooks | Slot array `_slots[slot]` | O(1) with no hash overhead |
+| 真人玩家长期存储 | `SteamID` (ulong) | 跨会话稳定 |
+| 运行时快速查找 | `SteamID` 或 `Slot` | 取决于热路径需求 |
+| bot / fakeclient | `SessionId` | bot 的 SteamID 固定为 0，不可靠 |
+| 高频 Hook 内查找 | 槽位数组 `_slots[slot]` | O(1)，无哈希开销 |
 
-## Cleanup timing
+## 清理时机
 
-- `OnClientDisconnected`: remove runtime state
-- `OnMapLoad` / `OnMapUnload`: clear map-scoped caches
-- Plugin `Unload()`: clear all state
+- `OnClientDisconnected`：移除运行时状态
+- `OnMapLoad` / `OnMapUnload`：清理 map-scoped 缓存
+- 插件 `Unload()`：清空所有状态
 
-## Concurrency-safety rules
+## 并发安全规则
 
-- Prefer `TryAdd`, `TryRemove`, `TryGetValue`, `GetOrAdd`, and `AddOrUpdate`.
-- Avoid two-step writes such as `ContainsKey` + `Remove` or `ContainsKey` + `Add`.
-- Use the merge predicate of `AddOrUpdate` to prevent state downgrade.
-- Revalidate player / generation before async write-back.
-- On hot paths, cache slot references to avoid dictionary lookups when appropriate.
+- 优先使用 `TryAdd`、`TryRemove`、`TryGetValue`、`GetOrAdd`、`AddOrUpdate`
+- 避免 `ContainsKey` + `Remove` / `ContainsKey` + `Add` 双步写法
+- 状态变更用 `AddOrUpdate` 的 merge predicate 防止降级
+- 异步回写前重新校验玩家/代际
+- 高频路径中可缓存 slot 引用，跳过字典查找
 
 ## Checklist
 
-- [ ] Is state initialized on connect?
-- [ ] Is state cleaned up on disconnect?
-- [ ] Are identity-key strategies different for real players and bots?
-- [ ] Is player validity rechecked after async delays?
-- [ ] Do concurrent operations use atomic APIs?
-- [ ] Are map-scoped caches cleaned on map changes?
+- [ ] 是否在 connect 时初始化？
+- [ ] 是否在 disconnect 时清理？
+- [ ] 是否区分真人与 bot 的身份键策略？
+- [ ] 异步延迟后是否重新校验玩家有效性？
+- [ ] 并发操作是否使用原子 API？
+- [ ] map 切换时 map-scoped 缓存是否清理？

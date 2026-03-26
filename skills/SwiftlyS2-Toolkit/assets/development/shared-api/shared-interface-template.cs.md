@@ -1,18 +1,18 @@
-# SwiftlyS2 Shared API Template
+# SwiftlyS2 Shared API 模板
 
-Official docs sections:
+对应官方文档：
 - `Shared API`
 - `Dependency Injection`
 
-Suitable for: exposing shared services across plugins, consuming other plugins’ interfaces, and designing contract DLLs.
+适用于：跨插件暴露共享服务、消费其他插件接口、contracts DLL 设计。
 
-## Minimal provider / consumer structure
+## Provider / Consumer 的最小结构
 
-- Contracts DLL: defines interfaces used by both provider and consumer
-- Provider: registers the interface implementation in `ConfigureSharedInterface`
-- Consumer: detects and retrieves the shared interface in `UseSharedInterface`
+- Contracts DLL：定义接口，供 provider / consumer 共用
+- Provider：在 `ConfigureSharedInterface` 中注册接口实现
+- Consumer：在 `UseSharedInterface` 中检测并获取共享接口
 
-## Contracts example
+## Contracts 示例
 
 ```csharp
 namespace MyPlugin.Contracts;
@@ -25,7 +25,7 @@ public interface IEconomyService : IDisposable
 }
 ```
 
-## Provider example
+## Provider 示例
 
 ```csharp
 using MyPlugin.Contracts;
@@ -44,7 +44,7 @@ public sealed class EconomyPlugin(ISwiftlyCore core) : BasePlugin(core)
 }
 ```
 
-## Consumer example
+## Consumer 示例
 
 ```csharp
 using MyPlugin.Contracts;
@@ -59,7 +59,7 @@ public sealed class ShopPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         if (!interfaceManager.HasSharedInterface("Economy.Service.v1"))
         {
-            Core.Logger.LogWarning("Economy.Service.v1 is not loaded yet.");
+            Core.Logger.LogWarning("Economy.Service.v1 尚未加载。");
             return;
         }
 
@@ -70,15 +70,15 @@ public sealed class ShopPlugin(ISwiftlyCore core) : BasePlugin(core)
 
 ## Checklist
 
-- Is the interface placed in a separate contracts DLL?
-- Does the key use clear naming and consider versioning?
-- Does the consumer call `HasSharedInterface(...)` before fetching?
-- Should the interface inherit from `IDisposable`?
-- Do provider and consumer both have cleanup closure during unload?
+- 是否把 interface 放在单独 contracts DLL？
+- key 是否使用清晰命名并考虑版本化？
+- consumer 获取前是否先 `HasSharedInterface(...)`？
+- interface 是否考虑继承 `IDisposable`？
+- provider / consumer 卸载时是否有 cleanup 闭环？
 
-## Delayed-initialization guard pattern
+## 延迟初始化守卫模式
 
-When a consumer’s core behavior strongly depends on a shared interface, do not initialize that business logic in `Load()`; delay it until `UseSharedInterface()` instead:
+当 consumer 的核心功能强依赖共享接口时，不应在 `Load()` 中初始化业务，而应延迟到 `UseSharedInterface()` 中：
 
 ```csharp
 public sealed class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
@@ -87,7 +87,7 @@ public sealed class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Load(bool hotReload)
     {
-        // Do not initialize shared-interface-dependent logic here
+        // 不在此初始化依赖共享接口的业务
         Core.Logger.LogInformation("MyPlugin loading...");
     }
 
@@ -97,7 +97,7 @@ public sealed class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (!interfaceManager.HasSharedInterface("Economy.Service.v1"))
         {
-            Core.Logger.LogWarning("Economy.Service.v1 is not available yet; delaying initialization.");
+            Core.Logger.LogWarning("Economy.Service.v1 尚未可用，延迟初始化");
             return;
         }
 
@@ -108,26 +108,26 @@ public sealed class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private void InitializeServices(IEconomyService economyService)
     {
-        // Initialize the DI container, register services, start the scheduler, and so on here
+        // 在此初始化 DI 容器、注册服务、启动 Scheduler 等
     }
 }
 ```
 
-**Key points**:
-- `UseSharedInterface` may be called multiple times (whenever a new plugin registers an interface)
-- Use the `_servicesInitialized` boolean guard to avoid duplicate initialization
-- When the dependency is unavailable, log a warning and return early instead of throwing
-- Only start persistent work such as schedulers or workers after delayed initialization completes
+**关键点**：
+- `UseSharedInterface` 可能被多次调用（每当有新插件注册接口时）
+- 使用 `_servicesInitialized` 布尔守卫避免重复初始化
+- 依赖不可用时记录 warning 并提前返回，不要抛异常
+- 在延迟初始化完成后才启动 Scheduler、Worker 等持续性工作
 
-## Two-phase cross-plugin dependency
+## 两阶段跨插件依赖
 
-When two plugins depend on each other (for example, Plugin A provides a trigger and Plugin B consumes it while injecting its own manager back), use a two-phase pattern:
+当两个插件互相依赖时（如 Plugin A 提供某个 trigger，Plugin B 消费并反向注入自己的 manager），使用两阶段模式：
 
-1. **Phase 1 (`ConfigureSharedInterface`)**: Plugin A registers the interface
-2. **Phase 2 (`UseSharedInterface`)**: Plugin B gets A’s interface and injects its own dependency back into A
+1. **Phase 1（ConfigureSharedInterface）**：Plugin A 注册接口
+2. **Phase 2（UseSharedInterface）**：Plugin B 获取 A 的接口，并对 A 进行反向注入
 
 ```csharp
-// Plugin B (consumer + reverse injection)
+// Plugin B（消费者 + 反向注入）
 public override void UseSharedInterface(IInterfaceManager interfaceManager)
 {
     if (!interfaceManager.HasSharedInterface("PluginA.FeatureTrigger"))
@@ -136,7 +136,7 @@ public override void UseSharedInterface(IInterfaceManager interfaceManager)
     var trigger = interfaceManager.GetSharedInterface<IFeatureTrigger>(
         "PluginA.FeatureTrigger");
 
-    // Inject the manager back into the trigger
+    // 反向注入 manager 到 trigger
     if (trigger is IFeatureTriggerInitializable initializable)
     {
         initializable.SetManager(_featureManager);

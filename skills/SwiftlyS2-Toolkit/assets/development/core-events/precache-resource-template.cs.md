@@ -1,37 +1,37 @@
-# SwiftlyS2 OnPrecacheResource Template
+# SwiftlyS2 OnPrecacheResource 模板
 
-Official docs section:
+对应官方文档：
 - `Core Events`
 
-Suitable for: precaching models, sounds, particles, and similar resources so they are available at runtime.
+适用于：预加载模型、声音、粒子等资源，确保运行时可用。
 
-## Why precache is needed
+## 为什么需要 Precache
 
-In Source 2, resources such as models, particles, and sound events must be precached before use.
-Resources that were not precached may silently fail or crash when used through calls such as `SetModel` or `EmitSound`.
+在 Source 2 中，模型、粒子、声音事件等资源必须在使用前 precache。
+未 precache 的资源在 `SetModel`、`EmitSound` 等调用时会静默失败或崩溃。
 
-## Basic pattern
+## 基本模式
 
 ```csharp
 [EventListener<OnPrecacheResource>]
 public void OnPrecacheResource(IOnPrecacheResourceEvent @event)
 {
-    // Static resources
+    // 静态资源
     @event.AddItem("characters/models/my_custom_model.vmdl");
     @event.AddItem("soundevents/soundevents_custom.vsndevts");
     @event.AddItem("particles/my_particle_effect.vpcf");
 }
 ```
 
-## Config-driven dynamic precache
+## 配置驱动的动态 Precache
 
-When resource paths come from a config file or database, they need to be precached dynamically:
+当资源路径来自配置文件或数据库时，需要动态预加载：
 
 ```csharp
 [EventListener<OnPrecacheResource>]
 public void OnPrecacheResource(IOnPrecacheResourceEvent @event)
 {
-    // Collect all model paths from config
+    // 从配置中收集所有模型路径
     foreach (var skin in Config.Skins)
     {
         if (!string.IsNullOrWhiteSpace(skin.ModelPath))
@@ -43,18 +43,18 @@ public void OnPrecacheResource(IOnPrecacheResourceEvent @event)
 }
 ```
 
-## Service-delegated precache
+## 服务委托 Precache
 
-When multiple services each have resources that need to be precached:
+当多个服务各自有资源需要 precache 时：
 
 ```csharp
 [EventListener<OnPrecacheResource>]
 public void OnPrecacheResource(IOnPrecacheResourceEvent @event)
 {
-    // Shared entry resource
+    // 统一入口资源
     @event.AddItem("soundevents/soundevents_plugin.vsndevts");
 
-    // Delegate to services managed by the factory
+    // 委托工厂管理的各服务
     if (_serviceProvider is not null)
     {
         foreach (var service in _serviceProvider.GetServices<IMyService>())
@@ -65,25 +65,25 @@ public void OnPrecacheResource(IOnPrecacheResourceEvent @event)
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Failed to precache resources - service: {Service}", service.GetType().Name);
+                Logger.LogError(ex, "预加载资源失败 - 服务: {Service}", service.GetType().Name);
             }
         }
     }
 }
 ```
 
-## Key points
+## 关键点
 
-- `OnPrecacheResource` fires early during map load, and some services may not be fully initialized yet.
-- Resource path strings must exactly match the real in-game path.
-- Adding the same path repeatedly is safe because the engine deduplicates it.
-- When config-driven resource lists change, the change only takes effect on the next map load.
-- Do not perform IO or blocking work in this event.
+- `OnPrecacheResource` 在地图加载早期触发，此时部分服务可能尚未完全初始化
+- 资源路径字符串必须精确匹配游戏内实际路径
+- 重复添加同一路径是安全的（引擎会去重）
+- 配置驱动的资源列表变化后，需要下一次 map load 才能生效
+- 不要在此事件中做 IO 或阻塞操作
 
 ## Checklist
 
-- [ ] Are all custom models used by the plugin registered in `OnPrecacheResource`?
-- [ ] Are sound event files (`.vsndevts`) registered?
-- [ ] Are particle effects (`.vpcf`) registered?
-- [ ] Are config-driven dynamic resources iterated and registered?
-- [ ] Is service-delegated precache protected against exceptions?
+- [ ] 插件使用的所有自定义模型是否都在 `OnPrecacheResource` 中注册？
+- [ ] 声音事件文件（`.vsndevts`）是否已注册？
+- [ ] 粒子效果（`.vpcf`）是否已注册？
+- [ ] 配置驱动的动态资源是否已遍历注册？
+- [ ] 服务委托 precache 是否有异常保护？
