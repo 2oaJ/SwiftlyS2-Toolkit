@@ -1,144 +1,149 @@
-﻿# swiftlys2-toolkit Audit Prompt
+# swiftlys2-toolkit Audit Prompt
 
-Use the `swiftlys2-toolkit` skill to perform a **general audit** on a SwiftlyS2 plugin project.
+使用 `swiftlys2-toolkit` skill，对 SwiftlyS2 插件项目执行**通用审计**。
 
-## Audit objective
+## 审计目标
 
-When the user asks to 鈥渁udit鈥?a SwiftlyS2 plugin or subsystem, do not look only at code style. Cover:
+当用户要求“审计”一个 SwiftlyS2 插件或子系统时，不要只看代码风格，要覆盖：
 
-1. whether the architecture matches the project size and responsibility
-2. whether lifecycle handling is closed properly
-3. whether there are main-thread risks, deadlock risks, or delayed references to invalid players
-4. whether high-frequency hooks contain hotspots such as allocations, logging, IO, locks, or blocking
-5. whether Schema / Protobuf follows thread and write-back rules
-6. whether behavioral drift exists when historical implementations or old versions are present
-7. whether the implementation shows awareness of the 64-tick server frame budget
+1. 架构是否匹配项目规模与职责
+2. 生命周期是否闭环
+3. 是否存在主线程风险、死锁风险、延迟引用失效玩家风险
+4. 高频 Hook 是否有分配、日志、IO、锁、阻塞等热点
+5. Schema / Protobuf 是否符合线程与写回规则
+6. 若存在历史实现或旧版本，是否存在行为漂移
+7. 是否满足 64 tick 服务器帧预算意识
 
-## Mandatory rules
+## 强制规则
 
-- Player-visible historical behavior differences must be listed separately and must not be hidden inside 鈥渙ptimization items鈥?
-- Every risk must be labeled with a severity level: P0 / P1 / P2 / P3.
-- Audit conclusions must be actionable rather than vague advice.
-- If comment issues are found, evaluate them against the repository鈥檚 comment conventions. If there is no extra convention, review them against the standard of being meaningful and explaining non-obvious semantics.
-- You must explicitly check for synchronous blocking and main-thread JSON overhead.
-- If the audit recommends `Span<T>`, `ReadOnlySpan<T>`, `stackalloc`, or `ref`, you must audit their safety boundaries at the same time.
-- If historical repositories exist in the workspace, they may only be treated as temporary experience sources and must not be assumed to exist forever.
-- If mixed bot / human storage exists, identity-key design must be audited separately, with special focus on whether a bot鈥檚 `SteamID` is misused.
+- 玩家可感知的历史行为差异必须单独列出，不得隐藏在“可优化项”里
+- 所有风险都要标注严重级别：P0 / P1 / P2 / P3
+- 审计结论必须可执行，不能只给空泛建议
+- 若发现注释问题，必须按当前仓库注释规范评估；若无额外规范，按“有意义且解释非显而易见语义”标准审查
+- 必须强制检查同步阻塞与主线程 JSON 开销
+- 若审计建议涉及 `Span<T>` / `ReadOnlySpan<T>` / `stackalloc` / `ref`，必须同时审计其安全边界
+- 若工作区中存在历史仓库，只能将其作为临时经验源，不能假定其永远存在
+- 若存在 bot / 真人混合存储，必须单独审计身份键设计，重点检查是否误用 bot 的 `SteamID`
 
-## Priority references
+## 语言输入要求
 
-### Skill reference documents
+- 每次输出前先识别用户**最新一条消息**的主语言，并以该语言作为本轮唯一输出语言。
+- 如果用户后续切换语言，则以最新一条用户消息为准。
+- 如果输入是混合语言，以用户意图最明确的主语言为准。
+- 除非用户明确要求双语输出，否则不要在同一段审计内容里混用中英文。
+
+## 优先参考
+
+### Skill 参考文档
 
 - `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
-### Public sources
+### 公开来源
 
-- SwiftlyS2 official documentation: `https://swiftlys2.net/docs/`
-- Thread Safety: `https://swiftlys2.net/docs/development/thread-safety/`
-- Native Functions and Hooks: `https://swiftlys2.net/docs/development/native-functions-and-hooks/`
-- Network Messages: `https://swiftlys2.net/docs/development/netmessages/`
-- Dependency Injection: `https://swiftlys2.net/docs/guides/dependency-injection/`
-- sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
-- SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
+- SwiftlyS2 官网文档：`https://swiftlys2.net/docs/`
+- Thread Safety：`https://swiftlys2.net/docs/development/thread-safety/`
+- Native Functions and Hooks：`https://swiftlys2.net/docs/development/native-functions-and-hooks/`
+- Network Messages：`https://swiftlys2.net/docs/development/netmessages/`
+- Dependency Injection：`https://swiftlys2.net/docs/guides/dependency-injection/`
+- sw2-mdwiki：`https://github.com/himenekocn/sw2-mdwiki`
+- SwiftlyS2 官方仓库：`https://github.com/swiftly-solution/swiftlys2`
 
-### Current workspace-specific references (if present)
+### 当前工作区定制参考（如存在）
 
-If `./copilot-instructions.md` or `./knowledge-base.md` records local workspace mappings, current project constraints, or special rules, read them as needed; however, when outputting a public audit, do not turn those local paths or workspace-specific project names into permanent dependencies.
+若 `./copilot-instructions.md` 或 `./knowledge-base.md` 记录了当前工作区的本地映射、当前项目约束或专项规则，可按需补充读取；但在输出公共审计时，不要把这些本地路径或工作区专属项目名写成永久依赖。
 
-## Audit dimensions
+## 审计维度
 
-### 1. Architecture audit
-- Does the current structure look more like modular gameplay, DI/service, or a hybrid architecture?
-- Is the layering clear?
-- Is business logic being incorrectly pushed into the main class / command / event entry?
-- Should parts be extracted into a module / service / worker / manager?
+### 1. 架构审计
+- 当前更像模块化 gameplay、DI/service，还是混合架构？
+- 分层是否清晰？
+- 是否把业务逻辑错误地塞进主类/命令/事件入口？
+- 是否应该抽成 module / service / worker / manager？
 
-### 2. Lifecycle audit
+### 2. 生命周期审计
 - `OnClientPutInServer`
 - `OnClientDisconnected`
 - `OnMapLoad`
 - `OnMapUnload`
 
-Check especially:
-- whether delayed logic still holds `IPlayer` after disconnect
-- whether dirty state remains after map change
+特别检查：
+- 玩家断线后 `IPlayer` 是否还被延迟逻辑持有
+- map change 后是否还有脏状态残留
 
-### 3. Thread-safety and async audit
-- whether main-thread APIs are misused from background threads
-- whether `lock` introduces main-thread waiting risk
-- whether `.Wait()`, `.Result`, or synchronous blocking exists
-- whether JSON serialization / deserialization happens on the main thread
-- whether worker stop / flush / cancel is complete
-- whether generation / session checks exist
+### 3. 线程安全与异步审计
+- 主线程 API 是否被后台线程误用
+- 是否有 `lock` 造成主线程等待风险
+- 是否有 `.Wait()` / `.Result` / 同步阻塞
+- 是否在主线程做 JSON 序列化 / 反序列化
+- worker stop/flush/cancel 是否完整
+- generation / session 校验是否存在
 
-### 4. High-frequency hook audit
-- whether there are meaningless allocations
-- whether there are logging hotspots
-- whether IO / API calls exist
-- whether heavy CPU work like JSON is mixed in
-- whether human / bot / dead-state fast-path routing is done
-- whether producer / consumer separation exists
-- whether the code reflects 64-tick server budget awareness
-- whether hot-path data movement could use `Span/ReadOnlySpan/stackalloc/ref`
+### 4. 高频 Hook 审计
+- 是否有无意义分配
+- 是否有日志热点
+- 是否有 IO / API 调用
+- 是否混入 JSON 等重 CPU 操作
+- 是否做了真人/机器人/死亡态快速分流
+- 是否有 producer/consumer 分离
+- 是否符合 64 tick 服务器预算意识
+- 热路径数据搬运是否可改用 `Span/ReadOnlySpan/stackalloc/ref`
 
-### 5. Schema / Protobuf audit
-- whether `Updated()` / `SetStateChanged()` is called after Schema writes
-- whether protobuf / usercmd / entity handles are accessed from unsafe threads
-- whether protobuf is snapshotted into plain models when needed
+### 5. Schema / Protobuf 审计
+- Schema 写入后是否调用 `Updated()` / `SetStateChanged()`
+- 是否在不安全线程访问 protobuf / usercmd / entity handle
+- 是否在需要时将 protobuf 快照化为普通模型
 
-### 6. Bot / fakeclient identity-key audit
-- whether `SteamID` is incorrectly used to look up bots / fakeclients
-- whether it is clearly understood that a bot鈥檚 `SteamID` should practically be treated as `0`
-- whether `SessionId` is preferred as the lookup key for mixed bot / human runtime state
-- whether mixed storage correctly distinguishes human and bot identity keys
+### 6. bot / fakeclient 身份键审计
+- 是否错误使用 `SteamID` 检索 bot/fakeclient
+- 是否明确知道 bot 的 `SteamID` 在实践上应视为 `0`
+- 是否优先使用 `SessionId` 作为 bot / 真人混合运行态的检索键
+- 混合存储时是否正确区分真人与 bot 的身份键
 
-### 7. Historical-implementation alignment audit (if applicable)
-- list historical reference methods
-- list current target methods
-- list behavioral differences and player impact
+### 7. 历史实现对齐审计（如适用）
+- 列出历史参考方法
+- 列出当前目标方法
+- 列出行为差异与玩家影响
 
-## Output format
+## 输出格式
 
-### 1. Audit scope
-- target repository / plugin
-- audit type
-- main reference sources used
+### 1. 审计范围
+- 目标仓库/插件
+- 审计类型
+- 使用的主要参考源
 
-### 2. Summary conclusions
-- current architecture classification
-- overall risk level
-- the most critical 3鈥?0 issues
+### 2. 总结结论
+- 当前架构判定
+- 总体风险等级
+- 最关键的 3~10 个问题
 
-### 3. Issue list
-For each issue, output:
-- **Level**: P0 / P1 / P2 / P3
-- **Issue**
-- **Impact**
-- **Location** (file + method)
-- **Reference basis** (docs / repository / historical method)
-- **Suggested repair direction**
-- **Whether performance-optimization boundaries must also be explained**
-- **Whether it involves main-thread synchronous blocking or main-thread JSON overhead**
+### 3. 问题清单
+对每个问题输出：
+- **级别**：P0 / P1 / P2 / P3
+- **问题**
+- **影响**
+- **定位**（文件 + 方法）
+- **参考依据**（文档 / 仓库 / 历史方法）
+- **建议修复方向**
+- **是否需要同步说明性能优化边界**
+- **是否涉及主线程同步阻塞或主线程 JSON 开销**
 
-### 4. Suggested repair priority
-- what should be fixed first
-- what can be done in parallel
-- what needs to be expanded into a method-level plan
+### 4. 修复优先级建议
+- 先修哪些
+- 哪些可以并行
+- 哪些需要方法级计划进一步展开
 
-### 5. Regression matrix
+### 5. 回归矩阵
 - build
-- map load / unload
-- connect / disconnect
-- gameevent / event / hook related paths (if applicable)
-- high-frequency hook stress points (if relevant)
+- map load/unload
+- connect/disconnect
+- gameevent/event/hook 相关（如适用）
+- 高频 hook 压力点（如相关）
 
-## Example uses
+## 示例用法
 
-- 鈥淎udit this SwiftlyS2 plugin鈥檚 thread safety and lifecycle closure.鈥?
-- 鈥淎udit the behavioral gap between the historical implementation and the current implementation, focusing on state synchronization / high-frequency loops / persistence paths.鈥?
-- 鈥淎udit whether a SwiftlyS2 plugin should continue using modular gameplay architecture or should be changed to DI/service architecture.鈥?
-- 鈥淎udit high-frequency Hook performance hotspots and give optimization directions, but do not edit code directly.鈥?
-
-
+- “审计这个 SwiftlyS2 插件的线程安全与生命周期闭环。”
+- “审计历史实现与当前实现的行为差距，重点看状态同步 / 高频循环 / 持久化链路。”
+- “审计一个 SwiftlyS2 插件是否适合继续使用模块化 gameplay 架构，还是应该改成 DI/service 架构。”
+- “审计高频 Hook 性能热点，给出优化方向，但不要直接改代码。”

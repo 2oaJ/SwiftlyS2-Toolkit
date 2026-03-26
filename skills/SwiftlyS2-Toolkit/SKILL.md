@@ -39,9 +39,11 @@ When using this skill, the preferred output should be one of the following:
 
 ## Language policy
 
-- Mirror the user's latest request language for analysis, plans, explanations, and delivery notes.
+- Detect the language of the user's latest request before every response and mirror that language for analysis, plans, explanations, delivery notes, prompt text, and any generated code comments.
+- If the user switches languages in a later message, the newest user message wins.
 - If the user writes in Chinese, respond in Chinese.
 - If the user writes in English, respond in English.
+- Avoid mixed-language prose unless the user explicitly asks for bilingual output.
 - Code comments generated or modified by the toolkit must use the same language as the response.
 
 ## When to use it

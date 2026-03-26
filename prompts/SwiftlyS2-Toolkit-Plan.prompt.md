@@ -1,155 +1,160 @@
-﻿# swiftlys2-toolkit Plan Prompt
+# swiftlys2-toolkit Plan Prompt
 
-Use the `swiftlys2-toolkit` skill to generate an **actionable, method-level implementation plan with reference sources** for SwiftlyS2 plugin tasks.
+使用 `swiftlys2-toolkit` skill，为 SwiftlyS2 插件任务生成**可执行、方法级、带参考来源的实施计划**。
 
-## Goal
+## 目标
 
-When the user wants to create, modify, optimize, refactor, migrate, or audit a SwiftlyS2 plugin project:
+当用户要创建、修改、优化、重构、迁移、审计 SwiftlyS2 插件项目时：
 
-- first identify the task type and target plugin
-- then determine which architecture should be referenced
-- then output a method-level plan and regression matrix
-- if historical implementations or older versions exist, treat them as **temporary experience sources** for extracting behavior and design experience
+- 先识别任务类型与目标插件
+- 再判定应参考哪类架构
+- 再输出方法级计划与回归矩阵
+- 若存在历史实现或旧版本，可将其作为**临时经验源**提取行为与设计经验
 
-## Mandatory rules
+## 强制规则
 
-1. If the task requires behavior to stay consistent with a historical implementation, **all player-visible capabilities are core features** and must not be marked as deferrable.
-2. The current project鈥檚 architectural boundaries must be preserved. Do not simply roll back the directory structure for 鈥渜uick alignment鈥?
-3. Every plan must be detailed down to:
-   - file
-   - method
-   - reference source
-   - modification action
-   - regression point
-4. When high-frequency hooks, Schema, Protobuf, or `IPlayer` lifecycle are involved, thread / lifecycle boundaries must be stated explicitly.
-5. All code comments must follow the repository鈥檚 existing conventions. If there is no additional convention, comments must remain meaningful and must not add noise.
-6. You must consider the CS2 server鈥檚 64-tick frame budget and avoid producing plans that would slow the main thread.
-7. If the plan suggests using `Span<T>`, `ReadOnlySpan<T>`, `stackalloc`, or `ref` for hot-path optimization, it must also describe the safety boundaries clearly.
-8. If historical repositories exist in the workspace, they may only be used as temporary references and must not be written in as long-term dependencies.
-9. If the task involves mixed bot / human storage, the identity-key strategy must be explicitly designed. By default, prefer `SessionId` as the runtime lookup key, and do not treat a bot鈥檚 `SteamID` as a stable key.
+1. 若任务要求与历史实现保持行为一致，**所有玩家可感知的能力都视为核心功能**，不得标记为可延期。
+2. 必须保持当前项目现有架构边界，不能为了“快速对齐”而简单回退目录结构。
+3. 任何计划都必须细化到：
+   - 文件
+   - 方法
+   - 参考来源
+   - 修改动作
+   - 回归点
+4. 涉及高频 Hook、Schema、Protobuf、IPlayer 生命周期时，必须显式说明线程/生命周期边界。
+5. 所有代码注释必须遵循当前仓库既有规范；若无额外规范，必须保持有意义且不得添加噪音注释。
+6. 必须考虑 CS2 server 64 tick 帧预算，避免计划产出会拖慢主线程的实现。
+7. 若计划建议使用 `Span<T>` / `ReadOnlySpan<T>` / `stackalloc` / `ref` 做热路径优化，必须同时写清安全边界。
+8. 若工作区中存在历史仓库，只能将其作为临时参考，不得把它写成未来长期依赖。
+9. 若涉及 bot / 真人混合存储，必须显式设计身份键策略；默认优先使用 `SessionId` 作为运行态检索键，不得把 bot 的 `SteamID` 当作稳定键。
 
-## Reference materials (must be prioritized before generating the plan)
+## 语言输入要求
 
-### Reference documents inside the skill
+- 每次输出前先识别用户**最新一条消息**的主语言，并以该语言输出整份计划、讨论结论和后续提问。
+- 如果用户后续切换语言，则以最新一条用户消息为准。
+- 如果输入是混合语言，以用户意图最明确的主语言为准。
+- 除非用户明确要求双语输出，否则不要在同一份计划里混用中英文。
+
+## 参考资料（生成计划前必须优先使用）
+
+### Skill 内参考文档
 
 - `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
-### Public sources
+### 公开来源
 
-- SwiftlyS2 official documentation: `https://swiftlys2.net/docs/`
-- Getting Started: `https://swiftlys2.net/docs/development/getting-started/`
-- Dependency Injection: `https://swiftlys2.net/docs/guides/dependency-injection/`
-- Thread Safety: `https://swiftlys2.net/docs/development/thread-safety/`
-- Native Functions and Hooks: `https://swiftlys2.net/docs/development/native-functions-and-hooks/`
-- Network Messages: `https://swiftlys2.net/docs/development/netmessages/`
-- Swiftly Core: `https://swiftlys2.net/docs/development/swiftly-core/`
-- sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
-- SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
+- SwiftlyS2 官网文档：`https://swiftlys2.net/docs/`
+- Getting Started：`https://swiftlys2.net/docs/development/getting-started/`
+- Dependency Injection：`https://swiftlys2.net/docs/guides/dependency-injection/`
+- Thread Safety：`https://swiftlys2.net/docs/development/thread-safety/`
+- Native Functions and Hooks：`https://swiftlys2.net/docs/development/native-functions-and-hooks/`
+- Network Messages：`https://swiftlys2.net/docs/development/netmessages/`
+- Swiftly Core：`https://swiftlys2.net/docs/development/swiftly-core/`
+- sw2-mdwiki：`https://github.com/himenekocn/sw2-mdwiki`
+- SwiftlyS2 官方仓库：`https://github.com/swiftly-solution/swiftlys2`
 
-### Current workspace-specific references (if present)
+### 当前工作区定制参考（如存在）
 
-If `./copilot-instructions.md` or `./knowledge-base.md` records local workspace mappings, current project constraints, or special rules, read them as needed; however, when outputting a public plan, do not turn those local paths or workspace-specific project names into permanent dependencies.
+若 `./copilot-instructions.md` 或 `./knowledge-base.md` 记录了当前工作区的本地映射、当前项目约束或专项规则，可按需补充读取；但在输出公共计划时，不要把这些本地路径或工作区专属项目名写成永久依赖。
 
-## Architecture classification rules
+## 架构判定规则
 
-### If it is a gameplay / state synchronization / player runtime plugin
+### 如果是 gameplay / 状态同步 / 玩家运行态插件
 
-Prefer classifying it as:
+优先判定为：
 
-- **modular gameplay architecture**
-- typical layering: `Commands + Events + Hooks + Modules + Workers + Services + Models`
+- **模块化 gameplay 架构**
+- 典型分层：`Commands + Events + Hooks + Modules + Workers + Services + Models`
 
-### If it is an infra / manager / system / global capability plugin
+### 如果是 infra / manager / system / 全局能力插件
 
-Prefer classifying it as:
+优先判定为：
 
-- **DI / service architecture**
-- typical layering: `ServiceCollection + interface / implementation + install / uninstall`
+- **DI / service 架构**
+- 典型分层：`ServiceCollection + interface / implementation + install / uninstall`
 
-### If it has characteristics of both sides
+### 如果同时具备两边特征
 
-It may be classified as:
+可判定为：
 
-- **hybrid architecture**
+- **混合架构**
 
-## Required special experience to extract
+## 必须提取的专项经验
 
-If the task involves the following areas, the plan must explicitly state the handling principles:
+若任务涉及以下内容，计划必须显式写出处理原则：
 
-### 1. Async and concurrency
-- which logic must run on the main thread
-- which logic can run in the background
-- whether queue / flush / cancel / generation checks are needed
-- whether map unload / plugin unload needs draining
-- whether there are risks from `lock`, blocking waits, or main-thread waiting
+### 1. 异步与并发
+- 哪些逻辑必须主线程
+- 哪些逻辑可以后台执行
+- 是否需要 queue / flush / cancel / generation 校验
+- map unload / plugin unload 是否需要 drain
+- 是否有 `lock`、阻塞等待、主线程等待风险
 
-### 2. High-frequency hooks
-- whether humans / bots / dead states should be filtered early
-- whether allocations and logging should be reduced
-- whether producer / consumer separation should be used
-- which stage is responsible for sampling, and which stage is responsible for computation or write-back
+### 2. 高频 Hook
+- 是否需要尽早过滤真人/机器人/死亡态
+- 是否需要减少分配与日志
+- 是否应采用 producer/consumer 分离
+- 哪个阶段负责采样，哪个阶段负责计算或写回
 
-### 3. Schema reads and writes
-- whether `Updated()`, `SetStateChanged()`, or native sync methods are needed
-- whether snapshots should be taken on the main thread before asynchronous consumption
+### 3. Schema 读写
+- 是否需要 `Updated()` / `SetStateChanged()` / 原生同步方法
+- 是否需要先主线程采快照再异步消费
 
 ### 4. Protobuf / NetMessages
-- whether reads and writes must stay on the main thread
-- whether they should be converted immediately into plain models before asynchronous handling
-- whether typed protobuf / hook / send / create / dispose behavior is involved
+- 是否必须在主线程读写
+- 是否应立即转换为普通模型后再异步处理
+- 是否涉及 typed protobuf / hook / send / create / dispose
 
-### 5. `IPlayer` lifecycle
-- how connect / disconnect / map change / player-state reconstruction will be closed properly
-- which identity key will manage this feature鈥檚 state
-- if bots / fakeclients are involved, whether `SessionId` is explicitly used as the runtime lookup key
-- whether the code incorrectly relies on a bot鈥檚 `SteamID`
-- whether detach / cleanup / generation checks are needed to prevent stale writes
-- whether delayed code may reference a destroyed `IPlayer`
+### 5. IPlayer 生命周期
+- 连接/断开/换图/玩家态重建如何闭环
+- 该功能的状态按什么身份键管理
+- 若涉及 bot / fakeclient，是否明确使用 `SessionId` 作为运行态检索键
+- 是否错误依赖 bot 的 `SteamID`
+- 是否需要 detach / cleanup / generation 防串写
+- 延迟代码是否会引用已销毁的 `IPlayer`
 
-## Output format
+## 输出格式
 
-### 1. Task classification
-- task type: create / modify / optimize / refactor / migrate / audit
-- target plugin
-- recommended architecture reference: modular gameplay / DI-service / hybrid
+### 1. 任务归类
+- 任务类型：创建 / 修改 / 优化 / 重构 / 迁移 / 审计
+- 目标插件
+- 推荐架构参考：模块化 gameplay / DI-service / 混合
 
-### 2. Key constraints
-- player-visible behavior requirements
-- thread-safety requirements
-- lifecycle closure requirements
-- historical implementation alignment requirements (if any)
-- 64-tick performance budget requirements
-- safety boundaries for using `Span`, `ReadOnlySpan`, `stackalloc`, and `ref` (if relevant)
-- comment and code-style requirements
+### 2. 关键约束
+- 玩家可见行为要求
+- 线程安全要求
+- 生命周期闭环要求
+- 历史实现对齐要求（如有）
+- 64 tick 性能预算要求
+- `Span` / `ReadOnlySpan` / `stackalloc` / `ref` 的安全使用边界（如相关）
+- 注释与代码风格要求
 
-### 3. Method-level implementation plan
-For each gap / subtask, output:
+### 3. 方法级实施计划
+对每个 gap / 子任务输出：
 - **Gap**
-- **Impact**
-- **Reference source** (docs / repository / method)
-- **Target file**
-- **Target method**
-- **Concrete modification steps**
-- **Thread / lifecycle boundaries to watch**
-- **Performance optimization boundaries to watch**
-- **Regression validation points**
+- **影响**
+- **参考来源**（文档 / 仓库 / 方法）
+- **目标文件**
+- **目标方法**
+- **具体修改步骤**
+- **注意的线程/生命周期边界**
+- **注意的性能优化边界**
+- **回归验证点**
 
-### 4. Validation matrix
-At minimum cover:
+### 4. 验证矩阵
+至少覆盖：
 - build
 - map load / unload
 - connect / disconnect
-- key state-transition paths (if relevant)
-- bots / long-lived runtime state (if relevant)
-- persistence / state recovery / cross-module synchronization (if relevant)
+- 关键状态切换链路（如相关）
+- bot / 长生命周期运行态（如相关）
+- 持久化 / 状态恢复 / 跨模块同步（如相关）
 
-## Example uses
+## 示例用法
 
-- 鈥淎dd a DI-based state synchronization module to a SwiftlyS2 plugin and generate a method-level plan.鈥?
-- 鈥淎udit a SwiftlyS2 plugin鈥檚 RuntimeLoop and Hook hot path and give me an optimization plan.鈥?
-- 鈥淢igrate behavioral experience from a historical SwiftlyS2 plugin into the new architecture, and all core features must remain non-deferrable.鈥?
-- 鈥淐hoose between modular gameplay and DI/service architecture for a new plugin and give me a landing plan.鈥?
-
-
+- “为 SwiftlyS2 插件新增一个带 DI 的状态同步模块，请生成方法级计划。”
+- “审计一个 SwiftlyS2 插件的 RuntimeLoop 与 Hook 热路径，给出优化计划。”
+- “把历史 SwiftlyS2 插件的行为经验迁移到新架构，要求全部核心功能不可延期。”
+- “为新插件在模块化 gameplay 与 DI/service 架构之间选型，并给出落地计划。”

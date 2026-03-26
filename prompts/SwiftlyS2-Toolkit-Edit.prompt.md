@@ -1,226 +1,231 @@
-﻿# swiftlys2-toolkit Edit Prompt
+# swiftlys2-toolkit Edit Prompt
 
-Use the `swiftlys2-toolkit` skill to directly handle **add feature / modify feature / remove feature** scenarios in SwiftlyS2 plugins.
+使用 `swiftlys2-toolkit` skill，直接处理 SwiftlyS2 插件中的**添加功能 / 修改功能 / 删除功能**场景。
 
-This prompt is meant for requests where the user explicitly wants to **land code changes directly**, rather than first doing a full audit or producing a long-form plan.
+本 prompt 适用于用户明确希望**直接落地代码改动**的请求，而不是先做完整审计或输出长篇计划。
 
-## Applicable scenarios
+## 适用场景
 
-Prefer this prompt when the user asks for things like:
+当用户提出以下类型请求时，优先使用本 prompt：
 
-- 鈥渁dd a feature鈥?
-- 鈥渕odify this feature鈥?
-- 鈥渞emove this feature鈥?
-- 鈥渆dit the code directly鈥?
-- 鈥渨ire this logic in鈥?
-- 鈥渇ix this feature, but don鈥檛 start with a huge plan鈥?
+- “添加一个功能”
+- “修改这个功能”
+- “删除这个功能”
+- “直接改代码”
+- “把这个逻辑接进去”
+- “修这个功能，但不要先写一大堆方案”
 
-## Goal
+## 目标
 
-Even in direct-edit scenarios, keep SwiftlyS2 agent development quality high:
+在直接编辑场景下，仍然保持 SwiftlyS2 Agent 开发质量：
 
-- first identify the feature type and owning subsystem
-- then locate the entry point, state ownership, thread boundaries, and lifecycle closure
-- then make the minimum necessary change
-- finally perform build / error checking / regression validation
+- 先识别功能类型与所属子系统
+- 再定位入口、状态归属、线程边界、生命周期闭环
+- 再做最小必要改动
+- 最后执行 build / 错误检查 / 回归验证
 
-## Editing risk levels
+## 编辑风险分级
 
-### P0: plan or audit first before editing
-- spans multiple subsystems and the boundaries are unclear
-- involves broad behavioral drift in long-lived runtime state / persistence / cross-module state synchronization
-- has clear historical-alignment requirements, but method-level mapping is not yet done
-- continuing with direct edits is likely to damage the current architectural boundaries
+### P0：先计划或先审计再改
+- 跨多个子系统，且边界不清楚
+- 涉及长生命周期运行态 / 持久化 / 跨模块状态同步的广泛行为漂移
+- 存在明显历史对齐要求，但尚未完成方法级映射
+- 继续直接改动很可能破坏当前架构边界
 
-### P1: direct editing is allowed, but with strong constraints
-- high-frequency hooks
-- schema / entity write-back
+### P1：可直接改，但必须高强度约束
+- 高频 hook
+- schema/entity 写回
 - protobuf / usercmd
-- dense use of thread-sensitive APIs
-- map lifecycle / disconnect cleanup / automatically controlled entity lifecycle
+- 线程敏感 API 密集调用
+- map lifecycle / disconnect cleanup / 自动控制实体生命周期
 
-### P2: standard direct-edit scenarios
-- menus
-- commands
-- localized service logic
-- localized worker flow
-- single-module behavior fixes
+### P2：标准直接编辑场景
+- 菜单
+- 命令
+- service 局部逻辑
+- worker 局部流程
+- 单模块行为修复
 
-### P3: low-risk direct-edit scenarios
-- small conditional fixes
-- dynamic text binding
-- small cleanups without behavioral drift
+### P3：低风险直接编辑场景
+- 小范围条件判断修正
+- 动态文案绑定
+- 无行为漂移的小清理
 
-## Mandatory rules
+## 强制规则
 
-1. Do not force every 鈥渄irect edit鈥?request to become a full audit.
-2. But before editing, you must complete at least one round of **minimum necessary localization**.
-3. If the task requires consistency with a historical implementation, all player-visible capabilities are core and must not be silently removed.
-4. Direct editing must still preserve the current architecture boundaries. Do not shove logic back into the main class or write across layers just for convenience.
-5. When thread-sensitive APIs are involved:
-   - prefer `Async` variants in async contexts
-   - do not default to `NextTick` / `NextWorldUpdate` as a blanket fallback
-6. Treat menu `Click` / `ValueChanged` delegates as async-context logic.
-7. For dynamic menu text, evaluate `BindingText` first.
-8. If bots / fakeclients / auto-controlled entities or mixed bot-human storage are involved, do not directly equate bot identity keys with human identity strategy.
-9. On hot paths or in high-frequency data passing, if SwiftlyS2 / the current API already provides parameters by `ref`, prefer continuing to use `ref`; if small high-frequency data passing is needed, you may evaluate `Span<T>` / `ReadOnlySpan<T>`, but do not misuse them across `await` or thread boundaries.
-10. All comments must follow the repository鈥檚 existing conventions. If there is no extra convention, they must be meaningful and explain non-obvious intent.
-11. High-risk changes must include build and scenario-regression notes.
-12. If mixed bot / human storage is involved, prefer `SessionId` as the runtime lookup key by default, and do not treat a bot鈥檚 `SteamID` as a reliable primary key.
+1. 不要把所有“直接编辑”请求都强行升级成完整审计。
+2. 但在动手前，必须至少完成一次**最小必要定位**。
+3. 若任务要求与历史实现保持一致，玩家可感知能力都视为核心，不可静默删减。
+4. 直接编辑也必须保持当前架构边界，不能为了省事把逻辑塞回主类或跨层乱写。
+5. 涉及线程敏感 API 时：
+   - 异步上下文优先用 `Async` 版本
+   - 不要默认用 `NextTick` / `NextWorldUpdate` 兜底
+6. menu 的 `Click` / `ValueChanged` 委托按异步上下文处理。
+7. 动态菜单文本优先评估 `BindingText`。
+8. 若存在 bot / fakeclient / 自动控制实体 或 bot/真人混合存储，禁止直接把 bot 身份键等同于真人策略。
+9. 热路径或高频数据传递中，若 SwiftlyS2/当前 API 已按 `ref` 提供参数，优先评估继续使用 `ref`；若需要小块高频数据传递，可评估 `Span<T>` / `ReadOnlySpan<T>`，但不得跨 `await` 或线程边界滥用。
+10. 所有注释必须遵循当前仓库既有规范；若无额外规范，必须有意义并解释非显而易见的意图。
+11. 高风险改动必须补 build 与场景回归说明。
+12. 若涉及 bot / 真人混合存储，默认优先使用 `SessionId` 作为运行态检索键，不得把 bot 的 `SteamID` 当作可靠主键。
 
-## Minimum navigation before use
+## 语言输入要求
 
-Based on task content, prioritize these supporting assets:
+- 每次输出前先识别用户**最新一条消息**的主语言，并以该语言作为本轮唯一输出语言。
+- 如果用户后续切换语言，则以最新一条用户消息为准。
+- 如果输入是混合语言，以用户意图最明确的主语言为准。
+- 除非用户明确要求双语输出，否则不要在同一段改动说明或验证说明里混用中英文。
 
-### Command-related
+## 使用前的最小导航
+
+根据任务内容，优先配套以下资产：
+
+### 命令相关
 - `./skills/swiftlys2-toolkit/assets/development/commands/command-attribute-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/commands/command-service-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/commands/client-command-hook-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/using-attributes/attribute-registration-checklist.md`
 
-### Menu-related
+### 菜单相关
 - `./skills/swiftlys2-toolkit/assets/development/menus/menu-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 
-### Hook / runtime / hot-path work
+### Hook / Runtime / 高频路径
 - `./skills/swiftlys2-toolkit/assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 - `./skills/swiftlys2-toolkit/assets/development/profiler/hotpath-gc-checklist.md`
 
-### Schema / entity write-back
+### Schema / Entity 写回
 - `./skills/swiftlys2-toolkit/assets/development/entity/schema-write-checklist.md`
 - `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 
-### Configuration / ConVar
+### 配置 / ConVar
 - `./skills/swiftlys2-toolkit/assets/development/configuration/config-hot-reload-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/convars/convar-template.cs.md`
 
-### Worker / async persistence / background tasks
+### Worker / 异步持久化 / 后台任务
 - `./skills/swiftlys2-toolkit/assets/development/scheduler/scheduler-vs-worker-guide.md`
 - `./skills/swiftlys2-toolkit/assets/patterns/background-workers/worker-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/patterns/async-patterns/async-safety-guide.md`
 - `./skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
 
-### DI / service
+### DI / Service
 - `./skills/swiftlys2-toolkit/assets/guides/dependency-injection/di-service-plugin-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/guides/dependency-injection/service-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/patterns/service-factory/service-factory-template.cs.md`
 
-### Resource precache / lifecycle
+### 资源预缓存 / 生命周期
 - `./skills/swiftlys2-toolkit/assets/development/core-events/precache-resource-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
 
-### Player runtime state
+### 玩家运行态
 - `./skills/swiftlys2-toolkit/assets/patterns/per-player-state/player-state-management-guide.md`
 
-### When higher-level engineering rules are needed
+### 需要更高层工程规则时
 - `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
-## Direct-edit workflow
+## 直接编辑工作流
 
-### 1. Determine the task type first
-- **Add**: new capability, entry point, configuration, or flow
-- **Modify**: adjust existing logic, fix a bug, or change behavior
-- **Remove**: remove a feature, clean up an entry point, or delete dead branches
+### 1. 先判断任务类型
+- **添加**：新增能力、入口、配置、流程
+- **修改**：调整现有逻辑、修 bug、改行为
+- **删除**：移除功能、清理入口、删无效分支
 
-### 2. Then determine the risk level
-- Is the current task P0 / P1 / P2 / P3?
-- If it is P0, switch to `plan` or `audit` first
-- If it is P1 / P2 / P3, continue with the direct-edit workflow
+### 2. 再判断风险级别
+- 当前是 P0 / P1 / P2 / P3 哪一级？
+- 若是 P0，优先切换到 `plan` 或 `audit`
+- 若是 P1/P2/P3，继续执行直接编辑流程
 
-### 3. Perform minimum necessary localization
-At minimum, answer:
-- Where is the entry file / method?
-- Which module / service / runtime context owns the state?
-- Does it involve commands, menus, events, hooks, workers, schema, or protobuf?
-- Does it involve `IPlayer` / `Pawn` / entity lifecycle?
-- Does it involve thread-sensitive APIs?
-- Does it involve bot / fakeclient identity lookup or mixed-storage key design?
-- If bots / fakeclients are involved, is `SteamID` being mistakenly treated as a reliable key, and should it use `SessionId` instead?
-- Is there avoidable high-frequency object copying that requires evaluating `ref` / `Span`?
+### 3. 做最小必要定位
+至少回答：
+- 入口文件 / 方法在哪？
+- 状态由哪个 module / service / runtime context 管？
+- 是否涉及命令、菜单、事件、hook、worker、schema、protobuf？
+- 是否涉及 `IPlayer` / `Pawn` / entity 生命周期？
+- 是否涉及线程敏感 API？
+- 是否涉及 bot / fakeclient 身份检索或混合存储键设计？
+- 若涉及 bot / fakeclient，是否误把 `SteamID` 当作可靠键，是否应改用 `SessionId`？
+- 是否存在可避免的高频对象拷贝，需评估 `ref` / `Span`？
 
-### 4. Choose the appropriate assets
-- command (attribute) 鈫?command attribute template + attribute checklist
-- command (service-owned) 鈫?command service template
-- command (client command hook) 鈫?client-command-hook-template + hook-handler-template
-- menu 鈫?menu template + thread checklist
-- hook 鈫?hook template + thread checklist + hotpath checklist
-- schema 鈫?schema checklist
-- worker 鈫?scheduler-vs-worker guide + worker template + lifecycle checklist
-- service / DI 鈫?service template / DI template
-- service factory / keyed DI 鈫?service-factory-template + di-service-plugin-template
-- config / hot configuration reload 鈫?config-hot-reload-template
-- convar 鈫?convar-template
-- precache / resource precache 鈫?precache-resource-template + lifecycle-checklist
-- per-player state / player runtime 鈫?player-state-management-guide
-- async safety 鈫?async-safety-guide + lifecycle-checklist
+### 4. 选择合适的资产
+- command（attribute）→ command attribute template + attribute checklist
+- command（service-owned）→ command service template
+- command（client command hook）→ client-command-hook-template + hook-handler-template
+- menu → menu template + thread checklist
+- hook → hook template + thread checklist + hotpath checklist
+- schema → schema checklist
+- worker → scheduler-vs-worker guide + worker template + lifecycle checklist
+- service/DI → service template / di template
+- service factory / keyed DI → service-factory-template + di-service-plugin-template
+- config / 配置热重载 → config-hot-reload-template
+- convar → convar-template
+- precache / 资源预缓存 → precache-resource-template + lifecycle-checklist
+- per-player state / 玩家运行态 → player-state-management-guide
+- async safety / 异步安全 → async-safety-guide + lifecycle-checklist
 
-### 5. Requirements during implementation
-- make the smallest possible change
-- do not alter unrelated formatting
-- do not copy-paste logic across layers
-- do not introduce 鈥渢emporary TODO logic鈥?into the main flow
-- re-check whether player / entity is valid across every `await` / delayed task
-- if this is only dynamic text updating, prefer `BindingText`
-- for thread-sensitive calls in async contexts, prefer `Async` APIs
-- if it is on a hot path, also check whether avoidable copying, boxing, or temporary array allocations can be removed
+### 5. 实施时的要求
+- 尽量做最小改动
+- 不改无关格式
+- 不复制粘贴跨层逻辑
+- 不引入“临时 TODO 逻辑”进入主流程
+- 任何跨 `await` / 延迟任务都重新检查 player/entity 是否有效
+- 若只是动态文本更新，优先 `BindingText`
+- 若是 async context 下的线程敏感调用，优先 `Async` API
+- 若位于热路径，顺手检查是否存在可去除的拷贝、装箱、临时数组分配
 
-### 6. Validation requirements
-At minimum perform:
-- file problem checks
-- build of the target plugin (if the change is actual code rather than documentation only)
+### 6. 验证要求
+至少执行：
+- 文件问题检查
+- 目标插件 build（如改动是实际代码而非纯文档）
 
-Add based on risk:
+按风险补充：
 - map load / unload
 - connect / disconnect
-- key state-transition paths (if relevant)
-- bots / long-lived runtime state
-- persistence / state recovery / cross-module synchronization
+- 关键状态切换链路（如相关）
+- bot / 长生命周期运行态
+- 持久化 / 状态恢复 / 跨模块同步
 
-## Output format
+## 输出格式
 
-### 1. Task determination
-- type: add / modify / remove
-- risk level: P0 / P1 / P2 / P3
-- target plugin / subsystem
-- entry-point localization
-- primary state ownership
+### 1. 任务判定
+- 类型：添加 / 修改 / 删除
+- 风险级别：P0 / P1 / P2 / P3
+- 目标插件 / 子系统
+- 入口定位
+- 主要状态归属
 
-### 2. Editing strategy
-- toolkit assets used
-- why the implementation was done this way
-- thread / lifecycle boundaries that need attention
+### 2. 编辑策略
+- 采用的 toolkit 资产
+- 为什么这样落地
+- 需要注意的线程 / 生命周期边界
 
-### 3. Actual changes
-List by file:
-- **File**
-- **Method / area**
-- **What changed**
-- **Why it changed this way**
+### 3. 实际改动
+按文件列出：
+- **文件**
+- **方法 / 区域**
+- **修改内容**
+- **为什么这样改**
 
-### 4. Validation results
-- problem-check results
-- build result (if applicable)
-- regression points covered
-- high-risk scenarios not yet executed but still recommended
+### 4. 验证结果
+- 问题检查结果
+- build 结果（如适用）
+- 已覆盖回归点
+- 尚未执行但建议执行的高风险场景
 
-## When not to continue direct editing
+## 何时不要继续直接编辑
 
-If any of the following is true, switch to plan or audit thinking first:
+遇到以下情况，应先切到 plan 或 audit 思维：
 
-- the change spans multiple subsystems and the behavior boundaries are unclear
-- there is a clear need for historical behavior alignment, but the gap has not yet been clarified
-- it involves broad drift in long-lived runtime state / persistence / state synchronization
-- state ownership cannot be confirmed, so continuing would likely damage architecture boundaries
+- 改动跨多个子系统且行为边界不清楚
+- 存在明显历史行为对齐需求，但差距尚未厘清
+- 涉及大范围长生命周期运行态 / 持久化 / 状态同步漂移
+- 无法确认状态归属，继续改会破坏架构边界
 
-## Example uses
+## 示例用法
 
-- 鈥淒irectly add a settings menu to this SwiftlyS2 plugin and wire in the save logic.鈥?
-- 鈥淐hange this command鈥檚 permission and prompts without touching other behavior.鈥?
-- 鈥淩emove the old reward entry and complete the cleanup logic.鈥?
-- 鈥淐onvert the existing menu to dynamic text binding with BindingText.鈥?
-- 鈥淐hange this thread-sensitive synchronous call into a more appropriate async-safe approach.鈥?
-
-
+- “直接给这个 SwiftlyS2 插件加一个设置菜单，并接上保存逻辑。”
+- “修改这个命令的权限与提示，不要动别的行为。”
+- “删除旧的奖励入口，并把清理逻辑补完整。”
+- “为现有 menu 改成 BindingText 动态文本绑定。”
+- “把这个线程敏感同步调用改成更合适的异步安全写法。”

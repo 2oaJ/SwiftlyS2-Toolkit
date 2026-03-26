@@ -13,6 +13,20 @@
 - 复杂业务逻辑下沉到 module / service
 - 若未来需要动态挂卸、条件启停、精确回收，考虑改为程序化注册
 
+## 关键约束
+
+### 处理器返回类型必须是 `void`
+
+`[Command]` 属性对应的处理器签名必须保持为 `void OnMyCommand(ICommandContext context)`。不要把入口改成 `async ValueTask`、`async Task` 或其它异步返回类型。底层委托类型是 `delegate void CommandListener(ICommandContext context);`。
+
+如果命令处理过程中确实需要异步工作，可以在 `void` 处理器内部触发一个 fire-and-forget 的异步方法，但入口本身必须保持 `void`。
+
+### `[CommandAlias]` 只是短别名，不是前缀变体
+
+`[CommandAlias("mc")]` 的作用是给玩家一个更短、更好记的替代命令名，例如 `!mc` 替代 `!mycommand`。它**不是**用来添加框架前缀、命名空间分组或 `sw_` 之类的系统标记。
+
+别名应该是命令名的短缩写或常见替代叫法，而不是一套额外的命名规则。
+
 ## 示例骨架
 
 ```csharp
@@ -61,7 +75,9 @@ public partial class MyPlugin
 
 ## Checklist
 
-- 是否采用 `[Command]` / `[CommandAlias]`，而不是误用程序化注册？
+- 处理器返回类型是否为 `void`（而不是 `async ValueTask`、`async Task` 或其它异步返回类型）？
+- 是否正确使用 `[Command]` / `[CommandAlias]`，而不是误用程序化注册？
+- `[CommandAlias]` 是否只用于短别名，而不是前缀或命名空间标记？
 - 是否先校验 `context.IsSentByPlayer`、`context.Sender`、`Sender.IsValid`？
 - 是否保留权限语义与 alias 语义？
 - 是否避免在命令入口直接写跨模块内部状态？
