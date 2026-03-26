@@ -97,6 +97,68 @@ public partial class ExamplePlugin
 }
 ```
 
+## 菜单回调中的主线程派发（NextWorldUpdate）
+
+菜单 `Click` / `ValueChanged` 回调是 `async` 委托，运行在异步上下文中。
+
+**硬规则：** 若回调内需要执行以下操作，必须用 `Core.Scheduler.NextWorldUpdate()` 包装，将其派发回主线程：
+
+- 创建 / 销毁实体（`CreateEntityByDesignerName`、`DispatchSpawn`、`Despawn`）
+- 写入 Schema 属性（`pawn.Render`、`pawn.RenderMode`、`pawn.MoveType` 等）
+- 调用 `*Updated()` 同步方法（`RenderUpdated()`、`RenderModeUpdated()` 等）
+- 设置模型、ViewEntity、修改武器服务、执行命令等主线程同步 API（完整清单参见 thread-sensitivity-checklist）
+
+> ⚠️ 若该方法存在 Async 版本（如 `SetModelAsync`、`AcceptInputAsync`、`TeleportAsync`、`RespawnAsync`），在异步上下文中可直接使用 Async 版本而无需 `NextWorldUpdate`。
+
+**不需要 NextWorldUpdate** 的操作：
+
+- `PrintToChatAsync` / `PrintToConsoleAsync` 等已有 Async API
+- 线程安全容器操作（`ConcurrentDictionary.TryAdd` 等）
+- 纯异步 IO（HTTP、数据库查询）
+
+### 正确示例
+
+```csharp
+btn.Click += async (sender, args) =>
+{
+    var p = args.Player;
+    if (!p.Valid() || !p.IsPlayerAlive()) return;
+
+    // 异步 IO 可直接执行
+    var data = await FetchDataAsync(p.SteamID);
+    if (data is null)
+    {
+        await p.PrintToChatAsync("数据获取失败");
+        return;
+    }
+
+    // 涉及实体/Schema 操作 → 必须回主线程
+    Core.Scheduler.NextWorldUpdate(() =>
+    {
+        if (!p.Valid() || !p.IsPlayerAlive()) return; // 再次校验
+
+        var pawn = p.PlayerPawn;
+        if (!pawn.Valid()) return;
+
+        pawn.Render = new Color(255, 0, 0, 255);
+        pawn.RenderUpdated();
+    });
+};
+```
+
+### 错误示例
+
+```csharp
+// ❌ 异步回调中直接操作实体
+btn.Click += async (sender, args) =>
+{
+    var pawn = args.Player.PlayerPawn;
+    pawn.Render = new Color(255, 0, 0, 255); // 可能不在主线程
+    pawn.RenderUpdated();
+    runtimeService.CreateDanceEntity(args.Player); // 创建实体不在主线程
+};
+```
+
 ## 菜单实现检查点
 
 - 是否优先评估了 `BindingText`？
@@ -104,6 +166,8 @@ public partial class ExamplePlugin
 - 是否在每个回调里重新检查 `player.IsValid`？
 - 是否避免在菜单回调里做重 IO / 阻塞 / 大量分配？
 - 是否把真实状态写回留在 service / runtime context 中？
+- **回调中是否涉及实体创建/销毁、Schema 写回、模型操作？若是，是否已用 `NextWorldUpdate` 派发回主线程？**
+- **`NextWorldUpdate` 回调内是否再次校验了 `player.Valid()` / `pawn.Valid()`？**
 
 ## 进阶菜单模式
 
