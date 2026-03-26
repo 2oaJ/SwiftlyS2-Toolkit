@@ -13,6 +13,16 @@ Suitable for: partial / small plugins that use `[Command]` and `[CommandAlias]` 
 - Complex business logic should be pushed down into modules or services.
 - If the feature later needs dynamic install / uninstall, conditional start / stop, or precise cleanup, consider switching to programmatic registration.
 
+## Critical constraints
+
+### Handler return type must be `void`
+
+The `[Command]` attribute handler signature is **`void OnMyCommand(ICommandContext context)`**. It must **not** be `async ValueTask`, `async Task`, or any other async return type. The underlying delegate type is `delegate void CommandListener(ICommandContext context);`. If you need to perform async work inside a command handler, you may fire-and-forget an async method from within the `void` handler body, but the handler entry point itself must remain `void`.
+
+### `CommandAlias` is a shorter alias, not a prefixed variant
+
+`[CommandAlias("mc")]` registers **an alternative name** that players can type instead of the full command (e.g., `!mc` instead of `!mycommand`). It is **not** used to add framework prefixes like `sw_` or namespace groupings. Aliases should be short, memorable abbreviations of the canonical command name.
+
 ## Example skeleton
 
 ```csharp
@@ -61,7 +71,9 @@ public partial class MyPlugin
 
 ## Checklist
 
+- Is the handler return type `void` (not `async ValueTask`, `async Task`, or any other async return type)?
 - Are `[Command]` / `[CommandAlias]` being used appropriately instead of mistakenly using programmatic registration?
+- Is `[CommandAlias]` used only for short alternative names, not for framework prefixes or namespace markers?
 - Are `context.IsSentByPlayer`, `context.Sender`, and `Sender.IsValid` validated first?
 - Are the permission semantics and alias semantics preserved?
 - Does the command entry avoid directly writing cross-module internal state?
