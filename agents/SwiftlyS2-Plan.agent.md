@@ -174,7 +174,6 @@ At minimum cover:
 - build
 - connect / disconnect
 - map load / unload
-- restart / respawn / pause / noclip / spec
 - bots / UI feedback / long-lived runtime state (if relevant)
 - persistence / state recovery / cross-module synchronization (if relevant)
 
