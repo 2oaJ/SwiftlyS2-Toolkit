@@ -12,8 +12,9 @@
 ## 使用规则
 
 - **Installation**：保留入口，但本工具包不做正文提取。
-- **API Reference**：只保留瘦导航与检索建议；需要详细 API 时由 agent 自行联网进入 `https://swiftlys2.net/docs/api/` 按需提取。
+- **API Reference**：只保留瘦导航与检索建议；需要详细 API 时由 agent 自行联网进入 `https://swiftlys2.net/docs/api/` 按需提取，或使用本地缓存 `../../llms-full.txt` 进行全文搜索。
 - **Development Flow**：当前官网页面仍是 `todo` 占位，不应作为可靠工程依据。
+- **LLM 全量文档**：`../../llms-full.txt` 是 `https://swiftlys2.net/llms-full.txt` 的本地缓存，包含完整官网内容，适合离线查阅和全文搜索。
 
 ## Docs Root
 

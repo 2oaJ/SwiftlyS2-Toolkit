@@ -17,8 +17,9 @@ Its goal is not to bind itself to any specific workspace, but to provide a **pub
 The public docs, prompts, agents, and templates in this toolkit should, by default, reference only the following public sources:
 
 1. SwiftlyS2 official documentation: `https://swiftlys2.net/docs/`
-2. sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
-3. SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
+2. SwiftlyS2 LLM-optimized full documentation: `https://swiftlys2.net/llms-full.txt`
+3. sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
+4. SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
 
 If the current workspace has workspace-specific mappings, local reference repositories, historical reference projects, or special rules, that information **may only be recorded in**:
 
@@ -76,6 +77,7 @@ Use this skill when the task involves:
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./references/swiftlys2-asset-inventory.md`
+- `../../llms-full.txt`：SwiftlyS2 官网 LLM 全量文档的本地缓存（定期从 `https://swiftlys2.net/llms-full.txt` 同步）
 
 ### Templates and checklists
 
@@ -146,7 +148,9 @@ Open these first:
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./README.md`
+### If online docs are unavailable or need full-text API search
 
+Use `../../llms-full.txt` as the local offline reference. This file contains the entire SwiftlyS2 official documentation (API reference, development guides, installation, porting guide, etc.) in a single text file optimized for LLM consumption. It is periodically synced from `https://swiftlys2.net/llms-full.txt`.
 ## Architecture categories
 
 ### 1. Modular gameplay plugins
