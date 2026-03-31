@@ -103,6 +103,47 @@
 - 访问前先做有效性检查
 - 需要延迟销毁、预览实体、beam/world text 之类的场景尤其要小心实体槽位复用问题
 
+### `DispatchSpawn` / `SetModel` 与 staging list (EF_IN_STAGING_LIST)
+
+引擎断言 `CModelState::SetupModel()` 要求：调用 `SetModel()` 时，该实体的 **OwnerEntity 不能处于 staging list 中**（`EF_IN_STAGING_LIST` 标记）。违反此断言会触发 tier0 写 `0xDEADBEEF` 到空指针，直接崩溃。
+
+**安全的实体创建顺序**：
+
+```csharp
+// ✅ 先 Spawn 再 SetModel — DispatchSpawn 完成后实体离开 staging list
+var entity = Core.EntitySystem.CreateEntityByDesignerName<CBaseModelEntity>("prop_dynamic");
+entity.DispatchSpawn();
+entity.SetModel("path/to/model.vmdl");
+
+// ❌ 先 SetModel 再 Spawn — 实体仍在 staging list，断言失败 → 崩溃
+var entity = Core.EntitySystem.CreateEntityByDesignerName<CBaseModelEntity>("prop_dynamic");
+entity.SetModel("path/to/model.vmdl"); // CRASH: EF_IN_STAGING_LIST
+entity.DispatchSpawn();
+```
+
+**对已存在实体调用 `SetModel` 的陷阱**：
+
+若目标实体的 OwnerEntity（如武器的 owner = pawn）恰好在当前帧被标记了 `EF_IN_STAGING_LIST`（常见于 `*Updated()` 触发后），对该实体调用 `SetModel` 同样会触发断言。此时需要将 `SetModel` 延迟到 `NextWorldUpdate`，等引擎 flush staging list 后再执行：
+
+```csharp
+// ✅ 延迟到下一帧执行 SetModel，避免 staging list 断言
+Core.Scheduler.NextWorldUpdate(() =>
+{
+    if (weapon.IsValid)
+        weapon.SetModel(string.Empty);
+});
+```
+
+### 断线/换图时跳过 pawn schema 写入
+
+玩家断线或换图后，pawn 即将被引擎销毁。此时对 pawn 的 schema 写入（Render、Collision、ViewEntity、ActiveWeapon 等）+ `*Updated()` 会标记 pawn 为 dirty，引擎在下一个 tick 处理 dirty flag 时 pawn 内存已释放 → 空指针崩溃。
+
+清理路径应区分「破坏性清理」（Disconnect / MapUnload）与「正常清理」（死亡/退出/超时），前者跳过 pawn 写入。
+
+### 实体父子关系清理
+
+若实体之间存在 `SetParent` / `FollowEntity` 关系，Despawn 前应先调用 `AcceptInput("ClearParent")` 解除引擎侧 parent chain，防止 Despawn 后引擎遍历悬空父指针。
+
 ## 六、Hook 热路径
 
 高频 Hook 的公共准则：
@@ -124,7 +165,27 @@
 - 不跨线程
 - 不会闭包捕获或逃逸
 
-若收益没有证据，不要为了“高级一点”而滥用。
+若收益没有证据，不要为了“高级一点”而滥用。### `ref` / `in` 参数传递：仅对 struct 使用
+
+`ref` 和 `in` 关键字仅在传递 **struct（值类型）** 时有意义——避免结构体的栈拷贝开销。
+
+**class（引用类型）本身就是引用传递**，传参时只复制一个指针大小的引用，不会复制整个对象。对 class 加 `ref` / `in` 没有性能收益，还会增加代码噪音和误导性。
+
+```csharp
+// ✅ struct 用 in — 避免大结构体拷贝
+void Process(in Vector position) { ... }
+void Modify(ref QAngle angle) { ... }
+
+// ❌ class 用 ref / in — 毫无意义，class 已经是引用类型
+void Handle(in IPlayer player) { ... }  // 不需要 in
+void Update(ref Config config) { ... }  // 不需要 ref
+
+// ✅ class 直接传递
+void Handle(IPlayer player) { ... }
+void Update(Config config) { ... }
+```
+
+例外：`ref` 用于 class 参数的唯一合法场景是需要**重新指向另一个实例**（即修改调用方的引用本身），这在 SwiftlyS2 插件中极其罕见。
 
 ## 七、Schema / NetMessages / Protobuf
 

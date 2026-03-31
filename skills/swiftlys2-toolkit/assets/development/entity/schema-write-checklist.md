@@ -81,6 +81,18 @@ pawn.RenderUpdated();
 - [ ] 延迟回调是否重新获取当前对象，而不是复用旧引用？
 - [ ] 若实体需跨 tick / 延迟长期跟踪，是否使用 `CHandle<T>`？
 
+## `SetModel` 与 staging list (EF_IN_STAGING_LIST)
+
+- [ ] 新创建实体是否先 `DispatchSpawn()` 再 `SetModel()`？（Spawn 前实体处于 staging list，此时 `SetModel` 触发断言崩溃）
+- [ ] 对已存在实体调用 `SetModel` 时，其 OwnerEntity 是否可能处于 staging list？（常见于 `*Updated()` 触发后同帧操作 owned 实体）
+- [ ] 若无法避免 staging list 冲突，是否已将 `SetModel` 延迟到 `NextWorldUpdate`？
+
+## 断线/换图时的 Schema 写入风险
+
+- [ ] 清理路径是否区分了「破坏性清理」（Disconnect / MapUnload）与「正常清理」（死亡/退出/超时）？
+- [ ] 破坏性清理路径是否跳过了 pawn schema 写入和 `*Updated()` 调用？
+- [ ] 实体父子关系（`SetParent` / `FollowEntity`）是否在 Despawn 前通过 `AcceptInput("ClearParent")` 解除？
+
 ## 热路径风险
 
 - [ ] 该 Schema 写回是否位于高频 Hook 中？
