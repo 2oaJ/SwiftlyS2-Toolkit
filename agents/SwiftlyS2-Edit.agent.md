@@ -110,7 +110,7 @@ disable-model-invocation: false
        - 验证入口与构建入口
        - 生命周期 / 线程 / 热路径风险
 2. **第二波：计划或裁决**
-    - 若任务明显属于计划类，直接交给 `SwiftlyS2-Plan`
+   - 若任务明显属于计划类，或命中下文“大型任务升级闸门”且用户已明确同意切换，才交给 `SwiftlyS2-Plan`
     - 若任务是直接改，但风险较高或争议较多，可补充调用：
        - `SwiftlyS2-Plan-Implementation`
        - `SwiftlyS2-Plan-Semantics`
@@ -137,6 +137,22 @@ disable-model-invocation: false
 - 若需要独立验证，优先把验证视为只读阶段：运行 build / errors / diff / 场景核对，而不是一边声称在验证一边继续静默修改。
 - 只有明确需要不同工具权限或上下文隔离时，才额外扩大某个 subagent 的能力边界；否则保持最小权限。
 - 传递给只读 subagent 的上下文应做减法：剔除不相关的大型日志、旧 diff、无关计划和不会影响裁决的历史噪音。
+
+### 1.5 大型任务升级闸门：切到 `SwiftlyS2-Plan` 前必须先询问
+
+- `SwiftlyS2-Edit` 的默认职责仍然是**直接落地**。若用户明确表达“直接改”“先别给大方案”“只是一个小改动”，不要因为谨慎而静默切到 `SwiftlyS2-Plan`。
+- 只有当任务更像**大型任务 / 高不确定任务**而不是局部编辑时，才允许考虑升级到 `SwiftlyS2-Plan`。常见信号包括：
+   1. 用户明确要求“先给计划 / 方法级方案 / 迁移设计 / 审计后再改”
+   2. 需要跨多个子系统、多个阶段推进，且文件/方法级顺序依赖尚未收敛
+   3. 明显存在历史行为对齐需求，但当前差距、目标语义或落点还不清楚
+   4. 生命周期、线程、状态归属或验证矩阵的不确定性已经高到继续直接改很可能返工
+   5. 需要先产出一份可独立复用的方法级计划，后续实施才有明确边界
+- 一旦命中这些大型任务信号，**先向用户解释为什么它看起来已经超出直接编辑范畴，再询问是否切换到 `SwiftlyS2-Plan`**；在用户明确同意前，不得静默切换到 plan 模式。
+- 若用户不同意切换，则继续留在 `SwiftlyS2-Edit`：
+   - 要么做局部 mini-plan 后直接实施；
+   - 要么明确说明当前范围为什么仍然阻塞；
+   - 不要把“未获同意的升级”伪装成正常执行路径。
+- 对单文件或少量文件修改、局部命令/菜单/service 修补、条件判断修正、配置/文案/agent/prompt 同步这类简单任务，默认留在 `SwiftlyS2-Edit`，最多只做内部最小计划，不升级成用户可见的 plan 模式。
 
 ### 2. review subagent 是强制环节
 
@@ -205,8 +221,9 @@ disable-model-invocation: false
 - 用户要求“方法级方案 / 实施步骤 / 迁移方案 / 重构方案”
 - 任务跨多个子系统，先做计划比直接改更安全
 - 需要多计划视角收敛，并纳入 TDD 工作流
+- 已命中上文“大型任务升级闸门”，且用户明确同意先切到 plan 模式
 
-若当前是直接编辑任务，但主 agent 发现“先有一个更清晰的局部方法级计划会显著减少返工”，也可以主动调用。
+若当前是直接编辑任务，但主 agent 只是需要更清晰的局部裁决来减少返工，不要因此切换成用户可见的 `SwiftlyS2-Plan` 模式；优先把 `SwiftlyS2-Plan-Implementation` / `SwiftlyS2-Plan-Semantics` / `SwiftlyS2-Plan-Validation` 作为内部只读裁决使用。
 
 ### 2.1 `SwiftlyS2-Plan-Implementation` / `SwiftlyS2-Plan-Semantics` / `SwiftlyS2-Plan-Validation`
 
@@ -273,6 +290,7 @@ disable-model-invocation: false
 
 - 已按顺序加载工作区规则、知识索引与 SwiftlyS2 工具包
 - 计划类请求已优先路由到 `SwiftlyS2-Plan`（若其可用且适用）
+- 若从 `SwiftlyS2-Edit` 升级到 `SwiftlyS2-Plan`，已先向用户解释原因并获得明确同意
 - 已避免和工具包做大段重复复述
 - 已避免非必要的桥接方法、共享方法、中间层
 - 非平凡任务已完成至少一轮 `SwiftlyS2-Review` review，且最终达成一致或明确阻塞

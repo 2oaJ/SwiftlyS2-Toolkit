@@ -97,6 +97,13 @@ disable-model-invocation: false
 - 若风险升高或证据不足，立即降级为建议切换到 `SwiftlyS2-Edit`
 - 不允许在高风险场景下假装“快速模式也够安全”
 
+### 2.1 大型任务升级闸门：先问，再切到 `SwiftlyS2-Plan`
+
+- `SwiftlyS2-Edit-Fast` 默认服务于**清晰、局部、可快速闭环**的任务；不要因为担心返工，就把简单请求静默升级成 plan 模式。
+- 若任务已经显著超出快速闭环能力，例如跨多个子系统、存在明显历史行为对齐缺口、验证矩阵难以快速收敛，先向用户说明它为何更像大型任务，再询问是否切换到 `SwiftlyS2-Plan`。
+- 在用户明确同意前，不得静默切到 `SwiftlyS2-Plan`。
+- 若只是需要局部裁决，不要切用户可见模式；优先内部并行调用 `SwiftlyS2-Plan-Implementation` / `SwiftlyS2-Plan-Semantics` / `SwiftlyS2-Plan-Validation` 后继续快修。
+
 ### 3. 先并行调查，再最小改动
 
 默认工作顺序：
@@ -146,12 +153,12 @@ disable-model-invocation: false
   - `SwiftlyS2-Plan-Implementation`
   - `SwiftlyS2-Plan-Semantics`
   - `SwiftlyS2-Plan-Validation`
-- 或直接调用 `SwiftlyS2-Plan`，让其完成多计划收敛
+- 或在命中上文“大型任务升级闸门”且用户明确同意后，调用 `SwiftlyS2-Plan`，让其完成多计划收敛
 
 选择规则：
 
 - **小型快速任务**：优先直接并行 3 个计划 subagent，再由主 agent 立即裁决
-- **中型且争议较多的任务**：优先调用 `SwiftlyS2-Plan`
+- **中型且争议较多的任务**：先判断是否已超出快速模式承载范围；若已超出，先询问用户是否切到 `SwiftlyS2-Plan`，仅在用户同意后再调用
 
 ### 第三层：实现后验证并行
 
