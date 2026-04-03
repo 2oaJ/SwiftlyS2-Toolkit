@@ -64,7 +64,7 @@
 - `CPlayer_ItemServices.*`
 - `CPlayer_WeaponServices.*`
 
-### 工程规则
+### 主线程与异步边界工程规则
 
 1. **写游戏状态、写实体、写 Schema、写 protobuf：默认回主线程。**
 2. **后台线程主要做计算、编码、磁盘 IO、网络 IO、批处理。**
@@ -155,6 +155,13 @@ Core.Scheduler.NextWorldUpdate(() =>
 5. 尽量做 producer / consumer 分离
 6. 牢记 64 tick 帧预算
 
+### Hook 治理边界
+
+- Hook 是**治理层**，不是特权层；Hook 的 allow / continue 不能绕过更高层的 deny / stop 规则。
+- Pre Hook 负责早过滤、前置校验与轻量修正；Post Hook 负责结果采集、收尾和可观测性，不要把重业务逻辑全塞进 Hook。
+- Hook 失败默认应“**可见但隔离**”，避免因为统计、日志或旁路治理代码的异常拖垮主执行链。
+- Hook 的阻断语义必须显式：何时 `Stop`、何时 `Continue`、何时仅记录告警，不能让调用方靠猜。
+
 ### `Span<T>` / `stackalloc` / `ref`
 
 只在满足以下条件时考虑：
@@ -165,7 +172,9 @@ Core.Scheduler.NextWorldUpdate(() =>
 - 不跨线程
 - 不会闭包捕获或逃逸
 
-若收益没有证据，不要为了“高级一点”而滥用。### `ref` / `in` 参数传递：仅对 struct 使用
+若收益没有证据，不要为了“高级一点”而滥用。
+
+### `ref` / `in` 参数传递：仅对 struct 使用
 
 `ref` 和 `in` 关键字仅在传递 **struct（值类型）** 时有意义——避免结构体的栈拷贝开销。
 
@@ -275,7 +284,7 @@ Config = monitor.CurrentValue;
 monitor.OnChange(newConfig => { Config = newConfig; /* 可选副作用 */ });
 ```
 
-### 工程规则
+### Configuration 热加载工程规则
 
 1. **Config 类字段必须给默认值**，确保首次序列化生成完整配置文件。
 2. **使用 JSONC 格式**（`config.jsonc`），支持注释便于维护。
@@ -400,7 +409,7 @@ OnMyCommandAsync(context).Forget(Logger, "MyPlugin.OnMyCommand");
 - 适合：基于事件结果做后续处理（记录、奖励、状态更新）
 - 常见模式：Post Hook + `DelayBySeconds` 等待状态稳定后操作
 
-### 工程规则
+### GameEvent Hook 工程规则
 
 - 不确定用 Pre 还是 Post 时，优先 Post（更安全）
 - Pre Hook 中拦截要确认确实需要阻止
@@ -438,13 +447,21 @@ OnMyCommandAsync(context).Forget(Logger, "MyPlugin.OnMyCommand");
 - 可通过 `CloseAfterClick = true` 关闭当前菜单后跳转
 - 需确保目标命令已注册且对当前玩家可用
 
-## 二十、注释与输出
+## 二十、验证门禁与证据链
+
+- build 通过 ≠ 需求完成；必须把验证证据和 prompt 需求逐条对齐。
+- 建议把每个关键验证写成：**检查项 / 实际执行 / 观察结果 / 结论**。
+- `PASS` = 已执行并拿到直接证据；`FAIL` = 证据表明未满足；`PARTIAL` = 因环境限制无法直接验证，但必须说明缺口与替代证据。
+- `PARTIAL` 只能用于环境限制、外部依赖不可得、工具缺失等客观阻塞，不能用于掩盖未验证、主观推断或不确定。
+- 对高风险改动，除 build 外至少补一个反证式回归点，例如：重复 install / uninstall、disconnect 后异步回调、map change 清理、bot / 真人混合状态切换。
+
+## 二十一、注释与输出
 
 - 注释应解释意图、线程边界、生命周期原因、引擎限制
 - 避免噪音注释
 - 计划、审计、实施记录应尽量方法级落地
 
-## 二十一、公开参考入口
+## 二十二、公开参考入口
 
 - Docs Map：`./swiftlys2-official-docs-map.md`
 - Getting Started：`https://swiftlys2.net/docs/development/getting-started/`

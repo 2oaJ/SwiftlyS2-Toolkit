@@ -45,6 +45,16 @@ When using this skill, the preferred output should be one of the following:
 - An audit of lifecycle, thread safety, high-frequency hooks, Schema, or Protobuf usage
 - A method-level implementation plan
 
+## Failure-mode-first rule writing
+
+When the toolkit proposes workflow rules, audits, or checklists, prefer rules that map to concrete failure modes rather than abstract virtues.
+
+Examples:
+
+- Do not claim validation without direct evidence.
+- Do not treat a successful build as proof of player-visible behavior.
+- Do not add bridge/helper layers unless reuse, lifecycle isolation, or boundary clarity clearly requires them.
+
 ## Language policy
 
 - Detect the language of the user's latest request before every response and mirror that language for analysis, plans, explanations, delivery notes, prompt text, and any generated code comments.
@@ -310,6 +320,13 @@ The output must include at least:
 - Why the change was made this way
 - Validation results
 - Which requirements were directly validated and which still need additional validation
+
+## Verification quality bar
+
+- Prefer evidence-backed verification statements over narrative confidence.
+- When validation status matters, distinguish `PASS`, `FAIL`, and `PARTIAL` in audits or delivery notes.
+- Use `PARTIAL` only for objective environment limits or missing external dependencies, not for uncertainty or skipped checks.
+- For high-risk lifecycle / hook / runtime work, add at least one adversarial or regression-oriented check in addition to build success.
 
 ## Examples
 
