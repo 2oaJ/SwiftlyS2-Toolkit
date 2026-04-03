@@ -17,9 +17,9 @@ Its goal is not to bind itself to any specific workspace, but to provide a **pub
 The public docs, prompts, agents, and templates in this toolkit should, by default, reference only the following public sources:
 
 1. SwiftlyS2 official documentation: `https://swiftlys2.net/docs/`
-2. SwiftlyS2 LLM-optimized full documentation: `https://swiftlys2.net/llms-full.txt`
-3. sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
-4. SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
+2. sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
+3. SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
+4. SwiftlyS2 LLM-optimized full documentation: `https://swiftlys2.net/llms-full.txt` (last-resort full-text fallback only when targeted navigation is insufficient)
 
 If the current workspace has workspace-specific mappings, local reference repositories, historical reference projects, or special rules, that information **may only be recorded in**:
 
@@ -27,6 +27,13 @@ If the current workspace has workspace-specific mappings, local reference reposi
 - `./knowledge-base.md`
 
 - If the workspace includes a local `sw2-mdwiki` checkout, it is strongly recommended to use it as a local reference repository to improve agent retrieval efficiency and accuracy.
+
+## Full-text documentation usage policy
+
+- Prefer indexed and targeted sources first: `swiftlys2-kb-index.md`, `swiftlys2-official-docs-map.md`, local `sw2-mdwiki`, and the relevant official docs pages.
+- Treat `../../llms-full.txt` as a low-priority offline fallback because it is large and not indexed.
+- Before reading `../../llms-full.txt`, ask the user whether it should be read.
+- After approval, use keyword-guided or range-based partial reads only; do not scan the whole file by default.
 
 ## What this skill should produce
 
@@ -77,7 +84,7 @@ Use this skill when the task involves:
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./references/swiftlys2-asset-inventory.md`
-- `../../llms-full.txt`：SwiftlyS2 官网 LLM 全量文档的本地缓存（定期从 `https://swiftlys2.net/llms-full.txt` 同步）
+- `../../llms-full.txt`：SwiftlyS2 官网 LLM 全量文档的本地缓存（定期从 `https://swiftlys2.net/llms-full.txt` 同步；仅作为低优先级离线兜底全文源）
 
 ### Templates and checklists
 
@@ -148,9 +155,10 @@ Open these first:
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./README.md`
-### If online docs are unavailable or need full-text API search
 
-Use `../../llms-full.txt` as the local offline reference. This file contains the entire SwiftlyS2 official documentation (API reference, development guides, installation, porting guide, etc.) in a single text file optimized for LLM consumption. It is periodically synced from `https://swiftlys2.net/llms-full.txt`.
+### If online docs are unavailable or a full-text API search is truly necessary
+
+Only after the indexed references above are insufficient, ask the user whether `../../llms-full.txt` may be read. If the user agrees, use it as a low-priority local offline reference and prefer keyword/range-based partial reads rather than whole-file scanning. This file contains the entire SwiftlyS2 official documentation (API reference, development guides, installation, porting guide, etc.) in a single text file optimized for LLM consumption. It is periodically synced from `https://swiftlys2.net/llms-full.txt`.
 ## Architecture categories
 
 ### 1. Modular gameplay plugins

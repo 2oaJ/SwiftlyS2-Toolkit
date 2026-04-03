@@ -50,14 +50,15 @@
 - 本工具包不内置完整 API Reference 全量提取，避免体积膨胀。
 - 先看：`./swiftlys2-official-docs-map.md` 中的 API Reference 瘦导航。
 - 再按栏目联网深挖：如 `commands`、`netmessages`、`players`、`schemas`、`services`。
-- 若无法联网或需要全文搜索，使用本地缓存 `../../llms-full.txt`（完整 SwiftlyS2 官网文档，定期从 `https://swiftlys2.net/llms-full.txt` 同步）。
+- 若无法联网或现有导航仍不足，再把本地缓存 `../../llms-full.txt` 视为最后兜底全文源；读取前必须先询问用户，且只做局部关键词/分段检索。
 
 ### LLM 全量文档本地缓存
 
 - 文件：`../../llms-full.txt`
 - 源地址：`https://swiftlys2.net/llms-full.txt`
 - 内容：SwiftlyS2 官网全部文档（介绍、安装、API Reference、Development 指南、Guides、Porting 指南等）的单文件 LLM 优化版本。
-- 用途：离线 API 查找、全文搜索、确认接口签名、查阅官方示例代码。
+- 用途：**最后兜底**的离线 API 查找、全文搜索、接口签名确认与官方示例查阅。
+- 使用约束：读取前必须先询问用户；获得同意后只做局部关键词或分段检索，禁止整文件扫描。
 
 ## 2. 本工具包 assets 导航
 
