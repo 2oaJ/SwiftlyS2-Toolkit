@@ -10,7 +10,7 @@
 - **Prompt constraints**: carefully designed prompts help keep generated code aligned with SwiftlyS2 plugin best practices and performance expectations
 - **Code quality**: the generated code is tested carefully so it stays high-performance and high-quality
 - **Ease of use**: just one sentence is enough to generate SwiftlyS2 plugin code that matches the expected standard, which greatly improves development efficiency
-- **Custom agents**: `edit`, `plan`, and `review` agents are provided to support different stages of development
+- **Custom agents**: `edit`, `edit-fast`, `plan`, and `review` style agents are provided; `edit` / `edit-fast` are focused on direct modifications, while `plan` remains the manual planning entry
 - **Skill index**: agents can easily find official docs, community resources, and code examples related to SwiftlyS2, helping ensure the generated code follows the latest practices
 - **Experience sources**: the toolkit combines official documentation with refined experience extracted from many original plugins (10+ small original plugins, 10+ medium original plugins, 3+ large original plugins)
 - **Stability**: after a long period of testing and iteration, plugin code generated with this toolkit serves thousands of players every day and is less likely to run into server crashes or performance problems
@@ -26,7 +26,7 @@
 
 ### `plan`
 
-Use it when you want the agent to think through an implementation plan first, for example:
+Use it when you **manually choose** to have the agent think through an implementation plan first, for example:
 
 - Method-level implementation plans
 - Breaking down changes before implementation
@@ -44,7 +44,20 @@ Use it when you want the agent to review plugin code first, for example:
 Use it when the goal is clear and you want the agent to start working directly, for example:
 
 - Direct code changes
+- Bug fixes / behavior adjustments / config and copy sync
 - A locate / modify / verify loop completed in a single conversation
+
+`edit` is now an **edit-only** entry point: it performs direct edits and modifications, and it does not switch into `plan` / `audit` mode from inside the edit workflow. If you need a method-level plan or a systematic audit, choose the matching entry manually.
+
+### `edit-fast`
+
+Use it when the scope is small and you want fast parallel investigation plus a quick direct modification loop, for example:
+
+- Small to medium direct changes
+- Prompt / agent / skill copy sync
+- Fast locate → modify → verify loops
+
+`edit-fast` is also an **edit-only** entry point: if risk rises or the scope cannot be narrowed quickly, fall back to `edit` rather than switching to `plan` from inside fast mode.
 
 ## Knowledge base index
 

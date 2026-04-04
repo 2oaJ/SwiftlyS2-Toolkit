@@ -6,7 +6,7 @@ This toolkit provides a publicly reusable workflow, rule set, template collectio
 
 ## What's Included
 
-```
+```text
 agents/                         ← Custom agent modes for Copilot Chat
   SwiftlyS2-Edit-Fast.agent.md
   SwiftlyS2-Edit.agent.md
@@ -31,7 +31,7 @@ skills/SwiftlyS2-Toolkit/       ← Main skill entry and all assets
 
 Copy the contents of this repository into the `.github/` folder of your workspace:
 
-```
+```text
 your-workspace/
 └── .github/
     ├── agents/          ← from agents/
@@ -53,14 +53,16 @@ rm -rf temp-toolkit
 ## Agents Overview
 
 | Agent | Purpose |
-|---|---|
-| `SwiftlyS2-Edit` | Full development agent with review closure loop |
-| `SwiftlyS2-Edit-Fast` | Fast execution agent for small/medium tasks |
-| `SwiftlyS2-Plan` | Pure planning agent (does not edit code) |
-| `SwiftlyS2-Plan-Implementation` | Subagent: file/method-level implementation plan |
-| `SwiftlyS2-Plan-Semantics` | Subagent: player-visible semantics and architecture |
-| `SwiftlyS2-Plan-Validation` | Subagent: TDD, validation matrices, regression paths |
+| --- | --- |
+| `SwiftlyS2-Edit` | Edit-only development agent with review closure loop |
+| `SwiftlyS2-Edit-Fast` | Edit-only fast execution agent for small/medium direct changes |
+| `SwiftlyS2-Plan` | Manual-only planning agent (does not edit code) |
+| `SwiftlyS2-Plan-Implementation` | Planning-only subagent: file/method-level implementation plan |
+| `SwiftlyS2-Plan-Semantics` | Planning-only subagent: player-visible semantics and architecture |
+| `SwiftlyS2-Plan-Validation` | Planning-only subagent: TDD, validation matrices, regression paths |
 | `SwiftlyS2-Review` | Review subagent for blocking objections |
+
+`SwiftlyS2-Edit` and `SwiftlyS2-Edit-Fast` no longer switch into plan mode on the user's behalf. If you need a formal method-level plan or a planning-first workflow, choose `SwiftlyS2-Plan` manually.
 
 ## Public Reference Sources
 
