@@ -18,7 +18,11 @@ disable-model-invocation: false
 1. `./copilot-instructions.md`
 2. `./knowledge-base.md`
 3. `./skills/swiftlys2-toolkit/SKILL.md`
-4. `./prompts/swiftlys2-toolkit-Plan.prompt.md`
+4. `./prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+
+若任务涉及性能、GC、高频 Hook、worker、map 初始化或 native interop，还必须读取：
+
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
 
 ## 你的核心职责
 

@@ -21,9 +21,10 @@ disable-model-invocation: false
 
 再根据 review 类型按需读取：
 
-- 计划 review：`./prompts/swiftlys2-toolkit-Plan.prompt.md`
-- 编辑 review：`./prompts/swiftlys2-toolkit-Edit.prompt.md`
-- 审计 review：`./prompts/swiftlys2-toolkit-Audit.prompt.md`
+- 计划 review：`./prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+- 编辑 review：`./prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+- 审计 review：`./prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+- 性能、GC、高频 Hook、worker、map 初始化或 native interop review：`./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
 
 ## review 目标
 

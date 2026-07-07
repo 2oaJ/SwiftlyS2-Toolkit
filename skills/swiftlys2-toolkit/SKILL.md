@@ -91,6 +91,7 @@ Use this skill when the task involves:
 ### Reference documents
 
 - `./references/swiftlys2-plugin-playbook.md`
+- `./references/swiftlys2-performance-optimization-playbook.md`
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./references/swiftlys2-asset-inventory.md`
@@ -129,9 +130,9 @@ Use this skill when the task involves:
 
 ### Paired prompts
 
-- `../../prompts/swiftlys2-toolkit-Plan.prompt.md`
-- `../../prompts/swiftlys2-toolkit-Audit.prompt.md`
-- `../../prompts/swiftlys2-toolkit-Edit.prompt.md`
+- `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+- `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+- `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
 
 ## Task routing
 
@@ -140,23 +141,25 @@ Use this skill when the task involves:
 Open these first:
 
 - `./references/swiftlys2-plugin-playbook.md`
-- `../../prompts/swiftlys2-toolkit-Plan.prompt.md`
+- `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
 
 ### If the task is mainly “systematically find risks first”
 
 Open these first:
 
 - `./references/swiftlys2-plugin-playbook.md`
-- `../../prompts/swiftlys2-toolkit-Audit.prompt.md`
+- If performance, GC, high-frequency hooks, worker queues, map initialization, or native interop are in scope: `./references/swiftlys2-performance-optimization-playbook.md`
+- `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
 - `./assets/workflows/audit/audit-report-template.md`
 
 ### If the task is mainly “edit code directly”
 
 Open these first:
 
-- `../../prompts/swiftlys2-toolkit-Edit.prompt.md`
+- `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
 - `./assets/README.md`
 - The template or checklist closest to the relevant subsystem
+- For performance optimization work, also open `./references/swiftlys2-performance-optimization-playbook.md` before editing.
 
 ### If the task is mainly “find reference entry points”
 
@@ -235,6 +238,8 @@ When in an async context, prefer the corresponding `Async` APIs instead of mecha
 - Avoid JSON, IO, blocking waits, and unbounded lock contention
 - Prefer a producer / consumer separation mindset
 - Keep a 64-tick frame-budget mindset
+- Decide whether the Hook should exist at all before optimizing its body; avoid the finest-grained Hook when a lower-frequency movement stage, scheduler, or state-diff path is sufficient
+- Use a stable early-return shape: feature disabled / no current runtime / invalid player or pawn / fake client / no registered subscribers
 
 ### 6. `IPlayer` lifecycle has extremely high priority
 
@@ -267,26 +272,41 @@ When in an async context, prefer the corresponding `Async` APIs instead of mecha
 - `.Wait()`, `.Result`, synchronous joins, and blocking IO should be treated as high-risk by default
 - JSON serialization / deserialization should, by default, run in the background rather than inside hooks, runtime loops, menu callbacks, or main-thread periodic tasks
 
+### 11. Performance optimization must map to a concrete hotspot category
+
+When asked to optimize performance, first classify the code as one or more of:
+
+- high-frequency Hook / movement path
+- per-player runtime state
+- sampling buffer / replay-like data
+- background worker / queue
+- map-level async initialization
+- periodic HUD / menu text
+- native interop / binary layout
+
+Then use `./references/swiftlys2-performance-optimization-playbook.md` to choose an implementation pattern. Do not add micro-optimizations such as `AggressiveInlining`, object pools, or binary layout unless the code is demonstrably small/hot, allocation-heavy, or native/binary-bound.
+
 ## Recommended reading order
 
 ### For planning
 
 1. `./SKILL.md`
 2. `./references/swiftlys2-plugin-playbook.md`
-3. `../../prompts/swiftlys2-toolkit-Plan.prompt.md`
+3. `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
 4. `./assets/workflows/planning/method-level-plan-template.md`
 
 ### For auditing
 
 1. `./SKILL.md`
 2. `./references/swiftlys2-kb-index.md`
-3. `../../prompts/swiftlys2-toolkit-Audit.prompt.md`
-4. `./assets/workflows/audit/audit-report-template.md`
+3. `./references/swiftlys2-performance-optimization-playbook.md` when performance or hot paths are in scope
+4. `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+5. `./assets/workflows/audit/audit-report-template.md`
 
 ### For direct code edits
 
 1. `./SKILL.md`
-2. `../../prompts/swiftlys2-toolkit-Edit.prompt.md`
+2. `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
 3. Relevant subsystem templates / checklists
 
 ## Output requirements

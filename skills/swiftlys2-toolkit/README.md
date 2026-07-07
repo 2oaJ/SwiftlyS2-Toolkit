@@ -71,6 +71,18 @@
 - 生命周期和线程边界在哪里
 - Hook / Schema / NetMessages / Menu / Worker 这类子系统该怎么处理
 
+### `references/swiftlys2-performance-optimization-playbook.md`
+
+偏性能优化落地，适合让 agent 在处理以下任务时选择具体优化方向：
+
+- 高频 Hook / movement path 早退、降频、分发治理
+- 玩家运行态收束、slot state、generation token
+- GC 分配控制、`Span` / `stackalloc` / 集合复用
+- 采样缓冲、ring buffer、预分配数组、二进制帧
+- 后台队列、批处理、背压、worker 生命周期
+- 地图级异步初始化、主线程 commit、缓存失效
+- JIT / 编译提示 / native interop 优化边界
+
 ### `references/swiftlys2-kb-index.md`
 
 偏公开知识导航，适合快速找：
@@ -118,6 +130,7 @@
 - `assets/development/*`：按 SwiftlyS2 官网 Development 对齐的模板和 checklist
 - `assets/guides/*`：按 Guides 对齐的模板和说明
 - `assets/patterns/background-workers/worker-template.cs.md`：后台 worker 模式骨架
+- `references/swiftlys2-performance-optimization-playbook.md`：性能优化、热路径、GC、worker、map 初始化、native interop 的场景化决策手册
 - `assets/workflows/planning/*`：方法级计划模板
 - `assets/workflows/audit/*`：审计报告模板
 

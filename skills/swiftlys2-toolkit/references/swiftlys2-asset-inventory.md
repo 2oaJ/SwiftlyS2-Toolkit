@@ -8,12 +8,13 @@
 - `skills/swiftlys2-toolkit/SKILL.md`
 
 ### Prompts
-- `prompts/swiftlys2-toolkit-Plan.prompt.md`
-- `prompts/swiftlys2-toolkit-Audit.prompt.md`
-- `prompts/swiftlys2-toolkit-Edit.prompt.md`
+- `prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+- `prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+- `prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
 
 ### References
 - `skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
+- [skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md](./swiftlys2-performance-optimization-playbook.md)
 - `skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `skills/swiftlys2-toolkit/references/swiftlys2-official-docs-map.md`
 - `skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
@@ -25,6 +26,7 @@
 - `skills/swiftlys2-toolkit/assets/development/swiftly-core/core-service-entrypoints.md`
 - `skills/swiftlys2-toolkit/assets/development/commands/command-attribute-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/commands/command-service-template.cs.md`
+- `skills/swiftlys2-toolkit/assets/development/commands/client-command-hook-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/menus/menu-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/netmessages/protobuf-handler-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
@@ -32,24 +34,34 @@
 - `skills/swiftlys2-toolkit/assets/development/profiler/hotpath-gc-checklist.md`
 - `skills/swiftlys2-toolkit/assets/development/entity/schema-write-checklist.md`
 - `skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
+- `skills/swiftlys2-toolkit/assets/development/core-events/precache-resource-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/scheduler/scheduler-vs-worker-guide.md`
 - `skills/swiftlys2-toolkit/assets/development/shared-api/shared-interface-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/game-events/game-events-usage-notes.md`
 - `skills/swiftlys2-toolkit/assets/development/configuration/README.md`
+- `skills/swiftlys2-toolkit/assets/development/configuration/config-hot-reload-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/translations/README.md`
 - `skills/swiftlys2-toolkit/assets/development/permissions/README.md`
+- `skills/swiftlys2-toolkit/assets/development/convars/convar-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/guides/dependency-injection/di-service-plugin-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/guides/dependency-injection/service-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/guides/terminologies/README.md`
 - `skills/swiftlys2-toolkit/assets/guides/html-styling/README.md`
 - `skills/swiftlys2-toolkit/assets/patterns/background-workers/worker-template.cs.md`
+- `skills/swiftlys2-toolkit/assets/patterns/async-patterns/async-safety-guide.md`
+- `skills/swiftlys2-toolkit/assets/patterns/per-player-state/player-state-management-guide.md`
+- `skills/swiftlys2-toolkit/assets/patterns/service-factory/service-factory-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/workflows/planning/method-level-plan-template.md`
 - `skills/swiftlys2-toolkit/assets/workflows/audit/audit-report-template.md`
 
 ### Toolkit Docs
 - `skills/swiftlys2-toolkit/README.md`
+- `skills/swiftlys2-toolkit/README.en.md`
 
-### Workspace Layer
+### Optional Workspace Layer
+
+以下文件属于下游工作区可选层，不计入本仓库核心资产：
+
 - `.github/copilot-instructions.md`
 - `.github/knowledge-base.md`
 
@@ -57,12 +69,12 @@
 
 - Skill：1
 - Prompts：3
-- References：4
-- Templates / Assets：26
-- Toolkit README：1
-- Workspace Layer：2
+- References：5
+- Templates / Assets：33
+- Toolkit README：2
+- Optional Workspace Layer：0
 
-**合计：37 个核心资产**
+**合计：44 个核心资产**
 
 ## 3. 分层原则
 
@@ -103,4 +115,4 @@
 
 - 新增通用 SwiftlyS2 工具时，优先放入当前工具包体系，并保持 `swiftlys2-` 前缀
 - 新增的是一次性任务文档时，应与公共 toolkit 分离
-- 若发现本地路径、工作区专属项目名、个人仓库名泄漏到公共文档，应优先回收至 `copilot-instructions.md` 或 `knowledge-base.md`
+- 若发现本地路径、工作区专属项目名、维护者私有仓库名泄漏到公共文档，应优先回收至 `copilot-instructions.md` 或 `knowledge-base.md`

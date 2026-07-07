@@ -44,7 +44,11 @@ disable-model-invocation: false
 3. SwiftlyS2 工具包入口：
    - `./skills/swiftlys2-toolkit/SKILL.md`
 4. 直接编辑 prompt：
-   - `./prompts/swiftlys2-toolkit-Edit.prompt.md`
+   - `./prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+
+若任务涉及性能、GC、高频 Hook、worker、map 初始化或 native interop，还必须读取：
+
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
 
 若工具包不可用，必须明确说明阻塞原因。
 

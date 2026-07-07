@@ -7,12 +7,16 @@
 
 适用于：高频 Hook、movement 采样、引擎回调分发、轻量采样 + 模块委托。
 
+性能优化和热路径治理先看：`../../../references/swiftlys2-performance-optimization-playbook.md`。
+
 ## 适用原则
 
 - Hook 内优先做快速分流
+- 先判断是否真的需要该 Hook；能用低频 scheduler、状态差分或较粗 movement 阶段解决时，不要升级到更细粒度 Hook
 - Hook 内不要直接做重 IO、重序列化、重日志
 - Hook 负责采样与委托，不负责堆业务逻辑
 - 涉及 `IPlayer` / `Pawn` / `Controller` 时，必须先做有效性检查
+- 无当前 runtime、功能未启用、无订阅者时应尽早返回
 
 ## 示例骨架
 
@@ -56,10 +60,13 @@ public partial class MyPlugin
 ## Checklist
 
 - 是否先过滤无效 player / pawn / fake client / dead player？
+- 是否先判断 Hook 是否必须存在，而不是默认常驻？
+- 是否先过滤功能关闭、runtime 不存在、无 subscriber / forward 的情况？
 - 是否避免在 Hook 内直接打日志？
 - 是否避免在 Hook 内做 IO / HTTP / DB / JSON？
 - 是否将复杂逻辑下沉到 module / service / worker？
 - 是否考虑 64 tick / 15ms 帧预算？
+- `Profiler.StartRecording` / `StopRecording` 是否成对，且名称稳定、不包含玩家或实体动态 id？
 
 ## GameData Patch 模式
 

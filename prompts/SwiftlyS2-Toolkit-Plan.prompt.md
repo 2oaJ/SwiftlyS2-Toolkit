@@ -42,6 +42,7 @@
 ### Skill 内参考文档
 
 - `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`（涉及性能、GC、高频 Hook、worker、map 初始化、native interop 时必须使用）
 - `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
@@ -95,10 +96,13 @@
 - 是否有 `lock`、阻塞等待、主线程等待风险
 
 ### 2. 高频 Hook
+- 是否应先参考 `swiftlys2-performance-optimization-playbook.md` 做热点分类
+- 是否真的需要高频 Hook，还是可用低频 Scheduler / 状态差分 / 较粗 movement 阶段替代
 - 是否需要尽早过滤真人/机器人/死亡态
 - 是否需要减少分配与日志
 - 是否应采用 producer/consumer 分离
 - 哪个阶段负责采样，哪个阶段负责计算或写回
+- 是否需要 `Span` / `stackalloc`、ring buffer、bounded queue、generation token、Profiler 分段等具体优化边界
 
 ### 3. Schema 读写
 - 是否需要 `Updated()` / `SetStateChanged()` / 原生同步方法

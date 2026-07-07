@@ -44,6 +44,7 @@
 | ConVars | `development/convars/convar-template.cs.md` | ConVar 创建、范围、标志 |
 | Thread Safety | `development/thread-safety/thread-sensitivity-checklist.md` | 线程敏感 API 审查 |
 | Profiler | `development/profiler/hotpath-gc-checklist.md` | 热路径 / GC / 性能审查 |
+| Profiler / Native Functions and Hooks / Scheduler | `../references/swiftlys2-performance-optimization-playbook.md` | 性能优化场景分类、落地模式、边界判断 |
 | Entity | `development/entity/schema-write-checklist.md` | schema 写回与实体有效性审查 |
 | Core Events | `development/core-events/lifecycle-checklist.md` | 生命周期闭环审查 |
 | Core Events | `development/core-events/precache-resource-template.cs.md` | OnPrecacheResource 模板 |
@@ -68,6 +69,8 @@
   - `.Forget()` 安全启动、StopOnMapChange、generation counter 失效策略、IPlayer 重获取
 - `patterns/service-factory/service-factory-template.cs.md`
   - 工厂模式、Keyed Singleton、多实现遍历、策略选择
+- `../references/swiftlys2-performance-optimization-playbook.md`
+  - 高频 Hook、玩家运行态、GC、采样缓冲、后台队列、地图初始化、native interop 的优化决策手册
 
 ## 工作流模板
 

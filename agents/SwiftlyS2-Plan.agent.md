@@ -44,11 +44,12 @@ disable-model-invocation: false
 1. `./copilot-instructions.md`
 2. `./knowledge-base.md`
 3. `./skills/swiftlys2-toolkit/SKILL.md`
-4. `./prompts/swiftlys2-toolkit-Plan.prompt.md`
+4. `./prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
 
 必要时再读取：
 
 - `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`（涉及性能、GC、高频 Hook、worker、map 初始化、native interop 时）
 - `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 

@@ -69,6 +69,18 @@ Leans toward engineering experience, useful for quickly judging:
 - Where lifecycle and thread boundaries sit
 - How to handle Hook / Schema / NetMessages / Menu / Worker subsystems
 
+### `references/swiftlys2-performance-optimization-playbook.md`
+
+Leans toward actionable performance work. Use it when an agent needs to choose a concrete optimization direction for:
+
+- high-frequency Hook / movement path early returns, throttling, and dispatch control
+- per-player runtime state, slot state, and generation tokens
+- GC allocation control, `Span` / `stackalloc`, and collection reuse
+- sampling buffers, ring buffers, preallocated arrays, and binary frames
+- background queues, batch draining, backpressure, and worker lifecycle
+- map-level async initialization, main-thread commits, and cache invalidation
+- JIT hints, compilation settings, and native interop boundaries
+
 ### `references/swiftlys2-kb-index.md`
 
 Leans toward public knowledge navigation, useful for quickly finding:
@@ -116,6 +128,7 @@ It is recommended to deploy the sw2-mdwiki project into the local workspace as a
 - `assets/development/*`: templates and checklists aligned with the SwiftlyS2 official Development documentation
 - `assets/guides/*`: templates and explanations aligned with the Guides documentation
 - `assets/patterns/background-workers/worker-template.cs.md`: background worker skeleton
+- `references/swiftlys2-performance-optimization-playbook.md`: scenario-driven guidance for performance, hot paths, GC, workers, map initialization, and native interop
 - `assets/workflows/planning/*`: method-level plan templates
 - `assets/workflows/audit/*`: audit report templates
 

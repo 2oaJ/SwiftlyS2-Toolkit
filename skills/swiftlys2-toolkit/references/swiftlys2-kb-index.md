@@ -63,6 +63,7 @@
 ## 2. 本工具包 assets 导航
 
 - Assets Root：`../assets/README.md`
+- Performance Playbook：`./swiftlys2-performance-optimization-playbook.md`
 - Development 主题资产：`../assets/development/`
 - Guides 主题资产：`../assets/guides/`
 - 非官方工程模式：`../assets/patterns/`
@@ -208,6 +209,7 @@
 	2. `Thread Safety`
 	3. `Profiler`
 - 再看本地资产：
+	- `./swiftlys2-performance-optimization-playbook.md`
 	- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
 	- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
 	- `../assets/development/profiler/hotpath-gc-checklist.md`
@@ -222,6 +224,7 @@
 	1. `Native Functions and Hooks`
 	2. `Thread Safety`
 - 再看本地资产：
+	- `./swiftlys2-performance-optimization-playbook.md`
 	- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
 - 常见坑：
 	- delegate 原型不匹配
@@ -291,6 +294,7 @@
 	1. `Scheduler`
 	2. `Thread Safety`
 - 再看本地资产：
+	- `./swiftlys2-performance-optimization-playbook.md`
 	- `../assets/development/scheduler/scheduler-vs-worker-guide.md`
 	- `../assets/patterns/background-workers/worker-template.cs.md`
 	- `../assets/development/core-events/lifecycle-checklist.md`
@@ -321,6 +325,17 @@
 - `OnMovementServicesRunCommandHook`
 - `DynamicHook`
 - `MidHookContext`
+
+### Performance / GC
+
+- `AggressiveInlining`
+- `stackalloc`
+- `Span`
+- `StringBuilder`
+- `PeriodicTimer`
+- `Generation`
+- `Backpressure`
+- `StructLayout`
 
 ### NetMessages / Protobuf
 

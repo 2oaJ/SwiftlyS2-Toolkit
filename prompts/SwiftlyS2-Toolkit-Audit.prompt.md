@@ -39,6 +39,7 @@
 ### Skill 参考文档
 
 - `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`（性能、GC、高频 Hook、worker、map 初始化、native interop 审计时必须使用）
 - `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
@@ -83,6 +84,8 @@
 - generation / session 校验是否存在
 
 ### 4. 高频 Hook 审计
+- 是否先按 `swiftlys2-performance-optimization-playbook.md` 分类为 Hook、player state、buffer、worker、map init、UI text 或 native interop 热点
+- 是否真的需要该 Hook，还是可由低频 Scheduler / 状态差分 / 较粗 movement 阶段替代
 - 是否有无意义分配
 - 是否有日志热点
 - 是否有 IO / API 调用
@@ -91,6 +94,7 @@
 - 是否有 producer/consumer 分离
 - 是否符合 64 tick 服务器预算意识
 - 热路径数据搬运是否可改用 `Span/ReadOnlySpan/stackalloc/ref`
+- 是否存在可改为 ring buffer、bounded queue、generation token、StringBuilder 复用、稳定 Profiler 分段的具体落点
 
 ### 5. Schema / Protobuf 审计
 - Schema 写入后是否调用 `Updated()` / `SetStateChanged()`

@@ -6,6 +6,8 @@
 
 适用于：后台持久化、批处理、异步计算、producer / consumer 解耦。
 
+后台队列、背压和热路径投递策略先看：`../../../references/swiftlys2-performance-optimization-playbook.md`。
+
 ## 适用原则
 
 - Worker 只处理可异步的计算 / 序列化 / 持久化
@@ -13,11 +15,15 @@
 - Worker 必须有明确的 Start / Stop / Flush / Cancel 语义
 - 回主线程写回前要重新校验 player / entity / generation
 - 轻量周期任务优先考虑 SwiftlyS2 自带 Scheduler
+- Worker 队列必须有容量策略；不能让生产速度无限大于消费速度
+- 背压策略必须按业务重要性选择，不能把可丢弃 telemetry 的策略套到强一致事件上
 
 ## 示例骨架
 
 ```csharp
-using System.Collections.Concurrent;
+using System;
+using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,11 +32,24 @@ namespace MyNamespace;
 
 public sealed class MyBackgroundWorker(ILogger<MyBackgroundWorker> logger)
 {
+    private const int QueueCapacity = 1024;
+    private const int MaxBatchSize = 64;
+    private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(5);
+
     private readonly ILogger<MyBackgroundWorker> _logger = logger;
-    private readonly ConcurrentQueue<MyWorkItem> _queue = new();
-    private readonly AutoResetEvent _signal = new(false);
+    private Channel<MyWorkItem> _queue = CreateQueue();
     private CancellationTokenSource? _cts;
     private Task? _workerTask;
+
+    private static Channel<MyWorkItem> CreateQueue()
+    {
+        return Channel.CreateBounded<MyWorkItem>(new BoundedChannelOptions(QueueCapacity)
+        {
+            SingleReader = true,
+            SingleWriter = false,
+            FullMode = BoundedChannelFullMode.Wait
+        });
+    }
 
     public void Start()
     {
@@ -43,10 +62,15 @@ public sealed class MyBackgroundWorker(ILogger<MyBackgroundWorker> logger)
         _workerTask = Task.Run(() => RunLoop(_cts.Token));
     }
 
-    public void Enqueue(MyWorkItem item)
+    public bool TryEnqueue(MyWorkItem item)
     {
-        _queue.Enqueue(item);
-        _signal.Set();
+        if (_queue.Writer.TryWrite(item))
+        {
+            return true;
+        }
+
+        _logger.LogWarning("后台任务队列已满，拒绝本次任务");
+        return false;
     }
 
     public async Task StopAsync(bool flushRemaining)
@@ -56,39 +80,49 @@ public sealed class MyBackgroundWorker(ILogger<MyBackgroundWorker> logger)
             return;
         }
 
-        _cts.Cancel();
-        _signal.Set();
+        _queue.Writer.TryComplete();
+        if (!flushRemaining)
+        {
+            _cts.Cancel();
+        }
 
         try
         {
-            await _workerTask.ConfigureAwait(false);
+            await _workerTask.WaitAsync(ShutdownTimeout).ConfigureAwait(false);
+        }
+        catch (TimeoutException ex)
+        {
+            _logger.LogError(ex, "后台任务停止超时");
+            _cts.Cancel();
+        }
+        catch (OperationCanceledException) when (!flushRemaining)
+        {
+            // 非 flush 停止时，取消 worker 是预期路径。
         }
         finally
         {
             _workerTask = null;
             _cts.Dispose();
             _cts = null;
-        }
-
-        if (flushRemaining)
-        {
-            FlushRemainingQueue();
+            _queue = CreateQueue();
         }
     }
 
-    private void RunLoop(CancellationToken cancellationToken)
+    private async Task RunLoop(CancellationToken cancellationToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        var batch = new List<MyWorkItem>(MaxBatchSize);
+
+        while (await _queue.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            if (!_queue.TryDequeue(out var item))
+            batch.Clear();
+            while (batch.Count < MaxBatchSize && _queue.Reader.TryRead(out var item))
             {
-                _signal.WaitOne(4);
-                continue;
+                batch.Add(item);
             }
 
             try
             {
-                Process(item, cancellationToken);
+                ProcessBatch(batch, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -97,24 +131,9 @@ public sealed class MyBackgroundWorker(ILogger<MyBackgroundWorker> logger)
         }
     }
 
-    private void Process(MyWorkItem item, CancellationToken cancellationToken)
+    private void ProcessBatch(IReadOnlyList<MyWorkItem> items, CancellationToken cancellationToken)
     {
         // 这里只做异步安全工作，例如 JSON、批处理、磁盘 / 网络 IO。
-    }
-
-    private void FlushRemainingQueue()
-    {
-        while (_queue.TryDequeue(out var item))
-        {
-            try
-            {
-                Process(item, CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Flush 剩余任务失败");
-            }
-        }
     }
 }
 
@@ -128,3 +147,5 @@ public sealed record MyWorkItem(ulong SteamId, string Payload);
 - 是否避免无限 fire-and-forget？
 - 是否在回写前重新校验当前会话 / generation？
 - 若只是轻量主线程周期任务，是否其实更适合 Scheduler？
+- 是否有 batch size、shutdown timeout 和 worker fault 日志？
+- 队列满时是 drop newest、drop oldest、coalesce，还是拒绝并反馈？

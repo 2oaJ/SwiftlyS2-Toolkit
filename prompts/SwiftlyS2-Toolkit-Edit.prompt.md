@@ -93,6 +93,7 @@
 - `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 
 ### Hook / Runtime / 高频路径
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
 - `./skills/swiftlys2-toolkit/assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 - `./skills/swiftlys2-toolkit/assets/development/profiler/hotpath-gc-checklist.md`
@@ -106,6 +107,7 @@
 - `./skills/swiftlys2-toolkit/assets/development/convars/convar-template.cs.md`
 
 ### Worker / 异步持久化 / 后台任务
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
 - `./skills/swiftlys2-toolkit/assets/development/scheduler/scheduler-vs-worker-guide.md`
 - `./skills/swiftlys2-toolkit/assets/patterns/background-workers/worker-template.cs.md`
 - `./skills/swiftlys2-toolkit/assets/patterns/async-patterns/async-safety-guide.md`
@@ -121,6 +123,7 @@
 - `./skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
 
 ### 玩家运行态
+- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
 - `./skills/swiftlys2-toolkit/assets/patterns/per-player-state/player-state-management-guide.md`
 
 ### 需要更高层工程规则时

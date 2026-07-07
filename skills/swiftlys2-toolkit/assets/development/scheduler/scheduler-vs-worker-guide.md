@@ -6,6 +6,8 @@
 
 用于：避免把官方 `Scheduler` 的 tick/timer 语义，与后台 `Task.Run` / queue / flush / cancel worker 混为一谈。
 
+性能优化、后台队列和 map 初始化策略先看：`../../../references/swiftlys2-performance-optimization-playbook.md`。
+
 ## 优先用 Scheduler 的场景
 
 - `NextTick` / 下一 Tick 执行
@@ -20,6 +22,7 @@
 - producer / consumer 解耦
 - 可取消的后台轮询
 - 不应阻塞主线程的持续性工作
+- 文件扫描、压缩、回放 / 采样持久化
 
 ## 决策问题
 
@@ -27,8 +30,11 @@
 - 这里是否需要访问主线程敏感 API？
 - 这里是否需要 stop / flush / cancel / drain 队列语义？
 - 这里是否会处理 JSON / IO / 大量批处理？
+- 队列是否需要容量上限、批处理上限和背压策略？
+- 回主线程写回前是否需要 map generation / player generation 校验？
 
 ## 路线建议
 
 - 若是主线程轻量延迟：继续看官方 `Scheduler`
 - 若是后台队列/批处理：转 `../../patterns/background-workers/worker-template.cs.md`
+- 若是地图加载、区域加载、排行榜加载、目录扫描：采用 generation + cancel previous + immutable DTO + main-thread commit
