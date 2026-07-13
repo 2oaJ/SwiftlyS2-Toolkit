@@ -2,7 +2,7 @@
 
 本索引用于快速定位 **公开可引用** 的 SwiftlyS2 资料入口。
 
-若当前工作区还有本地参考仓库、项目映射、历史参考项目或定制经验，请改去 `../../knowledge-base.md` 与 `../../copilot-instructions.md` 中登记，不要把它们写回这里。
+若当前工作区还有本地参考仓库、项目映射、历史参考项目或定制经验，请登记在最近层级的 `AGENTS.md` 或其显式引用的项目本地 skill 中，不要把它们写回这里。
 
 ## 1. SwiftlyS2 官网入口
 
@@ -50,14 +50,13 @@
 - 本工具包不内置完整 API Reference 全量提取，避免体积膨胀。
 - 先看：`./swiftlys2-official-docs-map.md` 中的 API Reference 瘦导航。
 - 再按栏目联网深挖：如 `commands`、`netmessages`、`players`、`schemas`、`services`。
-- 若无法联网或现有导航仍不足，再把本地缓存 `../../llms-full.txt` 视为最后兜底全文源；读取前必须先询问用户，且只做局部关键词/分段检索。
+- 若现有导航仍不足，再把 `https://swiftlys2.net/llms-full.txt` 视为最后兜底全文源；读取前必须先询问用户，且只做局部关键词/分段检索。
 
-### LLM 全量文档本地缓存
+### LLM 全量文档
 
-- 文件：`../../llms-full.txt`
-- 源地址：`https://swiftlys2.net/llms-full.txt`
+- 地址：`https://swiftlys2.net/llms-full.txt`
 - 内容：SwiftlyS2 官网全部文档（介绍、安装、API Reference、Development 指南、Guides、Porting 指南等）的单文件 LLM 优化版本。
-- 用途：**最后兜底**的离线 API 查找、全文搜索、接口签名确认与官方示例查阅。
+- 用途：**最后兜底**的 API 查找、全文搜索、接口签名确认与官方示例查阅。
 - 使用约束：读取前必须先询问用户；获得同意后只做局部关键词或分段检索，禁止整文件扫描。
 
 ## 2. 本工具包 assets 导航

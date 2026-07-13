@@ -1,4 +1,4 @@
-# swiftlys2-toolkit Audit Prompt
+# swiftlys2-toolkit Audit Workflow
 
 使用 `swiftlys2-toolkit` skill，对 SwiftlyS2 插件项目执行**通用审计**。
 
@@ -38,10 +38,10 @@
 
 ### Skill 参考文档
 
-- `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
-- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`（性能、GC、高频 Hook、worker、map 初始化、native interop 审计时必须使用）
-- `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
-- `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
+- `./swiftlys2-plugin-playbook.md`
+- `./swiftlys2-performance-optimization-playbook.md`（性能、GC、高频 Hook、worker、map 初始化、native interop 审计时必须使用）
+- `./swiftlys2-kb-index.md`
+- `./swiftlys2-asset-inventory.md`
 
 ### 公开来源
 
@@ -55,7 +55,7 @@
 
 ### 当前工作区定制参考（如存在）
 
-若 `./copilot-instructions.md` 或 `./knowledge-base.md` 记录了当前工作区的本地映射、当前项目约束或专项规则，可按需补充读取；但在输出公共审计时，不要把这些本地路径或工作区专属项目名写成永久依赖。
+读取当前范围内最近的 `AGENTS.md`，并按需读取其中指向的项目本地 skills 或参考资料；不要把本地路径、私有仓库或工作区专属项目名写回公共审计工作流。
 
 ## 审计维度
 

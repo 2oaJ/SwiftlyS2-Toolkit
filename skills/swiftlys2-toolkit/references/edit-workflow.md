@@ -1,12 +1,12 @@
-# swiftlys2-toolkit Edit Prompt
+# swiftlys2-toolkit Edit Workflow
 
 使用 `swiftlys2-toolkit` skill，直接处理 SwiftlyS2 插件中的**添加功能 / 修改功能 / 删除功能**场景。
 
-本 prompt 适用于用户明确希望**直接落地代码改动**的请求，而不是先做完整审计或输出长篇计划。
+本工作流适用于用户明确希望**直接落地代码改动**的请求，而不是先做完整审计或输出长篇计划。
 
 ## 适用场景
 
-当用户提出以下类型请求时，优先使用本 prompt：
+当用户提出以下类型请求时，优先使用本工作流：
 
 - “添加一个功能”
 - “修改这个功能”
@@ -54,7 +54,7 @@
 ## 强制规则
 
 1. 不要把所有“直接编辑”请求都强行升级成完整审计或 plan。
-2. 若判断任务已经达到 P0 / 大型任务级别，不要切换到 `SwiftlyS2-Plan` 或 `Audit` 模式；先用一句话说明触发原因，再缩小范围、补齐缺失信息，或在无法收敛时明确阻塞。
+2. 若判断任务已经达到 P0 / 大型任务级别，不要把实施请求静默改成只输出计划或审计；先用一句话说明触发原因，再缩小范围、补齐缺失信息，或在无法收敛时明确阻塞。
 3. 但在动手前，必须至少完成一次**最小必要定位**。
 4. 若任务要求与历史实现保持一致，玩家可感知能力都视为核心，不可静默删减。
 5. 直接编辑也必须保持当前架构边界，不能为了省事把逻辑塞回主类或跨层乱写。
@@ -70,6 +70,7 @@
 13. 若涉及 bot / 真人混合存储，默认优先使用 `SessionId` 作为运行态检索键，不得把 bot 的 `SteamID` 当作可靠主键。
 14. 验证结论应尽量按“**检查项 / 实际执行 / 观察结果 / 结论**”表达，并在有直接证据时使用 `PASS / FAIL / PARTIAL`。
 15. `PARTIAL` 只用于环境限制、依赖缺失或工具不可得，不得用来掩盖未执行、主观不确定或“还没来得及验证”。
+16. 除非当前用户明确要求兼容旧版本、旧调用或历史数据，否则不得新增兼容分支、别名、adapter、fallback、双写或双读路径。
 
 ## 语言输入要求
 
@@ -83,53 +84,53 @@
 根据任务内容，优先配套以下资产：
 
 ### 命令相关
-- `./skills/swiftlys2-toolkit/assets/development/commands/command-attribute-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/development/commands/command-service-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/development/commands/client-command-hook-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/development/using-attributes/attribute-registration-checklist.md`
+- `../assets/development/commands/command-attribute-template.cs.md`
+- `../assets/development/commands/command-service-template.cs.md`
+- `../assets/development/commands/client-command-hook-template.cs.md`
+- `../assets/development/using-attributes/attribute-registration-checklist.md`
 
 ### 菜单相关
-- `./skills/swiftlys2-toolkit/assets/development/menus/menu-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
+- `../assets/development/menus/menu-template.cs.md`
+- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
 
 ### Hook / Runtime / 高频路径
-- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
-- `./skills/swiftlys2-toolkit/assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
-- `./skills/swiftlys2-toolkit/assets/development/profiler/hotpath-gc-checklist.md`
+- `./swiftlys2-performance-optimization-playbook.md`
+- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
+- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
+- `../assets/development/profiler/hotpath-gc-checklist.md`
 
 ### Schema / Entity 写回
-- `./skills/swiftlys2-toolkit/assets/development/entity/schema-write-checklist.md`
-- `./skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
+- `../assets/development/entity/schema-write-checklist.md`
+- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
 
 ### 配置 / ConVar
-- `./skills/swiftlys2-toolkit/assets/development/configuration/config-hot-reload-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/development/convars/convar-template.cs.md`
+- `../assets/development/configuration/config-hot-reload-template.cs.md`
+- `../assets/development/convars/convar-template.cs.md`
 
 ### Worker / 异步持久化 / 后台任务
-- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
-- `./skills/swiftlys2-toolkit/assets/development/scheduler/scheduler-vs-worker-guide.md`
-- `./skills/swiftlys2-toolkit/assets/patterns/background-workers/worker-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/patterns/async-patterns/async-safety-guide.md`
-- `./skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
+- `./swiftlys2-performance-optimization-playbook.md`
+- `../assets/development/scheduler/scheduler-vs-worker-guide.md`
+- `../assets/patterns/background-workers/worker-template.cs.md`
+- `../assets/patterns/async-patterns/async-safety-guide.md`
+- `../assets/development/core-events/lifecycle-checklist.md`
 
 ### DI / Service
-- `./skills/swiftlys2-toolkit/assets/guides/dependency-injection/di-service-plugin-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/guides/dependency-injection/service-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/patterns/service-factory/service-factory-template.cs.md`
+- `../assets/guides/dependency-injection/di-service-plugin-template.cs.md`
+- `../assets/guides/dependency-injection/service-template.cs.md`
+- `../assets/patterns/service-factory/service-factory-template.cs.md`
 
 ### 资源预缓存 / 生命周期
-- `./skills/swiftlys2-toolkit/assets/development/core-events/precache-resource-template.cs.md`
-- `./skills/swiftlys2-toolkit/assets/development/core-events/lifecycle-checklist.md`
+- `../assets/development/core-events/precache-resource-template.cs.md`
+- `../assets/development/core-events/lifecycle-checklist.md`
 
 ### 玩家运行态
-- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`
-- `./skills/swiftlys2-toolkit/assets/patterns/per-player-state/player-state-management-guide.md`
+- `./swiftlys2-performance-optimization-playbook.md`
+- `../assets/patterns/per-player-state/player-state-management-guide.md`
 
 ### 需要更高层工程规则时
-- `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
-- `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
-- `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
+- `./swiftlys2-plugin-playbook.md`
+- `./swiftlys2-kb-index.md`
+- `./swiftlys2-asset-inventory.md`
 
 ## 直接编辑工作流
 
@@ -140,7 +141,7 @@
 
 ### 2. 再判断风险级别
 - 当前是 P0 / P1 / P2 / P3 哪一级？
-- 若是 P0，先简短说明它为什么已属于大型 / 高不确定任务，再把问题收敛到可直接实施的文件 / 方法级范围、要求补充缺失信息，或明确说明当前阻塞；不要在这个 prompt 内切到 `plan` / `audit` 模式
+- 若是 P0，先简短说明它为什么已属于大型 / 高不确定任务，再把问题收敛到可直接实施的文件 / 方法级范围、要求补充缺失信息，或明确说明当前阻塞；不要在本工作流中擅自改成只输出计划或审计
 - 若是 P1/P2/P3，继续执行直接编辑流程
 
 ### 3. 做最小必要定位
@@ -230,7 +231,7 @@
 - 涉及大范围长生命周期运行态 / 持久化 / 状态同步漂移
 - 无法确认状态归属，继续改会破坏架构边界
 
-此时不要静默跳到 plan / audit 模式，也不要把当前输出改写成用户可见的计划；先缩小范围、要求补充信息，或明确说明当前阻塞。若用户本轮明确只要方法级计划或系统性审计，应说明当前 prompt 不匹配，并提示其手动选择对应入口。
+此时不要静默把实施任务改写成只输出计划或审计；先缩小范围、要求补充信息，或明确说明当前阻塞。若用户本轮明确只要方法级计划或系统性审计，应改用同一 skill 内的 `plan-workflow.md` 或 `audit-workflow.md`。
 
 ## 示例用法
 

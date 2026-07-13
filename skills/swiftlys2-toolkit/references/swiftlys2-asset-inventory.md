@@ -1,16 +1,16 @@
 # swiftlys2-toolkit 资产清单
 
-本清单用于说明当前 `.github/` 中与 SwiftlyS2 工程工作流直接相关的**公共资产**。
+本清单用于说明 `swiftlys2-toolkit` skill 中与 SwiftlyS2 工程工作流直接相关的公共资产。
 
 ## 1. 核心资产
 
 ### Skill
 - `skills/swiftlys2-toolkit/SKILL.md`
 
-### Prompts
-- `prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
-- `prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
-- `prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+### Workflow References
+- `references/plan-workflow.md`
+- `references/audit-workflow.md`
+- `references/edit-workflow.md`
 
 ### References
 - `skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
@@ -54,27 +54,23 @@
 - `skills/swiftlys2-toolkit/assets/workflows/planning/method-level-plan-template.md`
 - `skills/swiftlys2-toolkit/assets/workflows/audit/audit-report-template.md`
 
-### Toolkit Docs
-- `skills/swiftlys2-toolkit/README.md`
-- `skills/swiftlys2-toolkit/README.en.md`
+### Codex Metadata
+- `agents/openai.yaml`
 
 ### Optional Workspace Layer
 
-以下文件属于下游工作区可选层，不计入本仓库核心资产：
-
-- `.github/copilot-instructions.md`
-- `.github/knowledge-base.md`
+下游工作区的最近层级 `AGENTS.md` 及其显式引用的项目本地 skills 属于可选工作区层，不计入本 skill 核心资产。
 
 ## 2. 统计口径
 
 - Skill：1
-- Prompts：3
-- References：5
+- Workflow References：3
+- Domain References：5
 - Templates / Assets：33
-- Toolkit README：2
+- Codex Metadata：1
 - Optional Workspace Layer：0
 
-**合计：44 个核心资产**
+**合计：43 个核心资产**
 
 ## 3. 分层原则
 
@@ -83,7 +79,7 @@
 以下内容适合公开随工具包发布：
 
 - Skill
-- 通用 prompts
+- 通用 workflow references
 - 通用 references
 - 通用模板与检查清单
 
@@ -91,8 +87,8 @@
 
 以下内容用于承接当前工作区中的定制信息：
 
-- `copilot-instructions.md`
-- `knowledge-base.md`
+- 最近层级的 `AGENTS.md`
+- 由 `AGENTS.md` 显式引用的项目本地 skills 或参考资料
 
 这些文件可以记录：
 
@@ -101,13 +97,13 @@
 - 工作区定制构建命令
 - 当前维护团队约束
 
-但这些信息不应再次写回公共 skill / prompt / template。
+但这些信息不应再次写回公共 skill / workflow reference / template。
 
 ## 4. 命名规范
 
 当前通用工具包采用以下命名策略：
 
-- skill / prompt / reference 统一使用 `swiftlys2-` 前缀
+- skill / domain reference 统一使用 `swiftlys2-` 前缀；工作流统一使用 `<intent>-workflow.md`
 - assets 改为“目录承担语义、文件名承担职责”，优先按官方 Development / Guides 分类命名
 - 便于检索，也避免 assets 文件名在深层目录里重复携带冗长前缀
 
@@ -115,4 +111,4 @@
 
 - 新增通用 SwiftlyS2 工具时，优先放入当前工具包体系，并保持 `swiftlys2-` 前缀
 - 新增的是一次性任务文档时，应与公共 toolkit 分离
-- 若发现本地路径、工作区专属项目名、维护者私有仓库名泄漏到公共文档，应优先回收至 `copilot-instructions.md` 或 `knowledge-base.md`
+- 若发现本地路径、工作区专属项目名、维护者私有仓库名泄漏到公共文档，应回收到下游仓库的 `AGENTS.md` 或项目本地 skill

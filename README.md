@@ -1,76 +1,83 @@
 # SwiftlyS2-Toolkit
 
-A general-purpose toolkit for **SwiftlyS2 C#/.NET plugin development** in VS Code with GitHub Copilot.
+A Codex-first toolkit for planning, implementing, auditing, and reviewing **SwiftlyS2 C#/.NET plugins**.
 
-This toolkit provides a publicly reusable workflow, rule set, template collection, and reference navigation system. It does **not** bind itself to any specific workspace — workspace-specific mappings and private rules should be placed in your own `copilot-instructions.md` and `knowledge-base.md`.
+The reusable domain workflow lives in one self-contained skill. Optional Codex subagent roles provide narrow research, planning, implementation, and review scopes without duplicating the skill's rules.
 
-## What's Included
-
-```text
-agents/                         ← Custom agent modes for Copilot Chat
-  SwiftlyS2-Edit-Fast.agent.md
-  SwiftlyS2-Edit.agent.md
-  SwiftlyS2-Plan-Implementation.agent.md
-  SwiftlyS2-Plan-Semantics.agent.md
-  SwiftlyS2-Plan-Validation.agent.md
-  SwiftlyS2-Plan.agent.md
-  SwiftlyS2-Review.agent.md
-
-prompts/                        ← Reusable prompt files
-  SwiftlyS2-Toolkit-Audit.prompt.md
-  SwiftlyS2-Toolkit-Edit.prompt.md
-  SwiftlyS2-Toolkit-Plan.prompt.md
-
-skills/SwiftlyS2-Toolkit/       ← Main skill entry and all assets
-  SKILL.md                      ← Skill entry point
-  assets/                       ← Templates, checklists, guides, patterns
-  references/                   ← Reference indexes and doc maps
-```
-
-## Installation
-
-Copy the contents of this repository into the `.github/` folder of your workspace:
+## Repository layout
 
 ```text
-your-workspace/
-└── .github/
-    ├── agents/          ← from agents/
-    ├── prompts/         ← from prompts/
-    └── skills/          ← from skills/
+AGENTS.md                              Codex repository guidance
+.codex/
+  config.toml                         Project-local subagent registration
+  agents/
+    swiftlys2-researcher.toml         Read-only investigation
+    swiftlys2-planner.toml            Read-only method-level planning
+    swiftlys2-implementer.toml        Bounded implementation and verification
+    swiftlys2-reviewer.toml           Read-only findings-first review
+skills/swiftlys2-toolkit/
+  SKILL.md                            Canonical skill entry
+  agents/openai.yaml                  Codex skill UI metadata
+  references/                         Workflow and domain references
+  assets/                             Templates, checklists, and guides
 ```
 
-Or clone directly:
+Legacy IDE-vendor agent, prompt, handoff, and tool-list formats are intentionally not shipped. Codex uses `AGENTS.md` for durable repository rules, `SKILL.md` for reusable workflow knowledge, `agents/openai.yaml` for skill metadata, and `.codex/agents/*.toml` for specialized subagent roles.
+
+## Install for Codex
+
+### 1. Install the skill
+
+Copy `skills/swiftlys2-toolkit` into `${CODEX_HOME}/skills/`. When `CODEX_HOME` is unset, use `~/.codex`.
+
+PowerShell:
+
+```powershell
+$CodexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME '.codex' }
+$SkillTarget = Join-Path $CodexHome 'skills\swiftlys2-toolkit'
+New-Item -ItemType Directory -Force $SkillTarget | Out-Null
+Copy-Item -Recurse -Force '.\skills\swiftlys2-toolkit\*' $SkillTarget
+```
+
+Git Bash / POSIX shell:
 
 ```bash
-# Clone into a temp folder, then copy into your .github/
-git clone https://github.com/2oaJ/SwiftlyS2-Toolkit temp-toolkit
-cp -r temp-toolkit/agents   your-workspace/.github/
-cp -r temp-toolkit/prompts  your-workspace/.github/
-cp -r temp-toolkit/skills   your-workspace/.github/
-rm -rf temp-toolkit
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$CODEX_HOME/skills"
+cp -R skills/swiftlys2-toolkit "$CODEX_HOME/skills/"
 ```
 
-## Agents Overview
+### 2. Install the optional subagent roles
 
-| Agent | Purpose |
-| --- | --- |
-| `SwiftlyS2-Edit` | Edit-only development agent with review closure loop |
-| `SwiftlyS2-Edit-Fast` | Edit-only fast execution agent for small/medium direct changes |
-| `SwiftlyS2-Plan` | Manual-only planning agent (does not edit code) |
-| `SwiftlyS2-Plan-Implementation` | Planning-only subagent: file/method-level implementation plan |
-| `SwiftlyS2-Plan-Semantics` | Planning-only subagent: player-visible semantics and architecture |
-| `SwiftlyS2-Plan-Validation` | Planning-only subagent: TDD, validation matrices, regression paths |
-| `SwiftlyS2-Review` | Review subagent for blocking objections |
+Copy `.codex/agents/*.toml` into `${CODEX_HOME}/agents/`, then merge the four `[agents.*]` sections from `.codex/config.toml` into `${CODEX_HOME}/config.toml`. Do not replace an existing global config wholesale.
 
-`SwiftlyS2-Edit` and `SwiftlyS2-Edit-Fast` no longer switch into plan mode on the user's behalf. If you need a formal method-level plan or a planning-first workflow, choose `SwiftlyS2-Plan` manually.
+The checked-out repository already contains the same registration as project-local Codex configuration.
 
-## Public Reference Sources
+## Use
 
-This toolkit references only public sources by default:
+Invoke the skill directly when you want the main Codex agent to own the complete task:
 
-1. [SwiftlyS2 Official Docs](https://swiftlys2.net/docs/)
+```text
+Use $swiftlys2-toolkit to audit this plugin's RuntimeLoop and fix the confirmed lifecycle issues.
+```
+
+The skill routes work to three canonical workflow references:
+
+- `skills/swiftlys2-toolkit/references/edit-workflow.md` for direct implementation
+- `skills/swiftlys2-toolkit/references/plan-workflow.md` for method-level planning
+- `skills/swiftlys2-toolkit/references/audit-workflow.md` for systematic review and risk discovery
+
+Use subagents only when the work splits into independent, verifiable scopes. The parent Codex agent remains responsible for final decisions, integration, high-risk changes, and acceptance.
+
+## Public reference sources
+
+Toolkit guidance is grounded in:
+
+1. [SwiftlyS2 official documentation](https://swiftlys2.net/docs/)
 2. [sw2-mdwiki](https://github.com/himenekocn/sw2-mdwiki)
-3. [SwiftlyS2 Official Repository](https://github.com/swiftly-solution/swiftlys2)
+3. [SwiftlyS2 official repository](https://github.com/swiftly-solution/swiftlys2)
+
+Keep workspace-specific paths, private repositories, credentials, and project rules in the downstream repository's `AGENTS.md` or project-local skills. Do not write them back into this public toolkit.
 
 ## License
 

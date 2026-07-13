@@ -1,4 +1,4 @@
-# swiftlys2-toolkit Plan Prompt
+# swiftlys2-toolkit Plan Workflow
 
 使用 `swiftlys2-toolkit` skill，为 SwiftlyS2 插件任务生成**可执行、方法级、带参考来源的实施计划**。
 
@@ -41,10 +41,10 @@
 
 ### Skill 内参考文档
 
-- `./skills/swiftlys2-toolkit/references/swiftlys2-plugin-playbook.md`
-- `./skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md`（涉及性能、GC、高频 Hook、worker、map 初始化、native interop 时必须使用）
-- `./skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
-- `./skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
+- `./swiftlys2-plugin-playbook.md`
+- `./swiftlys2-performance-optimization-playbook.md`（涉及性能、GC、高频 Hook、worker、map 初始化、native interop 时必须使用）
+- `./swiftlys2-kb-index.md`
+- `./swiftlys2-asset-inventory.md`
 
 ### 公开来源
 
@@ -60,7 +60,7 @@
 
 ### 当前工作区定制参考（如存在）
 
-若 `./copilot-instructions.md` 或 `./knowledge-base.md` 记录了当前工作区的本地映射、当前项目约束或专项规则，可按需补充读取；但在输出公共计划时，不要把这些本地路径或工作区专属项目名写成永久依赖。
+读取当前范围内最近的 `AGENTS.md`，并按需读取其中指向的项目本地 skills 或参考资料；不要把本地路径、私有仓库或工作区专属项目名写回公共计划工作流。
 
 ## 架构判定规则
 
@@ -165,11 +165,11 @@
 - `PARTIAL`：仅因环境限制、依赖缺失或工具不可得而无法直接验证；必须同时说明缺口与替代证据。
 - 若当前只是计划阶段且尚未执行验证，必须明确写“未直接验证/待实施验证”，不能伪装成已通过。
 
-## 若需将计划落盘为 prompt file
+## 若需将计划落盘
 
-- 若上层 agent 在计划收敛后需要直接生成 prompt plan file，文件名应使用：`plan-<task-name>.prompt.md`
-- `<task-name>` 应使用简短、稳定、可读的 kebab-case 英文标识，优先由“目标插件 + 任务主题”组成
-- 用户一旦确认生成，应直接创建文件，不要再要求额外输入 `create file` 一类口令
+- 只有用户明确要求保存计划时才创建文件，并优先使用用户指定路径。
+- 用户未指定路径时，使用 `plans/<task-name>.md`；`<task-name>` 采用简短、稳定、可读的 kebab-case 标识。
+- 计划文件必须自包含，包含执行顺序、目标文件/方法、验证命令和完成条件；不要依赖聊天中的隐藏上下文或 UI 跳转状态。
 
 ## 示例用法
 

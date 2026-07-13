@@ -9,7 +9,7 @@
 - sw2-mdwiki：`https://github.com/himenekocn/sw2-mdwiki`
 - SwiftlyS2 官方仓库：`https://github.com/swiftly-solution/swiftlys2`
 
-若某个工作区还拥有本地参考仓库、当前项目映射、历史参考项目或专项经验，请把它们登记在 `../../copilot-instructions.md` 与 `../../knowledge-base.md`，不要把它们写成这里的永久硬依赖。
+若某个工作区还拥有本地参考仓库、当前项目映射、历史参考项目或专项经验，请把它们登记在最近层级的 `AGENTS.md` 或其显式引用的项目本地 skill 中，不要把它们写成这里的永久硬依赖。
 
 ## 一、三类常见架构
 

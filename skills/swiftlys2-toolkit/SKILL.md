@@ -1,9 +1,6 @@
 ---
 name: swiftlys2-toolkit
-description: 'SwiftlyS2 toolkit for creating, modifying, auditing, planning, reviewing, and directly editing C#/.NET SwiftlyS2 plugins. Use when working on SwiftlyS2 plugins involving Commands, Events, Hooks, Modules, Workers, Services, high-frequency runtime loops, NetMessages, Schema access, or IPlayer lifecycle issues.'
-argument-hint: 'Describe the plugin/task, target module or method, and whether historical behavior/reference extraction is required.'
-user-invocable: true
-disable-model-invocation: false
+description: 'Plan, implement, audit, and review C#/.NET SwiftlyS2 plugins. Use when Codex works with Commands, Events, Hooks, Modules, Workers, Services, high-frequency runtime loops, NetMessages, Schema access, entity handling, thread safety, performance, or IPlayer lifecycle behavior.'
 ---
 
 # swiftlys2-toolkit
@@ -14,25 +11,22 @@ Its goal is not to bind itself to any specific workspace, but to provide a **pub
 
 ## Public reference allowlist
 
-The public docs, prompts, agents, and templates in this toolkit should, by default, reference only the following public sources:
+The public skill, workflow references, agent roles, and templates in this toolkit should, by default, reference only the following public sources:
 
 1. SwiftlyS2 official documentation: `https://swiftlys2.net/docs/`
 2. sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
 3. SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
 4. SwiftlyS2 LLM-optimized full documentation: `https://swiftlys2.net/llms-full.txt` (last-resort full-text fallback only when targeted navigation is insufficient)
 
-If the current workspace has workspace-specific mappings, local reference repositories, historical reference projects, or special rules, that information **may only be recorded in**:
+Keep workspace-specific mappings, private reference repositories, historical projects, credentials, and special rules in the nearest applicable `AGENTS.md` or in a project-local Codex skill. Do not write them back into this public skill.
 
-- `./copilot-instructions.md`
-- `./knowledge-base.md`
-
-- If the workspace includes a local `sw2-mdwiki` checkout, it is strongly recommended to use it as a local reference repository to improve agent retrieval efficiency and accuracy.
+If the workspace includes a local `sw2-mdwiki` checkout, prefer it as a local public reference repository for faster, more accurate retrieval.
 
 ## Full-text documentation usage policy
 
 - Prefer indexed and targeted sources first: `swiftlys2-kb-index.md`, `swiftlys2-official-docs-map.md`, local `sw2-mdwiki`, and the relevant official docs pages.
-- Treat `../../llms-full.txt` as a low-priority offline fallback because it is large and not indexed.
-- Before reading `../../llms-full.txt`, ask the user whether it should be read.
+- Treat `https://swiftlys2.net/llms-full.txt` as a low-priority fallback because it is large and not indexed.
+- Before reading the full-text document, ask the user whether it should be read.
 - After approval, use keyword-guided or range-based partial reads only; do not scan the whole file by default.
 
 ## What this skill should produce
@@ -64,29 +58,12 @@ Examples:
 - Avoid mixed-language prose unless the user explicitly asks for bilingual output.
 - Code comments generated or modified by the toolkit must use the same language as the response.
 
-## When to use it
-
-Use this skill when the task involves:
-
-- SwiftlyS2 plugin development
-- `Commands`, `Events`, `Hooks`, `Modules`, `Workers`, `Services`
-- High-frequency runtime loops and state synchronization
-- `Schema`, `NetMessages`, `Protobuf`, or `IPlayer` lifecycle handling
-- High-frequency hooks, async workers, main-thread-sensitive APIs, or entity lifecycle handling
-- Plugin migration, behavior alignment, structural audits, or method-level planning
-
-## When not to use it
-
-- Regular C# work unrelated to SwiftlyS2
-- Pure frontend UI work
-- A one-off tiny change that does not require architecture, lifecycle, or thread-boundary judgment
-
 ## Toolkit structure
 
 ### Entry documents
 
 - `./SKILL.md`
-- `./README.md`
+- `./agents/openai.yaml` (Codex UI metadata)
 
 ### Reference documents
 
@@ -95,7 +72,9 @@ Use this skill when the task involves:
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./references/swiftlys2-asset-inventory.md`
-- `../../llms-full.txt`：SwiftlyS2 官网 LLM 全量文档的本地缓存（定期从 `https://swiftlys2.net/llms-full.txt` 同步；仅作为低优先级离线兜底全文源）
+- `./references/plan-workflow.md`
+- `./references/audit-workflow.md`
+- `./references/edit-workflow.md`
 
 ### Templates and checklists
 
@@ -128,11 +107,11 @@ Use this skill when the task involves:
 - `./assets/workflows/planning/method-level-plan-template.md`
 - `./assets/workflows/audit/audit-report-template.md`
 
-### Paired prompts
+### Workflow references
 
-- `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
-- `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
-- `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+- `./references/plan-workflow.md`
+- `./references/audit-workflow.md`
+- `./references/edit-workflow.md`
 
 ## Task routing
 
@@ -141,7 +120,7 @@ Use this skill when the task involves:
 Open these first:
 
 - `./references/swiftlys2-plugin-playbook.md`
-- `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+- `./references/plan-workflow.md`
 
 ### If the task is mainly “systematically find risks first”
 
@@ -149,14 +128,14 @@ Open these first:
 
 - `./references/swiftlys2-plugin-playbook.md`
 - If performance, GC, high-frequency hooks, worker queues, map initialization, or native interop are in scope: `./references/swiftlys2-performance-optimization-playbook.md`
-- `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+- `./references/audit-workflow.md`
 - `./assets/workflows/audit/audit-report-template.md`
 
 ### If the task is mainly “edit code directly”
 
 Open these first:
 
-- `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+- `./references/edit-workflow.md`
 - `./assets/README.md`
 - The template or checklist closest to the relevant subsystem
 - For performance optimization work, also open `./references/swiftlys2-performance-optimization-playbook.md` before editing.
@@ -167,11 +146,11 @@ Open these first:
 
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
-- `./README.md`
+- `./references/swiftlys2-asset-inventory.md`
 
 ### If online docs are unavailable or a full-text API search is truly necessary
 
-Only after the indexed references above are insufficient, ask the user whether `../../llms-full.txt` may be read. If the user agrees, use it as a low-priority local offline reference and prefer keyword/range-based partial reads rather than whole-file scanning. This file contains the entire SwiftlyS2 official documentation (API reference, development guides, installation, porting guide, etc.) in a single text file optimized for LLM consumption. It is periodically synced from `https://swiftlys2.net/llms-full.txt`.
+Only after the indexed references above are insufficient, ask the user whether `https://swiftlys2.net/llms-full.txt` may be read. If the user agrees, use it as a low-priority fallback and prefer keyword/range-based partial reads rather than whole-document scanning.
 ## Architecture categories
 
 ### 1. Modular gameplay plugins
@@ -207,6 +186,7 @@ Suitable when:
 ### 2. Silent drift is forbidden
 
 - If the user explicitly requires historical alignment, legacy compatibility, or player-visible consistency, every difference must be explicitly explained or explicitly fixed.
+- Do not add backward-compatibility branches, aliases, adapters, fallback routes, or duplicate data paths unless the current user explicitly requests compatibility. If active legacy callers or data are discovered, report the evidence and impact before implementing a compatibility layer.
 
 ### 3. Lifecycle closure is a hard requirement
 
@@ -292,7 +272,7 @@ Then use `./references/swiftlys2-performance-optimization-playbook.md` to choose
 
 1. `./SKILL.md`
 2. `./references/swiftlys2-plugin-playbook.md`
-3. `../../prompts/SwiftlyS2-Toolkit-Plan.prompt.md`
+3. `./references/plan-workflow.md`
 4. `./assets/workflows/planning/method-level-plan-template.md`
 
 ### For auditing
@@ -300,13 +280,13 @@ Then use `./references/swiftlys2-performance-optimization-playbook.md` to choose
 1. `./SKILL.md`
 2. `./references/swiftlys2-kb-index.md`
 3. `./references/swiftlys2-performance-optimization-playbook.md` when performance or hot paths are in scope
-4. `../../prompts/SwiftlyS2-Toolkit-Audit.prompt.md`
+4. `./references/audit-workflow.md`
 5. `./assets/workflows/audit/audit-report-template.md`
 
 ### For direct code edits
 
 1. `./SKILL.md`
-2. `../../prompts/SwiftlyS2-Toolkit-Edit.prompt.md`
+2. `./references/edit-workflow.md`
 3. Relevant subsystem templates / checklists
 
 ## Output requirements
