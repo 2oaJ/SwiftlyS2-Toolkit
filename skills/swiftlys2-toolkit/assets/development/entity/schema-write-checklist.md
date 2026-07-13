@@ -17,7 +17,7 @@
 ## 写回通知要求
 
 - [ ] 写回后是否需要调用 `Updated()`？
-- [ ] 若任务涉及 CSS 迁移语义，是否确认是否还需 `SetStateChanged()`？
+- [ ] CSS 迁移是否已收敛到当前字段的 `Updated()`，而没有保留 `SetStateChanged()`？
 - [ ] 是否已确认当前字段的引擎 / 客户端同步语义？
 
 ### `*Updated()` 调用强制规则
@@ -80,6 +80,14 @@ pawn.RenderUpdated();
 - [ ] 是否避免在断线、换图、卸载后对旧对象写回？
 - [ ] 延迟回调是否重新获取当前对象，而不是复用旧引用？
 - [ ] 若实体需跨 tick / 延迟长期跟踪，是否使用 `CHandle<T>`？
+- [ ] `CHandle<T>.Value` 是否按可空值读取，并在每次使用前检查 `IsValid`？
+
+## Native / ref 边界
+
+- [ ] `ISchemaFixedArray<T>` 的 `ref` 元素是否只在当前同步栈帧使用？
+- [ ] 是否避免保存 `SchemaUntypedField.Address`、raw native pointer 或 wrapper 到字段、lambda、worker 或 async continuation？
+- [ ] 是否优先使用 typed schema accessor，而不是未验证的 raw Address？
+- [ ] 创建实体后是否确认已 spawn；后台上下文是否使用 `DispatchSpawnAsync`？
 
 ## `SetModel` 与 staging list (EF_IN_STAGING_LIST)
 

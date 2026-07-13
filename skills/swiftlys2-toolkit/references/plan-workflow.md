@@ -45,6 +45,7 @@
 - `./swiftlys2-performance-optimization-playbook.md`（涉及性能、GC、高频 Hook、worker、map 初始化、native interop 时必须使用）
 - `./swiftlys2-kb-index.md`
 - `./swiftlys2-asset-inventory.md`
+- `./swiftlys2-current-capability-map.md`
 
 ### 公开来源
 
@@ -52,6 +53,8 @@
 - Getting Started：`https://swiftlys2.net/docs/development/getting-started/`
 - Dependency Injection：`https://swiftlys2.net/docs/guides/dependency-injection/`
 - Thread Safety：`https://swiftlys2.net/docs/development/thread-safety/`
+- GameHooks API：`https://swiftlys2.net/docs/api/gamehooks/`
+- Game Events：`https://swiftlys2.net/docs/development/game-events/`
 - Native Functions and Hooks：`https://swiftlys2.net/docs/development/native-functions-and-hooks/`
 - Network Messages：`https://swiftlys2.net/docs/development/netmessages/`
 - Swiftly Core：`https://swiftlys2.net/docs/development/swiftly-core/`
@@ -96,6 +99,10 @@
 - 是否有 `lock`、阻塞等待、主线程等待风险
 
 ### 2. 高频 Hook
+- 目标属于 `Core.Event`、`Core.GameEvent`、`Core.GameHooks` 还是 raw `Core.Memory`？记录选择理由
+- 若是 GameHooks，具体 category / hook / Pre 或 Post / 允许的 `HookResult` 是什么？
+- 若是动态注册，谁拥有 `+=` / `-=` 或 `Guid` / `Unhook`？
+- `ref struct` context、temporary event/accessor/netmessage 是否只在 callback 内使用？
 - 是否应先参考 `swiftlys2-performance-optimization-playbook.md` 做热点分类
 - 是否真的需要高频 Hook，还是可用低频 Scheduler / 状态差分 / 较粗 movement 阶段替代
 - 是否需要尽早过滤真人/机器人/死亡态
@@ -105,13 +112,14 @@
 - 是否需要 `Span` / `stackalloc`、ring buffer、bounded queue、generation token、Profiler 分段等具体优化边界
 
 ### 3. Schema 读写
-- 是否需要 `Updated()` / `SetStateChanged()` / 原生同步方法
+- 是否需要对应字段的 `Updated()` / 原生同步方法（不保留 CSS `SetStateChanged()` 路径）
 - 是否需要先主线程采快照再异步消费
 
 ### 4. Protobuf / NetMessages
 - 是否必须在主线程读写
 - 是否应立即转换为普通模型后再异步处理
 - 是否涉及 typed protobuf / hook / send / create / dispose
+- callback wrapper / `Accessor` 是否只在 callback 内读取并复制普通值
 
 ### 5. IPlayer 生命周期
 - 连接/断开/换图/玩家态重建如何闭环

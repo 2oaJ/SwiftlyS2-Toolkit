@@ -21,7 +21,8 @@
 - [ ] `OnMapUnload` 是否停止 worker / 自动控制实体 / runtime loop？
 - [ ] 地图切换后是否有旧地图对象残留状态？
 - [ ] `OnPrecacheResource` 是否注册了所有自定义模型/声音/粒子？
-- [ ] map-scoped 的 `CancellationTokenSource` 是否通过 `StopOnMapChange` 绑定？
+- [ ] 每个 map-scoped scheduler timer 是否保存其返回的 `CancellationTokenSource` 并传给 `StopOnMapChange`？
+- [ ] 业务 async CTS 与 scheduler timer CTS 是否按不同所有权管理？
 
 ## 异步与后台任务
 
@@ -36,9 +37,19 @@
 - [ ] 插件 root 是否只负责安装顺序 / 卸载顺序？
 - [ ] 每个独立 service 注册的 Event / Hook / Command 是否都能在自身 `Uninstall()` / `Cleanup()` 中闭环清理？
 - [ ] 条件性 hook 是否通过内部状态标记动态挂卸？
+- [ ] `Core.Event.X += handler` 是否有同一 owner 中对称的 `-=`，以支持提前停止监听？
+- [ ] typed entity/movement/controller/pawn/weapon hook 是否使用 `Core.GameHooks`，而非已废弃的 `Core.Event.On*Hook`？
+- [ ] Game Event 动态注册是否保存 `Guid`，并在停用时 `Core.GameEvent.Unhook`？
 
 ## 高频 Hook / 热路径
 
 - [ ] 是否尽早过滤无效玩家 / fake client / dead player？
 - [ ] 是否避免热路径日志与 IO？
 - [ ] 是否避免多余分配？
+- [ ] `ref struct` hook context、temporary Game Event / NetMessage wrapper 是否只在当前回调内使用？
+
+## Core Event 订阅规则
+
+固定生命周期 listener 可以使用 `[EventListener<T>]`。动态订阅使用 `Core.Event.OnX += handler`，需要提前停止时用 `-=`；hot reload / unload 的自动清理不是省略本地所有权设计的理由。
+
+`OnTick`、`OnWorldUpdate`、`OnClientProcessUsercmds` 属于高频路径。其中旧的 `OnClientProcessUsercmds` native hook 迁移应优先转 `Core.GameHooks.Controller.ProcessUsercmds`，不是继续扩大 Core Event handler。

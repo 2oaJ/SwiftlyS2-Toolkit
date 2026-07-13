@@ -95,17 +95,26 @@
 
 ### Hook / Runtime / 高频路径
 - `./swiftlys2-performance-optimization-playbook.md`
-- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
+- `../assets/development/game-hooks/game-hooks-pre-post-guide.md`（typed controller/entity/item/movement/pawn/weapon hook）
+- `../assets/development/game-events/game-events-usage-notes.md`（generated Game Event）
+- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`（仅 GameHooks 未覆盖的 raw native / mid-hook）
 - `../assets/development/thread-safety/thread-sensitivity-checklist.md`
 - `../assets/development/profiler/hotpath-gc-checklist.md`
 
 ### Schema / Entity 写回
 - `../assets/development/entity/schema-write-checklist.md`
+- `../assets/development/entity/entity-key-values-guide.md`
 - `../assets/development/thread-safety/thread-sensitivity-checklist.md`
 
 ### 配置 / ConVar
 - `../assets/development/configuration/config-hot-reload-template.cs.md`
 - `../assets/development/convars/convar-template.cs.md`
+
+### Database / 声音 / Steamworks / 内存
+- `../assets/development/database/database-connection-template.cs.md`
+- `../assets/development/sound-events/sound-event-guide.md`
+- `../assets/development/steamworks/steamworks-server-guide.md`
+- `../assets/development/memory/memory-service-guide.md`
 
 ### Worker / 异步持久化 / 后台任务
 - `./swiftlys2-performance-optimization-playbook.md`
@@ -158,9 +167,11 @@
 ### 4. 选择合适的资产
 - command（attribute）→ command attribute template + attribute checklist
 - command（service-owned）→ command service template
-- command（client command hook）→ client-command-hook-template + hook-handler-template
+- command（client command hook）→ client-command-hook-template
 - menu → menu template + thread checklist
-- hook → hook template + thread checklist + hotpath checklist
+- typed game hook → game-hooks guide + thread checklist + hotpath checklist
+- generated Game Event → game-events guide + lifecycle checklist
+- raw native / mid-hook → native-functions-and-hooks template + thread checklist + hotpath checklist
 - schema → schema checklist
 - worker → scheduler-vs-worker guide + worker template + lifecycle checklist
 - service/DI → service template / di template

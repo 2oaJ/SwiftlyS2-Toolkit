@@ -48,15 +48,15 @@ private async Task OnMyCommandAsync(ICommandContext context)
 ```csharp
 private async Task HandleSomeActionAsync(IPlayer player)
 {
-    var steamId = player.SteamID;  // 先快照不可变标识
+    var sessionId = player.SessionId;  // 运行态使用会话标识，断线后会失效。
 
-    var result = await SomeLongRunningCall(steamId);
+    var result = await SomeLongRunningCall(player.SteamID);
 
     // 异步完成后重新获取玩家
-    var currentPlayer = Core.PlayerManager.GetPlayerBySteamId(steamId);
+    var currentPlayer = Core.PlayerManager.GetPlayerFromSessionId(sessionId);
     if (currentPlayer is null || !currentPlayer.IsValid)
     {
-        Logger.LogDebug("玩家 {SteamId} 在异步期间断开", steamId);
+        Logger.LogDebug("玩家会话 {SessionId} 在异步期间断开", sessionId);
         return;
     }
 
@@ -70,19 +70,23 @@ private async Task HandleSomeActionAsync(IPlayer player)
 
 ```csharp
 private CancellationTokenSource? _mapCts;
+private CancellationTokenSource? _periodicTimerCts;
 
 [EventListener<OnMapLoad>]
 public void OnMapLoad(IOnMapLoadEvent @event)
 {
     _mapCts?.Cancel();
     _mapCts?.Dispose();
-    _mapCts = new CancellationTokenSource();
+    var mapCts = _mapCts = new CancellationTokenSource();
 
     // 地图切换时自动 Cancel
-    Core.Scheduler.StopOnMapChange(_mapCts);
+    Core.Scheduler.StopOnMapChange(mapCts);
 
-    // Scheduler 注册的周期任务会被自动取消
-    Core.Scheduler.RepeatBySeconds(1.0f, () => PeriodicTask(_mapCts.Token));
+    // timer 自己返回 CTS，需单独保存并绑定 map lifecycle。
+    _periodicTimerCts?.Cancel();
+    _periodicTimerCts?.Dispose();
+    _periodicTimerCts = Core.Scheduler.RepeatBySeconds(1.0f, () => PeriodicTask(mapCts.Token));
+    Core.Scheduler.StopOnMapChange(_periodicTimerCts);
 }
 
 // 异步任务中使用 token 传播取消
@@ -92,8 +96,16 @@ private async Task LoadMapDataAsync(string mapName, CancellationToken cancellati
 
     cancellationToken.ThrowIfCancellationRequested();
 
-    // 确保不在已换图后继续操作
-    ApplyMapData(data);
+    // 无 Async 对应 API 时，使用同步 scheduler callback 回到主线程提交。
+    await Core.Scheduler.NextWorldUpdateAsync(() =>
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        ApplyMapData(data);
+    });
 }
 ```
 
@@ -178,7 +190,7 @@ while (true) { await Task.Delay(1000); DoWork(); }
 FireAndForget(SomethingAsync(), Logger, "MyPlugin.Context");
 
 // ✅ 异步后重取玩家
-var currentPlayer = Core.PlayerManager.GetPlayerBySteamId(steamId);
+var currentPlayer = Core.PlayerManager.GetPlayerFromSessionId(sessionId);
 if (currentPlayer is not null && currentPlayer.IsValid) { ... }
 
 // ✅ 带取消令牌
@@ -189,7 +201,8 @@ while (!token.IsCancellationRequested) { await Task.Delay(1000, token); }
 
 - [ ] 从同步入口发起的异步任务是否使用自实现的 `FireAndForget` 包装（见本文 一）？
 - [ ] 异步 `await` 后是否重新校验 `IPlayer` 有效性？
-- [ ] map-scoped 异步任务是否绑定 `StopOnMapChange`？
+- [ ] map-scoped 业务任务和 scheduler timer 是否各自保存 CTS，并分别在需要时 `StopOnMapChange`？
+- [ ] 是否没有向 `NextTick` / `NextWorldUpdate` 传 `async` lambda？
 - [ ] 异步回写是否使用 generation counter 或类似的代际校验？
 - [ ] 是否避免 `.Wait()` / `.Result` / 同步阻塞？
 - [ ] 后台循环是否携带 `CancellationToken`？

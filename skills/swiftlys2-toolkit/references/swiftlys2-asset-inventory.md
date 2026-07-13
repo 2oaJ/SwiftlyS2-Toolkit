@@ -17,6 +17,7 @@
 - [skills/swiftlys2-toolkit/references/swiftlys2-performance-optimization-playbook.md](./swiftlys2-performance-optimization-playbook.md)
 - `skills/swiftlys2-toolkit/references/swiftlys2-kb-index.md`
 - `skills/swiftlys2-toolkit/references/swiftlys2-official-docs-map.md`
+- `skills/swiftlys2-toolkit/references/swiftlys2-current-capability-map.md`
 - `skills/swiftlys2-toolkit/references/swiftlys2-asset-inventory.md`
 
 ### Templates / Assets
@@ -29,7 +30,13 @@
 - `skills/swiftlys2-toolkit/assets/development/commands/client-command-hook-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/menus/menu-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/development/netmessages/protobuf-handler-template.cs.md`
+- `skills/swiftlys2-toolkit/assets/development/game-hooks/game-hooks-pre-post-guide.md`
 - `skills/swiftlys2-toolkit/assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
+- `skills/swiftlys2-toolkit/assets/development/database/database-connection-template.cs.md`
+- `skills/swiftlys2-toolkit/assets/development/entity/entity-key-values-guide.md`
+- `skills/swiftlys2-toolkit/assets/development/sound-events/sound-event-guide.md`
+- `skills/swiftlys2-toolkit/assets/development/steamworks/steamworks-server-guide.md`
+- `skills/swiftlys2-toolkit/assets/development/memory/memory-service-guide.md`
 - `skills/swiftlys2-toolkit/assets/development/thread-safety/thread-sensitivity-checklist.md`
 - `skills/swiftlys2-toolkit/assets/development/profiler/hotpath-gc-checklist.md`
 - `skills/swiftlys2-toolkit/assets/development/entity/schema-write-checklist.md`
@@ -47,6 +54,8 @@
 - `skills/swiftlys2-toolkit/assets/guides/dependency-injection/service-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/guides/terminologies/README.md`
 - `skills/swiftlys2-toolkit/assets/guides/html-styling/README.md`
+- `skills/swiftlys2-toolkit/assets/guides/porting-from-css/porting-checklist.md`
+- `skills/swiftlys2-toolkit/assets/resources/runtime-configuration-guide.md`
 - `skills/swiftlys2-toolkit/assets/patterns/background-workers/worker-template.cs.md`
 - `skills/swiftlys2-toolkit/assets/patterns/async-patterns/async-safety-guide.md`
 - `skills/swiftlys2-toolkit/assets/patterns/per-player-state/player-state-management-guide.md`
@@ -65,12 +74,12 @@
 
 - Skill：1
 - Workflow References：3
-- Domain References：5
-- Templates / Assets：33
+- Domain References：6
+- Templates / Assets：41
 - Codex Metadata：1
 - Optional Workspace Layer：0
 
-**合计：43 个核心资产**
+**合计：52 个核心资产**
 
 ## 3. 分层原则
 

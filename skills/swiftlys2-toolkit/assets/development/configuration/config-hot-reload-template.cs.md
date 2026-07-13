@@ -9,6 +9,7 @@
 ## 设计要点
 
 - 使用 `Core.Configuration.InitializeJsonWithModel<T>()` 初始化配置。
+- 可用 `InitializeTomlWithModel<T>()` 和 `AddTomlFile(...)` 管理 TOML。
 - 使用 `IOptionsMonitor<T>.OnChange()` 监听变更，实现热加载。
 - Config 类建议定义在单独文件 `Config.cs` 中。
 - JSONC 格式（`config.jsonc`）支持注释，便于维护。
@@ -40,6 +41,24 @@ public class RewardConfig
     public float Multiplier { get; set; } = 1.0f;
 }
 ```
+
+## TOML 并行配置
+
+需要把运行配置和部署连接信息等分开时，可使用 TOML，而不是把不同格式硬塞进同一模型：
+
+```csharp
+Core.Configuration
+    .InitializeTomlWithModel<DatabaseConfig>("database.toml", "Database")
+    .Configure(builder => builder.AddTomlFile(
+        "database.toml",
+        optional: false,
+        reloadOnChange: true));
+
+services.AddOptionsWithValidateOnStart<DatabaseConfig>()
+    .BindConfiguration("Database");
+```
+
+`Initialize*WithModel` 只创建缺失文件；不要把它误当作每次 Load 都覆盖模板的 API。
 
 ## 初始化与热加载
 

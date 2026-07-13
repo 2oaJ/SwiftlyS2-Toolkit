@@ -51,7 +51,7 @@ if (runtime is null || !runtime.Enabled)
     return ContinueOriginal();
 
 var player = ResolvePlayer();
-if (player is null || !player.Valid() || player.IsFakeClient)
+if (player is null || !player.IsValid || player.IsFakeClient)
     return ContinueOriginal();
 
 var state = playerStateRegistry.TryGet(player.PlayerID);
@@ -85,6 +85,8 @@ foreach (var subscriber in subscribers)
 - 每个 Hook 要有清晰的 Install / Uninstall。
 - 条件性 Hook 应在条件满足时安装，在条件失效时卸载，不要长期空转。
 - Profiler 名称要成对、稳定、可按阶段区分，例如 `MyHook.PreDispatch` / `MyHook.PostDispatch`。
+- typed controller/entity/item/movement/pawn/weapon hook 优先从 `Core.GameHooks` 选择；raw native hook 只用于未被 typed API 覆盖的面。
+- `ref struct` hook context、usercmd、temporary wrapper 只在当前回调栈帧使用，采样后复制普通值再投递后台。
 
 ## 2. 玩家运行态优化
 

@@ -31,13 +31,12 @@
 
 ```csharp
 using SwiftlyS2.Shared.Commands;
-using SwiftlyS2.Shared.Core.Attributes.Commands;
 
 namespace MyNamespace;
 
 public partial class MyPlugin
 {
-    [Command("mycommand", permission: "myplugin.commands.use")]
+    [Command("mycommand", permission: "myplugin.commands.use", helpText: "执行我的功能")]
     [CommandAlias("mc")]
     public void OnMyCommand(ICommandContext context)
     {
@@ -47,14 +46,14 @@ public partial class MyPlugin
             return;
         }
 
-        var args = context.Arguments;
-        if (args.Count < 2)
+        var args = context.Args;
+        if (args.Length < 1)
         {
             context.Reply("[插件] 参数错误，请检查输入格式。");
             return;
         }
 
-        var parsedArg = args[1].Trim();
+        var parsedArg = args[0].Trim();
         if (string.IsNullOrWhiteSpace(parsedArg))
         {
             context.Reply("[插件] 参数不能为空。");
@@ -81,3 +80,12 @@ public partial class MyPlugin
 - 是否先校验 `context.IsSentByPlayer`、`context.Sender`、`Sender.IsValid`？
 - 是否保留权限语义与 alias 语义？
 - 是否避免在命令入口直接写跨模块内部状态？
+- `ICommandContext.Args` 是否按当前 `string[]` API 使用 `Length`，而不是旧的 `Arguments` / `Count`？
+- 是否仅在需要去掉 `sw_` 前缀时设置 `registerRaw: true`？它不影响 handler 是否会被发现。
+
+## 当前 Context 字段速查
+
+- `CommandName`：当前命令名。
+- `Prefix`：命令前缀。
+- `IsSlient`：官方当前 API 的拼写即为 `IsSlient`，不要自行改写为 `IsSilent`。
+- `Args`：命令参数数组；对参数个数使用 `Length`。

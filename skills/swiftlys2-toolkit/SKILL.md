@@ -1,6 +1,6 @@
 ---
 name: swiftlys2-toolkit
-description: 'Plan, implement, audit, and review C#/.NET SwiftlyS2 plugins. Use when Codex works with Commands, Events, Hooks, Modules, Workers, Services, high-frequency runtime loops, NetMessages, Schema access, entity handling, thread safety, performance, or IPlayer lifecycle behavior.'
+description: 'Plan, implement, audit, and review C#/.NET SwiftlyS2 plugins. Use when Codex works with Commands, Core Events, Game Events, GameHooks Pre/Post, raw native hooks, Modules, Workers, Services, high-frequency runtime loops, NetMessages, Schema access, entity handling, thread safety, performance, or IPlayer lifecycle behavior.'
 ---
 
 # swiftlys2-toolkit
@@ -72,6 +72,7 @@ Examples:
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./references/swiftlys2-asset-inventory.md`
+- `./references/swiftlys2-current-capability-map.md`
 - `./references/plan-workflow.md`
 - `./references/audit-workflow.md`
 - `./references/edit-workflow.md`
@@ -87,12 +88,21 @@ Examples:
 - `./assets/development/commands/client-command-hook-template.cs.md`
 - `./assets/development/menus/menu-template.cs.md`
 - `./assets/development/netmessages/protobuf-handler-template.cs.md`
+- `./assets/development/game-hooks/game-hooks-pre-post-guide.md`
 - `./assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
+- `./assets/development/database/database-connection-template.cs.md`
+- `./assets/development/entity/entity-key-values-guide.md`
+- `./assets/development/sound-events/sound-event-guide.md`
+- `./assets/development/steamworks/steamworks-server-guide.md`
+- `./assets/development/memory/memory-service-guide.md`
+- `./assets/development/configuration/README.md`
 - `./assets/development/configuration/config-hot-reload-template.cs.md`
 - `./assets/development/convars/convar-template.cs.md`
 - `./assets/development/core-events/lifecycle-checklist.md`
 - `./assets/development/core-events/precache-resource-template.cs.md`
 - `./assets/development/game-events/game-events-usage-notes.md`
+- `./assets/development/translations/README.md`
+- `./assets/development/permissions/README.md`
 - `./assets/development/shared-api/shared-interface-template.cs.md`
 - `./assets/development/thread-safety/thread-sensitivity-checklist.md`
 - `./assets/development/profiler/hotpath-gc-checklist.md`
@@ -100,6 +110,10 @@ Examples:
 - `./assets/development/scheduler/scheduler-vs-worker-guide.md`
 - `./assets/guides/dependency-injection/di-service-plugin-template.cs.md`
 - `./assets/guides/dependency-injection/service-template.cs.md`
+- `./assets/guides/terminologies/README.md`
+- `./assets/guides/html-styling/README.md`
+- `./assets/guides/porting-from-css/porting-checklist.md`
+- `./assets/resources/runtime-configuration-guide.md`
 - `./assets/patterns/background-workers/worker-template.cs.md`
 - `./assets/patterns/per-player-state/player-state-management-guide.md`
 - `./assets/patterns/async-patterns/async-safety-guide.md`
@@ -147,6 +161,7 @@ Open these first:
 - `./references/swiftlys2-kb-index.md`
 - `./references/swiftlys2-official-docs-map.md`
 - `./references/swiftlys2-asset-inventory.md`
+- `./references/swiftlys2-current-capability-map.md`
 
 ### If online docs are unavailable or a full-text API search is truly necessary
 
@@ -221,6 +236,15 @@ When in an async context, prefer the corresponding `Async` APIs instead of mecha
 - Decide whether the Hook should exist at all before optimizing its body; avoid the finest-grained Hook when a lower-frequency movement stage, scheduler, or state-diff path is sufficient
 - Use a stable early-return shape: feature disabled / no current runtime / invalid player or pawn / fake client / no registered subscribers
 
+### 5.1 Choose the current hook surface before optimizing it
+
+- Framework lifecycle / tick / ordinary core notifications: `Core.Event`
+- Generated Source 2 game events: `Core.GameEvent`
+- Typed controller/entity/item/movement/pawn/weapon hooks: `Core.GameHooks`
+- Only typed API gaps: `Core.GameData` + `Core.Memory` with an exact delegate
+- Do not introduce `DynamicHook`, `[HookCallback]`, or old `Core.Event.On*Hook` paths for a new implementation.
+- For dynamic registration, declare the owner, precise unregistration route, `Pre` / `Post` behavior, and whether temporary/ref context can escape.
+
 ### 6. `IPlayer` lifecycle has extremely high priority
 
 - `IPlayer` objects may be destroyed after disconnect
@@ -228,6 +252,7 @@ When in an async context, prefer the corresponding `Async` APIs instead of mecha
 - Do not assume bots / fakeclients can reuse the same identity-key strategy as real players
 - When bots and real players are stored together, prefer `SessionId` as the runtime lookup key
 - Bot `SteamID` values are not reliable and should, in practice, be treated as fixed `0`; do not use them as stable bot lookup keys
+- Use `GetPlayerFromSessionId` for current-session relookup; use `GetPlayerFromSteamId` only for confirmed real-player identity flows.
 
 ### 7. For long-lived entity tracking, think in handles first
 
@@ -272,16 +297,18 @@ Then use `./references/swiftlys2-performance-optimization-playbook.md` to choose
 
 1. `./SKILL.md`
 2. `./references/swiftlys2-plugin-playbook.md`
-3. `./references/plan-workflow.md`
-4. `./assets/workflows/planning/method-level-plan-template.md`
+3. `./references/swiftlys2-current-capability-map.md` when SDK surface selection matters
+4. `./references/plan-workflow.md`
+5. `./assets/workflows/planning/method-level-plan-template.md`
 
 ### For auditing
 
 1. `./SKILL.md`
 2. `./references/swiftlys2-kb-index.md`
-3. `./references/swiftlys2-performance-optimization-playbook.md` when performance or hot paths are in scope
-4. `./references/audit-workflow.md`
-5. `./assets/workflows/audit/audit-report-template.md`
+3. `./references/swiftlys2-current-capability-map.md`
+4. `./references/swiftlys2-performance-optimization-playbook.md` when performance or hot paths are in scope
+5. `./references/audit-workflow.md`
+6. `./assets/workflows/audit/audit-report-template.md`
 
 ### For direct code edits
 

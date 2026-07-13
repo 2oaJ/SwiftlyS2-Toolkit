@@ -10,10 +10,12 @@
 
 - Docs Root：`https://swiftlys2.net/docs/`
 - Docs Map（本工具包精简导航）：`./swiftlys2-official-docs-map.md`
+- Current Capability Map（本次官方快照对照）：`./swiftlys2-current-capability-map.md`
 - API Reference：`https://swiftlys2.net/docs/api/`
 
 ### Development 区主入口
 
+- Installation：`https://swiftlys2.net/docs/installation/`
 - Getting Started：`https://swiftlys2.net/docs/development/getting-started/`
 - Swiftly Core：`https://swiftlys2.net/docs/development/swiftly-core/`
 - Using attributes：`https://swiftlys2.net/docs/development/using-attributes/`
@@ -25,6 +27,7 @@
 - Entity Key Values：`https://swiftlys2.net/docs/development/entitykeyvalues/`
 - Game Events：`https://swiftlys2.net/docs/development/game-events/`
 - Core Events：`https://swiftlys2.net/docs/development/core-events/`
+- GameHooks API：`https://swiftlys2.net/docs/api/gamehooks/`
 - Network Messages：`https://swiftlys2.net/docs/development/netmessages/`
 - Menus：`https://swiftlys2.net/docs/development/menus/`
 - Convars：`https://swiftlys2.net/docs/development/convars/`
@@ -37,11 +40,18 @@
 - Sound Events：`https://swiftlys2.net/docs/development/soundevents/`
 - Steamworks：`https://swiftlys2.net/docs/development/steamworks/`
 
+### Resources 区主入口
+
+- CLI Options：`https://swiftlys2.net/docs/resources/cli-options/`
+- Core Configuration：`https://swiftlys2.net/docs/resources/core-configuration/`
+- Command Overrides：`https://swiftlys2.net/docs/resources/command-overrides/`
+- Console Filter：`https://swiftlys2.net/docs/resources/console-filter/`
+
 ### Guides 区主入口
 
 - Dependency Injection：`https://swiftlys2.net/docs/guides/dependency-injection/`
 - Development Flow（当前官网仍为占位 todo）：`https://swiftlys2.net/docs/guides/development-flow/`
-- HTML Styling：`https://swiftlys2.net/docs/guides/html-styling/`
+- Chat & CenterHTML Styling：`https://swiftlys2.net/docs/guides/chat-and-html-styling/`
 - Porting from CounterStrikeSharp：`https://swiftlys2.net/docs/guides/porting-from-css/`
 - Terminologies：`https://swiftlys2.net/docs/guides/terminologies/`
 
@@ -62,6 +72,7 @@
 ## 2. 本工具包 assets 导航
 
 - Assets Root：`../assets/README.md`
+- Current Capability Map：`./swiftlys2-current-capability-map.md`
 - Performance Playbook：`./swiftlys2-performance-optimization-playbook.md`
 - Development 主题资产：`../assets/development/`
 - Guides 主题资产：`../assets/guides/`
@@ -105,7 +116,8 @@
 
 - **我要注册命令 / alias / chat hook** → `Commands`
 - **我要监听地图 / 玩家 / 实体生命周期** → `Core Events`
-- **我要写高频 Hook / native hook / movement 采样** → `Native Functions and Hooks`
+- **我要写 typed entity/controller/movement/pawn/weapon Hook** → `GameHooks` API + `assets/development/game-hooks/`
+- **我要写 raw native function / mid-hook** → `Native Functions and Hooks` + `Memory`
 - **我要发送 typed protobuf / netmessage** → `Network Messages`
 - **我要做跨插件接口** → `Shared API`
 - **我在纠结 await / NextTick / 线程敏感 API** → `Thread Safety`
@@ -201,23 +213,41 @@
 
 ### 我要写 Hook
 
-#### 1）我要写 typed core event / 高频运行态 Hook
+#### 1）我要写 typed GameHooks / 高频运行态 Hook
 
 - 先看官方：
-	1. `Core Events`
+	1. `GameHooks` API
 	2. `Thread Safety`
 	3. `Profiler`
 - 再看本地资产：
 	- `./swiftlys2-performance-optimization-playbook.md`
-	- `../assets/development/native-functions-and-hooks/hook-handler-template.cs.md`
+	- `../assets/development/game-hooks/game-hooks-pre-post-guide.md`
 	- `../assets/development/thread-safety/thread-sensitivity-checklist.md`
 	- `../assets/development/profiler/hotpath-gc-checklist.md`
 - 常见坑：
 	- 热路径中做 JSON / IO / 高频日志
 	- 不做 player / pawn / fakeclient 过滤
 	- 把复杂逻辑直接塞进 Hook 回调
+	- 让 `ref struct` context / usercmd / temporary wrapper 跨 callback
+	- 在 Post 中依赖取消语义
 
-#### 2）我要写 native function hook / mid-hook
+#### 2）我要写 generated Game Event
+
+- 先看官方：
+	1. `Game Events`
+	2. `GameEventDefinitions` API
+- 再看本地资产：
+	- `../assets/development/game-events/game-events-usage-notes.md`
+- 常用 API / 关键词：
+	- `HookPre<T>` / `HookPost<T>`
+	- `Unhook(Guid)`
+	- `FireAsync<T>`
+	- `DontBroadcast` / `Accessor`
+- 常见坑：
+	- 将 event / accessor 保存到延迟或 async 回调
+	- 把不可靠 Game Event 当作 Core lifecycle
+
+#### 3）我要写 native function hook / mid-hook
 
 - 先看官方：
 	1. `Native Functions and Hooks`
@@ -281,7 +311,7 @@
 - 再看本地资产：
 	- `../assets/development/shared-api/shared-interface-template.cs.md`
 - 常见坑：
-	- 不先 `HasSharedInterface(...)`
+	- 不使用 `TryGetSharedInterface(...)` 处理 optional dependency
 	- provider 未加载就假定接口已存在
 	- unload 后继续持有旧接口引用
 
@@ -302,6 +332,18 @@
 	- 在 worker 线程直接访问主线程敏感 API
 	- 没有 stop / flush / cancel 闭环
 
+### 我要接入数据库、声音、Steamworks、Memory 或服务器运行配置
+
+| 场景 | 先看官方 | 再看本地资产 |
+| --- | --- | --- |
+| 插件数据库连接与 ADO.NET/ORM | `Database` | `../assets/development/database/database-connection-template.cs.md` |
+| 实体 spawn 前 key values | `Entity Key Values` | `../assets/development/entity/entity-key-values-guide.md` |
+| 自定义声音与接收者 | `Sound Events` + `Thread Safety` | `../assets/development/sound-events/sound-event-guide.md` |
+| Steam server/Workshop/auth callback | `Steamworks` | `../assets/development/steamworks/steamworks-server-guide.md` |
+| signature/vtable/xref/alloc | `Memory` API | `../assets/development/memory/memory-service-guide.md` |
+| 启动参数、core config、命令权限覆盖、console filter | `Resources` | `../assets/resources/runtime-configuration-guide.md` |
+| CSS 迁移 | `Porting from CounterStrikeSharp` | `../assets/guides/porting-from-css/porting-checklist.md` |
+
 ## 7. 推荐检索关键词
 
 ### 生命周期
@@ -320,9 +362,11 @@
 
 ### Hooks / movement
 
-- `OnClientProcessUsercmds`
-- `OnMovementServicesRunCommandHook`
-- `DynamicHook`
+- `Core.GameHooks`
+- `ProcessUsercmdsPreContext` / `ProcessUsercmdsPostContext`
+- `RunCommandMovementPreContext` / `RunCommandMovementPostContext`
+- `TakeDamageEntityPreContext`
+- `GameHookHandler`
 - `MidHookContext`
 
 ### Performance / GC
@@ -348,6 +392,15 @@
 - `ConfigureSharedInterface`
 - `UseSharedInterface`
 - `HasSharedInterface`
+- `TryGetSharedInterface`
+- `OnSharedInterfaceInjected`
+
+### Database / Sound / Steam / Memory
+
+- `IDatabaseService` / `GetConnectionInfo`
+- `SoundEvent` / `EmitAsync`
+- `SteamGameServerUGC` / `Callback<T>` / `CallResult<T>`
+- `IMemoryService` / `GetAddressBySignature` / `GetUnmanagedFunctionByAddress`
 
 ### Schema / Entity
 

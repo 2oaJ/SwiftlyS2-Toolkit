@@ -11,11 +11,12 @@
 
 ## 使用规则
 
-- **Installation**：保留入口，但本工具包不做正文提取。
+- **Installation**：`https://swiftlys2.net/docs/installation/`；保留入口，但本工具包不做正文提取。
 - **读取优先级**：优先使用本导航、SwiftlyS2 官网定向页面与 `sw2-mdwiki`；`https://swiftlys2.net/llms-full.txt` 只作为最后兜底全文源。
 - **API Reference**：只保留瘦导航与检索建议；需要详细 API 时由 agent 自行联网进入 `https://swiftlys2.net/docs/api/` 按需提取。只有在定向页面与现有索引仍不足时，才可在征得用户同意后使用官方 LLM 全量文档做局部全文搜索。
 - **Development Flow**：当前官网页面仍是 `todo` 占位，不应作为可靠工程依据。
 - **LLM 全量文档**：`https://swiftlys2.net/llms-full.txt` 包含完整官网内容，但因为**没有索引且扫描成本高**，只适合在用户同意后做局部查阅和关键词搜索。
+- **当前快照对照**：本工具包的 `./swiftlys2-current-capability-map.md` 记录本次已覆盖的官方页面、动态 API 边界和 snapshot provenance。
 
 ## Docs Root
 
@@ -43,7 +44,7 @@
 - 定位：`ISwiftlyCore` 总入口说明。
 - 关键点：
   - `ISwiftlyCore` 是框架中心单例
-  - 汇总 Event、Engine、GameEvent、NetMessage、Helpers、Game、Command、EntitySystem、ConVar、Configuration、GameData、PlayerManager、Memory、Profiler、Trace、Scheduler、Database、Translation、Permission、Registrator、MenusAPI、PluginManager 等服务
+  - 汇总 Event、Engine、GameEvent、GameHooks、NetMessage、Helpers、Game、Command、EntitySystem、ConVar、Configuration、GameData、PlayerManager、Memory、Profiler、Trace、Scheduler、Database、Translation、Permission、Registrator、MenusAPI、PluginManager 等服务
   - 官方明确推荐通过依赖注入共享 `ISwiftlyCore`
   - 与插件生命周期、热重载紧密相关
 - 适用场景：梳理 service 边界、查 core 服务入口、设计 DI 架构。
@@ -63,7 +64,8 @@
 - 定位：主线程敏感 API 清单。
 - 关键点：
   - 非主线程调用线程不安全 API 可能直接导致崩溃
-  - Async 变体在主线程会立即执行，非主线程会调度到下一 Tick
+  - API Reference 以 `[ThreadUnsafe]` 标记同步危险调用；优先 await 对应 Async API
+  - Async 变体通常会在主线程直接执行、非主线程安全调度，但具体 API 仍以当前签名为准
   - 明确列出主线程敏感调用：
     - `IPlayer.Send* / Kick / ChangeTeam / SwitchTeam / TakeDamage / Teleport / ExecuteCommand`
     - `IGameEventService.Fire*`
@@ -87,6 +89,8 @@
   - 可用 `[CommandAlias]` 或 `Core.Command.RegisterCommandAlias`
   - `registerRaw` 控制是否跳过 `sw_` 前缀
   - 支持内建 permission 参数
+  - `ICommandContext.Args` 是 `string[]`；当前命令 metadata 支持 `helpText`
+  - `registerRaw` 只控制 `sw_` 前缀，ClientCommand hook 不依赖它
   - 客户端命令/聊天 Hook 均返回 `HookResult`
   - 卸载时自动清理，但也支持手动 `Unregister` / `Unhook`
 - 适用场景：命令系统设计、聊天拦截、客户端命令过滤。
@@ -102,6 +106,7 @@
   - `Configure(builder => ...)` 可追加 `json/jsonc/toml` 配置源
   - 推荐搭配 `IOptionsMonitor<T>` 使用，并支持 `reloadOnChange`
   - 支持 fluent method chaining
+  - 支持 `BasePath` / `BasePathExists` / `GetConfigPath` 以及仅首次创建的 model/template 初始化
 - 适用场景：配置模型设计、热重载、DI + Options 模式。
 
 ### 7. Translations
@@ -112,6 +117,7 @@
   - 翻译文件位于 `resources/translations/*.jsonc`
   - 使用语言代码命名，如 `en.jsonc`、`zh-CN.jsonc`
   - 常用入口：`Core.Translation.GetPlayerLocalizer(player)`
+  - `Core.Localizer` 用于 server/default lookup；自定义语言码不会由 player localizer 自动解析
   - 支持参数化占位 `{0}`, `{1}`
   - 缺失 key 时默认返回 key 本身
   - 推荐始终提供 `en.jsonc` 作为兜底
@@ -147,7 +153,9 @@
 - 定位：Game Event 的 fire 与 hook。
 - 关键点：
   - 可用 `Core.GameEvent.Fire<T>`、`FireToPlayer`
+  - 非主线程使用 `FireAsync*`
   - 支持 `HookPre<T>` / `HookPost<T>`
+  - 动态 hook 返回 `Guid`，可用 `Unhook(Guid)` 或 type-wide unhook 清理
   - `@event` 是当前 Tick 的临时对象，不能跨 Tick 长期持有
   - 官网特别提醒：**Source 2 中很多 game event 已经偏废弃，部分不工作**
 - 适用场景：仅在确有对应 Game Event 且验证可用时使用；不要盲目信任所有事件都可靠。
@@ -159,9 +167,22 @@
 - 关键点：
   - Core event 不是 game event
   - 监听器在 hot reload / unload 时会销毁
+  - `+=` / `-=` 适合动态提前订阅/退订
+  - entity/movement/controller/pawn/weapon 的旧 Core `On*Hook` 应迁到 `Core.GameHooks`
   - 各事件参数类型承载字段信息
   - 详细事件列表查 `EventDelegates`
 - 适用场景：地图、玩家、实体、tick、hook 回调等生命周期监听。
+
+### GameHooks API（当前 typed hook 面）
+
+- 地址：`https://swiftlys2.net/docs/api/gamehooks/`
+- 定位：`Core.GameHooks` 下的 controller、entities、items、movement、pawn、weapons typed Pre/Post hook。
+- 关键点：
+  - hook 暴露 `Pre` / `Post` event，callback 使用 `ref XxxPreContext` / `ref XxxPostContext`。
+  - context 是 `ref struct`，不得跨 callback、await、scheduler 或 closure 保存。
+  - Pre 可通过 `ctx.SetHookResult(...)` 控制原调用；`Handled` / `Stop` 不在 Post 中生效。
+  - 多项旧 Core `On*Hook` 已标 obsolete，具体迁移映射见本工具包 `assets/development/game-hooks/game-hooks-pre-post-guide.md`。
+- 适用场景：usercmd、touch、damage、movement、item、pawn、weapon 的当前 typed native hook。
 
 ### 12. Network Messages
 
@@ -171,7 +192,8 @@
   - net message 基于 protobuf + message id
   - 可直接 `Core.NetMessage.Send<T>`
   - 高频复用时可 `Create<T>()` 后复用并 `using` 释放
-  - 支持 client/server message hook 与对应 unhook
+  - 支持 client/server/internal-server message hook 与对应 unhook
+  - callback message 与 Accessor 是临时 wrapper，只能在 callback 内复制
   - 详细类型参考 `ProtobufDefinitions` 与 `INetMessageService`
 - 适用场景：Shake、声音、HUD、客户端/服务端网络消息拦截与发送。
 
@@ -180,7 +202,7 @@
 - 地址：`https://swiftlys2.net/docs/development/menus/`
 - 定位：完整菜单系统。
 - 关键点：
-  - 入口是 `Core.Menus` / `IMenuManagerAPI`
+  - 当前入口是 `Core.MenusAPI` / `IMenuManagerAPI`
   - 支持 builder fluent API
   - 内建选项类型：`Button / Toggle / Slider / Choice / Text / Input / ProgressBar / Submenu`
   - 支持层级菜单、动态内容、全局事件、per-player 校验与格式化
@@ -194,9 +216,11 @@
 - 定位：ConVar 创建、查找、复制到客户端、客户端查询。
 - 关键点：
   - `Core.ConVar.Create<T>()` / `Find<T>()`
+  - `CreateOrFind<T>()` 可复用同名项；未知类型可用 `FindAsString`
   - `.Value` 赋值会进入内部事件队列，不一定立即生效
   - 临时即时修改应优先考虑 `.SetInternal(T value)`
   - 支持 `ReplicateToClient`、`QueryClient`
+  - `TryGetMinValue` / `TryGetMaxValue` / `TryGetDefaultValue` 适合安全读取既有范围
   - 支持 flag 增删改查
 - 适用场景：临时切换 cvar、读取游戏 convar、客户端 convar 查询。
 
@@ -208,6 +232,7 @@
   - 可从 gamedata 获取签名，再解析地址
   - delegate 原型必须与原生签名严格匹配
   - `Call()` 会经过当前可能已被其他 mod hook 的地址；`CallOriginal()` 走原始调用
+  - 已有 typed hook 时优先 `Core.GameHooks`；raw hook 用 exact delegate + `AddHook(next => ...)`
   - 支持函数 hook 与 mid-hook 地址 hook
   - mid-hook 可读写寄存器，但错误修改可能直接崩服
   - hook 都必须成对卸载；插件 unload 时框架会自动清理
@@ -223,6 +248,8 @@
   - 秒级调用应使用 `*BySeconds` 变体
   - 返回 `CancellationTokenSource` 可取消
   - `StopOnMapChange(token)` 可在换图时自动取消
+  - `Repeat*` 首次立即执行；不要向 NextTick/NextWorldUpdate 传 async callback，相关 overload 已 obsolete/unsafe
+  - `AddTimer` 可按 `TimerStep.Spin/Wait/Stop` 动态决定下一步
 - 适用场景：主线程延迟、小型周期任务、地图切换时自动收尾。
 
 ### 17. Shared API
@@ -232,10 +259,11 @@
 - 关键点：
   - 通过 `ConfigureSharedInterface` 提供接口
   - 通过 `UseSharedInterface` 消费接口
+  - 通过 `OnSharedInterfaceInjected` 响应重新注入
   - interface 应放在单独 contracts DLL，供 provider / consumer 共用
   - 推荐 interface 继承 `IDisposable`
   - key 应使用明确命名并考虑版本化
-  - 使用前先 `HasSharedInterface`
+  - optional dependency 优先 `TryGetSharedInterface`
 - 适用场景：跨插件共享服务、积分/权限/经济系统暴露。
 
 ### 18. Permissions
@@ -244,10 +272,11 @@
 - 定位：权限检查、组、子权限。
 - 关键点：
   - `Core.Permission.PlayerHasPermission(steamId, permission)`
+  - `PlayerHasPermissions` 是 all-of 检查；`GetPlayerPermissions` 用于查看含继承的实际权限
   - 支持通配符 `*`
-  - 可 `AddPermission` / `RemovePermission`
+  - 可 `AddPermission` / `RemovePermission` / `ClearPermissions`；不要新增已废弃的 `ClearPermission`
   - `permissions.jsonc` 支持玩家分组与 `__default`
-  - 支持 `AddSubPermission(parent, child)` 形成层级权限
+  - 支持 `AddSubPermission(parent, child)` / `RemoveSubPermission(...)` 形成和撤销层级权限
   - 推荐命名：`plugin.category.action`
 - 适用场景：命令权限、菜单可见性、模块访问控制。
 
@@ -268,8 +297,8 @@
 - 关键点：
   - `Core.Database.GetConnection(key)` 读取 SwiftlyS2 全局 `configs/database.jsonc`
   - key 不存在时回退到 default connection
+  - 可用 `GetConnectionString` / `GetConnectionInfo` 诊断连接；不得记录 password/raw URI
   - 官方建议用 ORM / ADO.NET 工具，如 Dapper、FreeSql、EF Core
-  - 官网提醒连接串中的用户名/密码/host/database 不应包含 `@ : /`
 - 适用场景：插件数据库接入、全局连接复用。
 
 ### 21. Sound Events
@@ -281,6 +310,7 @@
   - 发送前必须添加 recipients
   - 可设置 `Name / Volume / Pitch / SourceEntityIndex`
   - 可附加 position 与各类字段参数
+  - 主线程用 `Emit()`，非主线程用并 await `EmitAsync()`
 - 适用场景：自定义提示音、武器音、环境音效广播。
 
 ### 22. Steamworks
@@ -291,7 +321,9 @@
   - 通过 `using SwiftlyS2.Shared.SteamAPI;` 使用
   - 包含 Steam ID、鉴权、服务器信息、Workshop 下载、回调处理等内容
   - callback 引用必须保活，避免被 GC 回收
-  - 使用前应验证 Steamworks 是否初始化成功
+  - `Callback<T>` / `CallResult<T>` 由 plugin/service 持有并在卸载时 dispose
+  - 通过 `OnSteamAPIActivated` 建立依赖 Steam API 的初始化
+  - Workshop 使用 `SteamGameServerUGC`；不要新增 deprecated connect/disconnect auth API 调用
   - `SteamAPI` 完整签名查 API Reference
 - 适用场景：所有权校验、Workshop 下载、服务器信息上报。
 
@@ -313,9 +345,9 @@
 - 当前状态：官网正文仍是 `todo`
 - 使用建议：可保留入口，但**不要把这页当作正式依据**。
 
-### 3. HTML Styling
+### 3. Chat & CenterHTML Styling
 
-- 地址：`https://swiftlys2.net/docs/guides/html-styling/`
+- 地址：`https://swiftlys2.net/docs/guides/chat-and-html-styling/`
 - 定位：Panorama UI HTML 样式指南。
 - 关键点：
   - 官方列出常用可用标签：`div`、`span`、`p`、`a`、`img`、`br`、`hr`、`h1-h6`、`strong`、`em`、`b`、`i`、`u`、`pre`
@@ -337,6 +369,7 @@
   - 强调 SwiftlyS2 使用 `.NET 10`
   - 强调用 `Updated()` 代替 CSS 里的 `SetStateChanged`
   - 给出从工具类到 `Core.*` 服务的替换思路
+- 工具包内迁移清单：`../assets/guides/porting-from-css/porting-checklist.md`
 - 适用场景：历史仓库迁移、对齐 CSS 语义、做结构迁移计划。
 
 ### 5. Terminologies
@@ -349,6 +382,15 @@
   - 说明实体 index 范围与 handle 概念
   - 区分 temporary / permanent entities
 - 适用场景：术语对齐、减少迁移与审计中的概念混乱。
+
+## Resources 区导航
+
+- Resources Root：`https://swiftlys2.net/docs/resources/`
+- CLI Options：`https://swiftlys2.net/docs/resources/cli-options/`，用于 `-sw_path`、`-sw_logpath`、控制台日志可见性和级别。
+- Core Configuration：`https://swiftlys2.net/docs/resources/core-configuration/`，用于 `core.jsonc` 的框架级命令、插件、菜单、语言、filter 和 Steam auth 行为。
+- Command Overrides：`https://swiftlys2.net/docs/resources/command-overrides/`，用于不改插件代码的 command permission 重映射。
+- Console Filter：`https://swiftlys2.net/docs/resources/console-filter/`，用于已确认噪声的过滤与 reload/status 运维。
+- 本地操作边界：`../assets/resources/runtime-configuration-guide.md`。
 
 ## API Reference 瘦导航
 
@@ -363,10 +405,18 @@
 - Core Listeners：`https://swiftlys2.net/docs/api/events/`
 - SteamWorks API：`https://swiftlys2.net/docs/api/steamapi/`
 - Commands：`https://swiftlys2.net/docs/api/commands/`
+- GameHooks：`https://swiftlys2.net/docs/api/gamehooks/`
 
 ### 首页侧边栏可见的高价值分类
 
 - Memory：`https://swiftlys2.net/docs/api/memory/`
+- CommandLine：`https://swiftlys2.net/docs/api/commandline/`
+- Convars：`https://swiftlys2.net/docs/api/convars/`
+- Database：`https://swiftlys2.net/docs/api/database/`
+- Engine：`https://swiftlys2.net/docs/api/engine/`
+- EntitySystem：`https://swiftlys2.net/docs/api/entitysystem/`
+- GameEventDefinitions：`https://swiftlys2.net/docs/api/gameeventdefinitions/`
+- GameHooks：`https://swiftlys2.net/docs/api/gamehooks/`
 - Menus：`https://swiftlys2.net/docs/api/menus/`
 - Natives：`https://swiftlys2.net/docs/api/natives/`
 - NetMessages：`https://swiftlys2.net/docs/api/netmessages/`
@@ -380,6 +430,7 @@
 - Services：`https://swiftlys2.net/docs/api/services/`
 - Sounds：`https://swiftlys2.net/docs/api/sounds/`
 - SteamAPI：`https://swiftlys2.net/docs/api/steamapi/`
+- Trace：`https://swiftlys2.net/docs/api/trace/`
 - StringTable：`https://swiftlys2.net/docs/api/stringtable/`
 - Translation：`https://swiftlys2.net/docs/api/translation/`
 - Helper：`https://swiftlys2.net/docs/api/helper/`

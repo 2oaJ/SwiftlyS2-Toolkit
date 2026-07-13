@@ -13,6 +13,8 @@
   - Core Events、tick、map、player、entity 生命周期监听
 - `Core.GameEvent`
   - Game Event fire / hook
+- `Core.GameHooks`
+  - typed controller、entity、item、movement、pawn、weapon Pre/Post hook
 - `Core.NetMessage`
   - typed netmessage 发送与 hook
 - `Core.EntitySystem`
@@ -29,11 +31,13 @@
   - NextTick、Delay、Repeat、StopOnMapChange
 - `Core.Database`
   - 全局数据库连接
+- `Core.Memory`
+  - signature、interface/vtable/xref、unmanaged wrapper 和显式内存所有权
 - `Core.Profiler`
   - 轻量性能采样
 - `Core.Registrator`
   - 非主类对象 attribute 注册
-- `Core.Menus` / `Core.MenusAPI`
+- `Core.MenusAPI`
   - 菜单 builder、打开/关闭、菜单事件
 
 ## 使用建议

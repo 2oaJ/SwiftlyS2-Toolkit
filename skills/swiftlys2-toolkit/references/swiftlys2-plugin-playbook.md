@@ -201,7 +201,7 @@ void Update(Config config) { ... }
 ### Schema
 
 - 写入应在主线程
-- 需要时补 `Updated()` / `SetStateChanged()` 一类通知
+- 需要时补当前字段对应的 `Updated()` 通知；CSS `SetStateChanged()` 不进入新实现
 - 若异步链路要用到数据，主线程先采安全快照
 
 ### NetMessages / Protobuf
@@ -220,6 +220,13 @@ void Update(Config config) { ... }
 - delegate 原型必须严格匹配
 - hook 必须能成对卸载
 - mid-hook 功能强但风险高，错误改寄存器会直接崩服
+
+### GameHooks
+
+- controller、entity、item、movement、pawn、weapon 的 typed native hook 优先使用 `Core.GameHooks`。
+- 每个 hook 的 `Pre` / `Post` context 是 callback-scoped `ref struct`；不要跨 `await`、scheduler、closure 或 worker。
+- `HookResult.Handled` / `Stop` 不在 Post 中承担取消语义。
+- 已废弃的 `Core.Event.On*Hook` 不要作为新实现入口。
 
 ## 八、Menu 回调
 
@@ -298,8 +305,9 @@ monitor.OnChange(newConfig => { Config = newConfig; /* 可选副作用 */ });
 根据官方 `Convars` 文档：
 
 - ConVar 用于运行时可即时调整的服务器参数。
-- 使用 `Core.ConVar.CreateOrFind()` 创建，幂等可重入。
-- 支持 bool / int / float / string 类型，int/float 支持 min/max 范围约束。
+- 用 `Create` 暴露重复注册错误，用 `CreateOrFind` 有意复用同名项；后者不代表并发安全保证。
+- 支持 bool、整数、浮点、Color、QAngle、Vector 系列和 string；min/max 重载仅限 `unmanaged` 类型。
+- `SERVER_CAN_EXECUTE` 不是权限控制；普通 ConVar 默认 `ConvarFlags.NONE`，权限放在命令/RCON/Permission 层。
 
 ### ConVar vs Config 分流
 
@@ -353,21 +361,23 @@ public required IConVar<int> ConVar_Limit { get; set; }
 
 ## 十四、异步安全模式
 
-### `.Forget()` 模式
+### `FireAndForget` 模式
 
-从同步入口（命令、事件回调）发起异步任务时，使用 `.Forget(Logger, "Context")` 而非 `_ = Task`：
+从同步入口（命令、事件回调）发起非关键异步任务时，使用工具包定义的 `FireAndForget(task, logger, context)` 而非 `_ = Task`：
 
 ```csharp
-OnMyCommandAsync(context).Forget(Logger, "MyPlugin.OnMyCommand");
+FireAndForget(OnMyCommandAsync(context), Logger, "MyPlugin.OnMyCommand");
 ```
+
+关键 gameplay 操作不要无等待地投递；应将结果、取消和错误路径显式纳入调用链。
 
 ### StopOnMapChange
 
-`Core.Scheduler.StopOnMapChange(cts)` 将 `CancellationTokenSource` 绑定到 map 生命周期，map 切换时自动 cancel。
+`Core.Scheduler.StopOnMapChange(cts)` 只绑定传入的 CTS。业务 async 任务和 `Delay` / `Repeat` / `AddTimer` 返回的 timer CTS 分别保存、分别绑定。
 
 ### 异步后重取 IPlayer
 
-任何 `await` 之后，`IPlayer` 必须通过 `SteamID` 重新获取并校验 `Valid()`。
+任何 `await` 之后，`IPlayer` 必须重新获取并校验 `IsValid`。真实玩家可用 `SteamID` + `GetPlayerFromSteamId`；bot/混合运行态优先 `SessionId` + `GetPlayerFromSessionId`。
 
 ### Generation Counter
 
@@ -414,6 +424,8 @@ OnMyCommandAsync(context).Forget(Logger, "MyPlugin.OnMyCommand");
 - 不确定用 Pre 还是 Post 时，优先 Post（更安全）
 - Pre Hook 中拦截要确认确实需要阻止
 - Post Hook 中涉及实体操作时，常需 NextTick / DelayBySeconds 等待状态稳定
+- event 和 `Accessor` 都是临时对象；延迟逻辑只保存普通值、`SessionId` 或 handle
+- 动态 hook 保存 `Guid` 并在 owner 停用时 `Unhook`
 
 ## 十七、ClientCommandHookHandler
 
@@ -424,7 +436,7 @@ OnMyCommandAsync(context).Forget(Logger, "MyPlugin.OnMyCommand");
 
 ### 关键点
 
-- 配合 `[Command("xxx", registerRaw: true)]` 确保底层识别
+- `[ClientCommandHookHandler]` 本身拦截任何客户端命令；`registerRaw` 只控制自注册命令的 `sw_` 前缀
 - `HookResult.Stop` 阻止命令、`HookResult.Continue` 放行
 - 需自行解析 `commandLine` 原始字符串
 

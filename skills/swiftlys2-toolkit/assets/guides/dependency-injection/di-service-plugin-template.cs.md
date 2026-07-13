@@ -7,6 +7,16 @@
 
 适用于：DI / service 导向、共享服务导向、或混合架构中的中/大型插件。
 
+## 前置包
+
+项目需要引用 `Microsoft.Extensions.DependencyInjection`：
+
+```bash
+dotnet add package Microsoft.Extensions.DependencyInjection
+```
+
+随后将解析出的版本按当前项目的 .NET / 依赖策略锁定；不要为了复制模板临时混入不兼容的 DI 包版本。
+
 ## 目录建议
 
 ```text
@@ -60,6 +70,10 @@ namespace MyNamespace
     }
 }
 ```
+
+默认调用 `AddSwiftly(Core)` 会注册官方默认 logger/configuration 集成。项目已经自建这些管线时，才评估 `addLogger` 与 `addConfiguration` 参数，并在目标服务器验证最终服务图。
+
+`[SwiftlyInject]` 也存在于当前 API，用于 property/field 注入。官方快照只公开了声明面，未给出比构造函数注入更完整的生命周期示例；本工具包继续以构造函数注入为默认，不用属性注入替代已有清晰依赖边界。
 
 ## 模块型监听所有权建议
 

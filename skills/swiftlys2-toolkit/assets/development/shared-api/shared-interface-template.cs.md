@@ -11,6 +11,7 @@
 - Contracts DLL：定义接口，供 provider / consumer 共用
 - Provider：在 `ConfigureSharedInterface` 中注册接口实现
 - Consumer：在 `UseSharedInterface` 中检测并获取共享接口
+- Injection：在 `OnSharedInterfaceInjected` 中处理注入后的重新绑定需求
 
 ## Contracts 示例
 
@@ -57,13 +58,13 @@ public sealed class ShopPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
-        if (!interfaceManager.HasSharedInterface("Economy.Service.v1"))
+        if (!interfaceManager.TryGetSharedInterface<IEconomyService>("Economy.Service.v1", out var economyService))
         {
             Core.Logger.LogWarning("Economy.Service.v1 尚未加载。");
             return;
         }
 
-        _economyService = interfaceManager.GetSharedInterface<IEconomyService>("Economy.Service.v1");
+        _economyService = economyService;
     }
 }
 ```
@@ -72,7 +73,7 @@ public sealed class ShopPlugin(ISwiftlyCore core) : BasePlugin(core)
 
 - 是否把 interface 放在单独 contracts DLL？
 - key 是否使用清晰命名并考虑版本化？
-- consumer 获取前是否先 `HasSharedInterface(...)`？
+- optional dependency 是否使用 `TryGetSharedInterface(...)`，而不是 `Has` 后再 `Get` 的双步读取？
 - interface 是否考虑继承 `IDisposable`？
 - provider / consumer 卸载时是否有 cleanup 闭环？
 
@@ -95,13 +96,12 @@ public sealed class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         if (_servicesInitialized) return;
 
-        if (!interfaceManager.HasSharedInterface("Economy.Service.v1"))
+        if (!interfaceManager.TryGetSharedInterface<IEconomyService>("Economy.Service.v1", out var economyService))
         {
             Core.Logger.LogWarning("Economy.Service.v1 尚未可用，延迟初始化");
             return;
         }
 
-        var economyService = interfaceManager.GetSharedInterface<IEconomyService>("Economy.Service.v1");
         InitializeServices(economyService);
         _servicesInitialized = true;
     }
@@ -114,8 +114,8 @@ public sealed class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
 ```
 
 **关键点**：
-- `UseSharedInterface` 可能被多次调用（每当有新插件注册接口时）
-- 使用 `_servicesInitialized` 布尔守卫避免重复初始化
+- 不要假设 `Load`、`ConfigureSharedInterface`、`UseSharedInterface`、`OnSharedInterfaceInjected` 的精确调用顺序或次数；实现必须幂等且能处理依赖暂不可用
+- 使用 `_servicesInitialized` 守卫避免重复初始化
 - 依赖不可用时记录 warning 并提前返回，不要抛异常
 - 在延迟初始化完成后才启动 Scheduler、Worker 等持续性工作
 
@@ -130,11 +130,8 @@ public sealed class MyPlugin(ISwiftlyCore core) : BasePlugin(core)
 // Plugin B（消费者 + 反向注入）
 public override void UseSharedInterface(IInterfaceManager interfaceManager)
 {
-    if (!interfaceManager.HasSharedInterface("PluginA.FeatureTrigger"))
+    if (!interfaceManager.TryGetSharedInterface<IFeatureTrigger>("PluginA.FeatureTrigger", out var trigger))
         return;
-
-    var trigger = interfaceManager.GetSharedInterface<IFeatureTrigger>(
-        "PluginA.FeatureTrigger");
 
     // 反向注入 manager 到 trigger
     if (trigger is IFeatureTriggerInitializable initializable)
@@ -143,3 +140,15 @@ public override void UseSharedInterface(IInterfaceManager interfaceManager)
     }
 }
 ```
+
+## 回调职责与插件管理
+
+| 回调 / 服务 | 职责 |
+| --- | --- |
+| `ConfigureSharedInterface(IInterfaceManager)` | 注册本插件提供的 contracts |
+| `UseSharedInterface(IInterfaceManager)` | 查询并保存其他插件提供的 contracts |
+| `OnSharedInterfaceInjected(IInterfaceManager)` | 对新注入或重新注入的 interface 做响应 |
+| `OnAllPluginsLoaded()` | 所有插件加载完成后的可选协调点 |
+| `Core.PluginManager` | 按 plugin id load/unload/reload 和查询状态 |
+
+`IPluginManager` 的运行时管理是框架管理面，不应用作绕开 contracts 或隐式重启依赖的日常业务控制。调用 load/unload/reload 前先定义失败路径、状态检查和真实服务器验证。

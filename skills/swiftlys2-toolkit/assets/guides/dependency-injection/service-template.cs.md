@@ -39,6 +39,7 @@ using MyNamespace.Interface;
 using SwiftlyS2.Shared;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Events;
+using SwiftlyS2.Shared.GameHooks;
 using SwiftlyS2.Shared.Misc;
 
 namespace MyNamespace.Impl;
@@ -48,7 +49,7 @@ public sealed class MyFeatureService(ISwiftlyCore core, ILogger<MyFeatureService
     private readonly ISwiftlyCore _core = core;
     private readonly ILogger<MyFeatureService> _logger = logger;
     private bool _installed;
-    private bool _eventHooked;
+    private bool _runtimeHooked;
     private Guid _commandGuid;
     private Guid _clientCommandHookGuid;
 
@@ -93,28 +94,35 @@ public sealed class MyFeatureService(ISwiftlyCore core, ILogger<MyFeatureService
 
     private void EnsureRuntimeEventHooked()
     {
-        if (_eventHooked)
+        if (_runtimeHooked)
         {
             return;
         }
 
-        _core.Event.OnClientProcessUsercmds += OnClientProcessUsercmds;
-        _eventHooked = true;
+        _core.GameHooks.Controller.ProcessUsercmds.Pre += OnProcessUsercmdsPre;
+        _runtimeHooked = true;
     }
 
     private void UnhookRuntimeEvent()
     {
-        if (!_eventHooked)
+        if (!_runtimeHooked)
         {
             return;
         }
 
-        _core.Event.OnClientProcessUsercmds -= OnClientProcessUsercmds;
-        _eventHooked = false;
+        _core.GameHooks.Controller.ProcessUsercmds.Pre -= OnProcessUsercmdsPre;
+        _runtimeHooked = false;
     }
 
-    private void OnClientProcessUsercmds(IOnClientProcessUsercmdsEvent @event)
+    private void OnProcessUsercmdsPre(ref ProcessUsercmdsPreContext ctx)
     {
+        var player = ctx.Params.Player;
+        if (!player.IsValid || player.IsFakeClient)
+        {
+            return;
+        }
+
+        // 只在同步回调内读取 ctx；不要让 context 或 Usercmds 跨 async/worker 边界。
     }
 
     private void OnMyFeatureCommand(ICommandContext context)
@@ -134,3 +142,4 @@ public sealed class MyFeatureService(ISwiftlyCore core, ILogger<MyFeatureService
 - 是否具备 Install / Uninstall 或 Initialize / Cleanup 闭环
 - 是否由 owning service 自己注册并清理命令、事件、Hook
 - 是否避免长期持有会失效的 `IPlayer` / entity wrapper
+- typed runtime hook 是否优先使用 `Core.GameHooks`，并以 `+=` / `-=` 在 service 内闭环？

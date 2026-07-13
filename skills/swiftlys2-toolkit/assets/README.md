@@ -38,7 +38,10 @@
 | Commands | `development/commands/client-command-hook-template.cs.md` | ClientCommandHookHandler 拦截模板 |
 | Menus | `development/menus/menu-template.cs.md` | 菜单、BindingText、异步回调 |
 | Network Messages | `development/netmessages/protobuf-handler-template.cs.md` | typed protobuf / netmessage 模板 |
-| Native Functions and Hooks | `development/native-functions-and-hooks/hook-handler-template.cs.md` | 高频 hook / native hook 模板 |
+| GameHooks | `development/game-hooks/game-hooks-pre-post-guide.md` | typed controller/entity/item/movement/pawn/weapon Pre/Post hook |
+| Native Functions and Hooks | `development/native-functions-and-hooks/hook-handler-template.cs.md` | GameHooks 未覆盖时的 raw native / mid-hook 模板 |
+| Database | `development/database/database-connection-template.cs.md` | 全局连接、ADO.NET/ORM、secret 边界 |
+| Entity Key Values | `development/entity/entity-key-values-guide.md` | spawn 前 typed key values / dispose |
 | Configuration | `development/configuration/config-hot-reload-template.cs.md` | Config + IOptionsMonitor 热重载 |
 | Configuration | `development/configuration/README.md` | 配置入口建议 |
 | ConVars | `development/convars/convar-template.cs.md` | ConVar 创建、范围、标志 |
@@ -51,12 +54,17 @@
 | Scheduler | `development/scheduler/scheduler-vs-worker-guide.md` | Scheduler vs 后台 worker 分流 |
 | Shared API | `development/shared-api/shared-interface-template.cs.md` | provider / consumer / contracts 模板 |
 | Game Events | `development/game-events/game-events-usage-notes.md` | Game Event 使用边界说明 |
+| Sound Events | `development/sound-events/sound-event-guide.md` | recipients、字段、Emit/EmitAsync |
+| Steamworks | `development/steamworks/steamworks-server-guide.md` | server API、callback、Workshop、auth |
+| Memory | `development/memory/memory-service-guide.md` | signature、vtable、xref、内存所有权 |
 | Translations | `development/translations/README.md` | 翻译资源入口建议 |
 | Permissions | `development/permissions/README.md` | 权限与权限组入口建议 |
 | Dependency Injection | `guides/dependency-injection/di-service-plugin-template.cs.md` | DI 插件骨架 |
 | Dependency Injection | `guides/dependency-injection/service-template.cs.md` | service 骨架 |
 | Terminologies | `guides/terminologies/README.md` | controller / pawn / player / handle 术语分流 |
 | HTML Styling | `guides/html-styling/README.md` | Panorama HTML 样式入口 |
+| Porting from CounterStrikeSharp | `guides/porting-from-css/porting-checklist.md` | CSS 到当前 SwiftlyS2 迁移边界 |
+| Resources | `resources/runtime-configuration-guide.md` | CLI、core config、command overrides、console filter |
 
 ## 非官方但高频使用的工程模式
 
@@ -66,7 +74,7 @@
 - `patterns/per-player-state/player-state-management-guide.md`
   - 四档玩家状态管理模式：轻量字典 → 运行时对象 → DB 还原 → 槽位数组 + generation counter
 - `patterns/async-patterns/async-safety-guide.md`
-  - `.Forget()` 安全启动、StopOnMapChange、generation counter 失效策略、IPlayer 重获取
+  - `FireAndForget`、StopOnMapChange、generation counter 失效策略、IPlayer 重获取
 - `patterns/service-factory/service-factory-template.cs.md`
   - 工厂模式、Keyed Singleton、多实现遍历、策略选择
 - `../references/swiftlys2-performance-optimization-playbook.md`

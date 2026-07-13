@@ -78,3 +78,9 @@ public sealed class MyCommandService(ISwiftlyCore core) : IMyCommandService
 - 是否真的需要动态启停或独立生命周期？
 - 是否把命令实现和命令注册放在同一个 service 中闭环？
 - 是否区分 `RegisterCommandAlias`、`HookClientChat`、`HookClientCommand` 的不同卸载路径？
+
+## 注册诊断
+
+当前 `ICommandService` 还提供 `IsCommandRegistered`、`GetAllCommands`、`GetCommandsByPlugin`、`GetAllCommandsByPlugin` 与 `GetAllCommandsInfo`。排查命令冲突、热重载重复注册或权限/帮助文本不一致时，先查这些 API，而不是猜测 command 是否已被框架接管。
+
+`CommandInfo` 可用于查看 command name、raw-prefix 模式、permission 和 help text。新实现使用带 `helpText` 的当前 `RegisterCommand` 重载；不要为了旧调用保留四参数注册路径。

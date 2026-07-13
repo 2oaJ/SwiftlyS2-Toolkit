@@ -24,7 +24,7 @@ public void OnClientPutInServer(IOnClientPutInServerEvent @event)
     Core.Scheduler.NextWorldUpdate(() =>
     {
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
-        if (player is null || !player.IsValid) return;
+        if (player is null || !player.IsValid || player.IsFakeClient) return;
         _playerEnabled.TryAdd(player.SteamID, true);
     });
 }
@@ -57,7 +57,7 @@ public void OnClientPutInServer(IOnClientPutInServerEvent @event)
     Core.Scheduler.NextWorldUpdate(() =>
     {
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
-        if (player is null || !player.IsValid) return;
+        if (player is null || !player.IsValid || player.IsFakeClient) return;
 
         // GetOrAdd 保证原子性，避免竞态
         _playerStates.GetOrAdd(player.SteamID, steamId => new PlayerRuntime
@@ -91,7 +91,7 @@ public void OnClientPutInServer(IOnClientPutInServerEvent @event)
     Core.Scheduler.NextWorldUpdate(() =>
     {
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
-        if (player is null || !player.IsValid) return;
+        if (player is null || !player.IsValid || player.IsFakeClient) return;
 
         // 从 DB 或远端恢复（需先实现 FireAndForget，见 async-safety-guide.md 一）
         FireAndForget(LoadPlayerStateAsync(player), Logger, "MyPlugin.LoadPlayerState");
@@ -104,7 +104,7 @@ private async Task LoadPlayerStateAsync(IPlayer player)
     var dbRecord = await SomeService.GetPlayerDataAsync(steamId);
 
     // 异步完成后重新校验玩家
-    var currentPlayer = Core.PlayerManager.GetPlayerBySteamId(steamId);
+    var currentPlayer = Core.PlayerManager.GetPlayerFromSteamId(steamId);
     if (currentPlayer is null || !currentPlayer.IsValid) return;
 
     var runtime = new PlayerRuntime
@@ -170,7 +170,7 @@ public class PlayerRegistry
 | 场景 | 推荐键 | 原因 |
 |------|--------|------|
 | 真人玩家长期存储 | `SteamID` (ulong) | 跨会话稳定 |
-| 运行时快速查找 | `SteamID` 或 `Slot` | 取决于热路径需求 |
+| 真人运行时重取 | `SteamID` + `GetPlayerFromSteamId` | 只适用于已排除 bot 的真实玩家 |
 | bot / fakeclient | `SessionId` | bot 的 SteamID 固定为 0，不可靠 |
 | 高频 Hook 内查找 | 槽位数组 `_slots[slot]` | O(1)，无哈希开销 |
 

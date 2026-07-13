@@ -6,6 +6,8 @@
 
 适用于：后台持久化、批处理、异步计算、producer / consumer 解耦。
 
+> 这是 .NET `Channel` / `Task.Run` 工程模式，不是 SwiftlyS2 SDK 的 Worker 服务。SDK 不保证它会随插件卸载、换图或 hot reload 自动取消；plugin/service 必须显式 stop、flush、cancel 和 dispose。
+
 后台队列、背压和热路径投递策略先看：`../../../references/swiftlys2-performance-optimization-playbook.md`。
 
 ## 适用原则

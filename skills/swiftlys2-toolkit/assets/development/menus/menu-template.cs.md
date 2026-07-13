@@ -5,7 +5,7 @@
 - `Thread Safety`
 - `HTML Styling`
 
-> 说明：官方文档示例常写 `Core.Menus`；若当前项目通过 `Core.MenusAPI` 暴露 `IMenuManagerAPI`，以当前项目实际 Core 属性为准。
+> 当前入口为 `Core.MenusAPI`。不要保留 `Core.Menus` 的双路径表述。
 
 ## 设计要点
 
@@ -112,7 +112,7 @@ public partial class ExamplePlugin
 
 **不需要 NextWorldUpdate** 的操作：
 
-- `PrintToChatAsync` / `PrintToConsoleAsync` 等已有 Async API
+- `SendChatAsync` / `SendMessageAsync` 等已有 Async API
 - 线程安全容器操作（`ConcurrentDictionary.TryAdd` 等）
 - 纯异步 IO（HTTP、数据库查询）
 
@@ -122,23 +122,26 @@ public partial class ExamplePlugin
 btn.Click += async (sender, args) =>
 {
     var p = args.Player;
-    if (!p.Valid() || !p.IsPlayerAlive()) return;
+    if (p is null || !p.IsValid || !p.IsAlive) return;
+
+    var sessionId = p.SessionId;
 
     // 异步 IO 可直接执行
     var data = await FetchDataAsync(p.SteamID);
     if (data is null)
     {
-        await p.PrintToChatAsync("数据获取失败");
+        await p.SendChatAsync("数据获取失败");
         return;
     }
 
     // 涉及实体/Schema 操作 → 必须回主线程
     Core.Scheduler.NextWorldUpdate(() =>
     {
-        if (!p.Valid() || !p.IsPlayerAlive()) return; // 再次校验
+        var currentPlayer = Core.PlayerManager.GetPlayerFromSessionId(sessionId);
+        if (currentPlayer is null || !currentPlayer.IsValid || !currentPlayer.IsAlive) return;
 
-        var pawn = p.PlayerPawn;
-        if (!pawn.Valid()) return;
+        var pawn = currentPlayer.Pawn;
+        if (pawn is null || !pawn.IsValid) return;
 
         pawn.Render = new Color(255, 0, 0, 255);
         pawn.RenderUpdated();
@@ -152,10 +155,11 @@ btn.Click += async (sender, args) =>
 // ❌ 异步回调中直接操作实体
 btn.Click += async (sender, args) =>
 {
-    var pawn = args.Player.PlayerPawn;
+    var pawn = args.Player?.Pawn;
+    if (pawn is null) return;
     pawn.Render = new Color(255, 0, 0, 255); // 可能不在主线程
     pawn.RenderUpdated();
-    runtimeService.CreateDanceEntity(args.Player); // 创建实体不在主线程
+    runtimeService.CreateDanceEntity(args.Player!); // 创建实体不在主线程
 };
 ```
 
@@ -167,9 +171,15 @@ btn.Click += async (sender, args) =>
 - 是否避免在菜单回调里做重 IO / 阻塞 / 大量分配？
 - 是否把真实状态写回留在 service / runtime context 中？
 - **回调中是否涉及实体创建/销毁、Schema 写回、模型操作？若是，是否已用 `NextWorldUpdate` 派发回主线程？**
-- **`NextWorldUpdate` 回调内是否再次校验了 `player.Valid()` / `pawn.Valid()`？**
+- **`NextWorldUpdate` 回调内是否以 `SessionId` 重取并校验 `player.IsValid` / `pawn.IsValid`？**
 
 ## 进阶菜单模式
+
+### Selector 和 per-player 状态
+
+需要在多选项中维护当前值时，优先检查 `SelectorMenuOption<T>`。菜单可对特定玩家使用 `SetVisible` / `SetEnabled` 做展示与交互控制；这类变化只应反映当前 runtime/permission 状态，不能替代服务端真实权限校验。
+
+需要明确 builder 以外的创建参数时，查当前 `CreateMenu` API；不要在本地模板中复制过期构造参数。
 
 ### BindingText 动态倒计时
 
@@ -285,9 +295,19 @@ if (confirmed)
 var btnSkin = new ButtonMenuOption("角色模型菜单") { CloseAfterClick = true };
 btnSkin.Click += async (sender, args) =>
 {
+    if (args.Player is null || !args.Player.IsValid)
+    {
+        return;
+    }
+
+    var sessionId = args.Player.SessionId;
     Core.Scheduler.NextWorldUpdate(() =>
     {
-        args.Player.ExecuteCommand("sw_skin");
+        var player = Core.PlayerManager.GetPlayerFromSessionId(sessionId);
+        if (player is not null && player.IsValid)
+        {
+            player.ExecuteCommand("sw_skin");
+        }
     });
 };
 menu.AddOption(btnSkin);
@@ -301,7 +321,7 @@ menu.AddOption(btnSkin);
 var inputOption = new InputMenuOption("输入名称");
 inputOption.ValueChanged += async (sender, args) =>
 {
-    if (args.Player is null || !args.Player.Valid()) return;
+    if (args.Player is null || !args.Player.IsValid) return;
     var inputText = args.NewValue?.Trim();
     if (string.IsNullOrWhiteSpace(inputText)) return;
 

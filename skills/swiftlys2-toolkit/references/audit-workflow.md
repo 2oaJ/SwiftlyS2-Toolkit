@@ -42,11 +42,14 @@
 - `./swiftlys2-performance-optimization-playbook.md`（性能、GC、高频 Hook、worker、map 初始化、native interop 审计时必须使用）
 - `./swiftlys2-kb-index.md`
 - `./swiftlys2-asset-inventory.md`
+- `./swiftlys2-current-capability-map.md`
 
 ### 公开来源
 
 - SwiftlyS2 官网文档：`https://swiftlys2.net/docs/`
 - Thread Safety：`https://swiftlys2.net/docs/development/thread-safety/`
+- GameHooks API：`https://swiftlys2.net/docs/api/gamehooks/`
+- Game Events：`https://swiftlys2.net/docs/development/game-events/`
 - Native Functions and Hooks：`https://swiftlys2.net/docs/development/native-functions-and-hooks/`
 - Network Messages：`https://swiftlys2.net/docs/development/netmessages/`
 - Dependency Injection：`https://swiftlys2.net/docs/guides/dependency-injection/`
@@ -84,6 +87,11 @@
 - generation / session 校验是否存在
 
 ### 4. 高频 Hook 审计
+- 是否把已废弃的 `Core.Event.On*Hook` 留在 controller/entity/movement/pawn/weapon 路径，而没有迁到 `Core.GameHooks`？
+- 是否把 `DynamicHook`、`[HookCallback]` 或 CSS hook API 当作当前 SwiftlyS2 实现？
+- `Pre` / `Post` 是否正确，且是否错误地在 Post 中依赖 `Handled` / `Stop`？
+- 是否有未对称取消的 `+=`、动态 `Guid` hook 或 raw `RemoveHook`？
+- `ref struct` context、temporary event/accessor/netmessage 是否跨 callback、await、scheduler 或 closure 逃逸？
 - 是否先按 `swiftlys2-performance-optimization-playbook.md` 分类为 Hook、player state、buffer、worker、map init、UI text 或 native interop 热点
 - 是否真的需要该 Hook，还是可由低频 Scheduler / 状态差分 / 较粗 movement 阶段替代
 - 是否有无意义分配
@@ -97,9 +105,10 @@
 - 是否存在可改为 ring buffer、bounded queue、generation token、StringBuilder 复用、稳定 Profiler 分段的具体落点
 
 ### 5. Schema / Protobuf 审计
-- Schema 写入后是否调用 `Updated()` / `SetStateChanged()`
+- Schema 写入后是否调用当前字段所需的 `Updated()`，且没有残留 CSS `SetStateChanged()`
 - 是否在不安全线程访问 protobuf / usercmd / entity handle
 - 是否在需要时将 protobuf 快照化为普通模型
+- 是否缓存了 callback-scoped `msg` / `Accessor` / Game Event wrapper
 
 ### 6. bot / fakeclient 身份键审计
 - 是否错误使用 `SteamID` 检索 bot/fakeclient
