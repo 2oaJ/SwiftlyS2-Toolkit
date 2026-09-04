@@ -1,6 +1,6 @@
 ---
 name: swiftlys2-toolkit
-description: 'Plan, implement, audit, and review C#/.NET SwiftlyS2 plugins. Use when Codex works with Commands, Core Events, Game Events, GameHooks Pre/Post, raw native hooks, Modules, Workers, Services, high-frequency runtime loops, NetMessages, Schema access, entity handling, thread safety, performance, or IPlayer lifecycle behavior.'
+description: 'Plan, implement, audit, and review C#/.NET SwiftlyS2 plugins. Use when working with Commands, Core Events, Game Events, GameHooks Pre/Post, raw native hooks, Modules, Workers, Services, high-frequency runtime loops, NetMessages, Schema access, entity handling, thread safety, performance, or IPlayer lifecycle behavior.'
 ---
 
 # swiftlys2-toolkit
@@ -11,14 +11,14 @@ Its goal is not to bind itself to any specific workspace, but to provide a **pub
 
 ## Public reference allowlist
 
-The public skill, workflow references, agent roles, and templates in this toolkit should, by default, reference only the following public sources:
+The public skill, workflow references, and templates in this toolkit should, by default, reference only the following public sources:
 
 1. SwiftlyS2 official documentation: `https://swiftlys2.net/docs/`
 2. sw2-mdwiki: `https://github.com/himenekocn/sw2-mdwiki`
 3. SwiftlyS2 official repository: `https://github.com/swiftly-solution/swiftlys2`
 4. SwiftlyS2 LLM-optimized full documentation: `https://swiftlys2.net/llms-full.txt` (last-resort full-text fallback only when targeted navigation is insufficient)
 
-Keep workspace-specific mappings, private reference repositories, historical projects, credentials, and special rules in the nearest applicable `AGENTS.md` or in a project-local Codex skill. Do not write them back into this public skill.
+Keep workspace-specific mappings, private reference repositories, historical projects, credentials, and special rules in the nearest applicable `AGENTS.md` or in a project-local skill. Do not write them back into this public skill.
 
 If the workspace includes a local `sw2-mdwiki` checkout, prefer it as a local public reference repository for faster, more accurate retrieval.
 
@@ -63,7 +63,6 @@ Examples:
 ### Entry documents
 
 - `./SKILL.md`
-- `./agents/openai.yaml` (Codex UI metadata)
 
 ### Reference documents
 

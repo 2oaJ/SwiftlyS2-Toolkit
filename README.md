@@ -1,73 +1,49 @@
 # SwiftlyS2-Toolkit
 
-A Codex-first toolkit for planning, implementing, auditing, and reviewing **SwiftlyS2 C#/.NET plugins**.
+A standard-format agent skill for planning, implementing, auditing, and reviewing **SwiftlyS2 C#/.NET plugins**.
 
-The reusable domain workflow lives in one self-contained skill. Optional Codex subagent roles provide narrow research, planning, implementation, and review scopes without duplicating the skill's rules.
+The repository root is the skill root: `SKILL.md` is the canonical entry, and all workflow references, templates, and checklists live directly beside it. No vendor-specific adaptation layer is shipped — any coding agent that reads standard `SKILL.md` skills can use it as-is.
 
 ## Repository layout
 
 ```text
-AGENTS.md                              Codex repository guidance
-.codex/
-  config.toml                         Project-local subagent registration
-  agents/
-    swiftlys2-researcher.toml         Read-only investigation
-    swiftlys2-planner.toml            Read-only method-level planning
-    swiftlys2-implementer.toml        Bounded implementation and verification
-    swiftlys2-reviewer.toml           Read-only findings-first review
-skills/swiftlys2-toolkit/
-  SKILL.md                            Canonical skill entry
-  agents/openai.yaml                  Codex skill UI metadata
-  references/                         Workflow and domain references
-  assets/                             Templates, checklists, and guides
+SKILL.md                 Canonical skill entry (frontmatter: name, description)
+references/              Workflow and domain references
+assets/                  Templates, checklists, and guides
+AGENTS.md                Repository guidance for coding agents
+LICENSE                  MIT
 ```
 
-Legacy IDE-vendor agent, prompt, handoff, and tool-list formats are intentionally not shipped. Codex uses `AGENTS.md` for durable repository rules, `SKILL.md` for reusable workflow knowledge, `agents/openai.yaml` for skill metadata, and `.codex/agents/*.toml` for specialized subagent roles.
+## Install
 
-## Install for Codex
-
-### 1. Install the skill
-
-Copy `skills/swiftlys2-toolkit` into `${CODEX_HOME}/skills/`. When `CODEX_HOME` is unset, use `~/.codex`.
-
-PowerShell:
-
-```powershell
-$CodexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME '.codex' }
-$SkillTarget = Join-Path $CodexHome 'skills\swiftlys2-toolkit'
-New-Item -ItemType Directory -Force $SkillTarget | Out-Null
-Copy-Item -Recurse -Force '.\skills\swiftlys2-toolkit\*' $SkillTarget
-```
-
-Git Bash / POSIX shell:
+### As a git submodule (recommended for downstream repositories)
 
 ```bash
-CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-mkdir -p "$CODEX_HOME/skills"
-cp -R skills/swiftlys2-toolkit "$CODEX_HOME/skills/"
+git submodule add https://github.com/2oaJ/SwiftlyS2-Toolkit.git .agents/skills/swiftlys2-toolkit
+git submodule update --init --recursive
 ```
 
-### 2. Install the optional subagent roles
+### As a plain copy
 
-Copy `.codex/agents/*.toml` into `${CODEX_HOME}/agents/`, then merge the four `[agents.*]` sections from `.codex/config.toml` into `${CODEX_HOME}/config.toml`. Do not replace an existing global config wholesale.
+Copy this repository into the skills directory of your agent tool so that `SKILL.md` sits directly under the skill folder, for example:
 
-The checked-out repository already contains the same registration as project-local Codex configuration.
+```bash
+cp -R SwiftlyS2-Toolkit /path/to/skills/swiftlys2-toolkit
+```
 
 ## Use
 
-Invoke the skill directly when you want the main Codex agent to own the complete task:
+Invoke the skill by its name `swiftlys2-toolkit` whenever working on SwiftlyS2 plugin code:
 
 ```text
-Use $swiftlys2-toolkit to audit this plugin's RuntimeLoop and fix the confirmed lifecycle issues.
+Use swiftlys2-toolkit to audit this plugin's RuntimeLoop and fix the confirmed lifecycle issues.
 ```
 
 The skill routes work to three canonical workflow references:
 
-- `skills/swiftlys2-toolkit/references/edit-workflow.md` for direct implementation
-- `skills/swiftlys2-toolkit/references/plan-workflow.md` for method-level planning
-- `skills/swiftlys2-toolkit/references/audit-workflow.md` for systematic review and risk discovery
-
-Use subagents only when the work splits into independent, verifiable scopes. The parent Codex agent remains responsible for final decisions, integration, high-risk changes, and acceptance.
+- `references/edit-workflow.md` for direct implementation
+- `references/plan-workflow.md` for method-level planning
+- `references/audit-workflow.md` for systematic review and risk discovery
 
 ## Public reference sources
 

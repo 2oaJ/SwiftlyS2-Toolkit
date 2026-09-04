@@ -1,17 +1,16 @@
-# SwiftlyS2 Toolkit Codex Instructions
+# SwiftlyS2 Toolkit Agent Guidance
 
 ## Canonical entry
 
-- Read `skills/swiftlys2-toolkit/SKILL.md` completely before planning, editing, or reviewing SwiftlyS2 work.
+- This repository root is a standard agent skill. Read `SKILL.md` completely before planning, editing, or reviewing SwiftlyS2 work.
 - In a downstream project, also read the nearest applicable `AGENTS.md` and any project-local skills it names.
-- Route direct implementation, planning, and auditing through `skills/swiftlys2-toolkit/references/edit-workflow.md`, `skills/swiftlys2-toolkit/references/plan-workflow.md`, and `skills/swiftlys2-toolkit/references/audit-workflow.md` respectively.
+- Route direct implementation, planning, and auditing through `references/edit-workflow.md`, `references/plan-workflow.md`, and `references/audit-workflow.md` respectively.
 
-## Codex-native layout
+## Layout rules
 
-- `skills/swiftlys2-toolkit/` is the canonical reusable skill. Keep reusable domain guidance, references, scripts, and assets inside it.
-- `.codex/agents/*.toml` contains Codex subagent roles. Keep each role narrow, independently verifiable, and explicit about read/write scope.
-- `skills/swiftlys2-toolkit/agents/openai.yaml` is UI metadata for the skill, not a substitute for subagent role definitions.
-- Do not add IDE-vendor-specific agent, prompt, instruction-file, handoff-button, tool-list, or Chat Mode compatibility paths.
+- The repository root is the skill root. Keep reusable domain guidance, references, scripts, and assets directly under it.
+- `SKILL.md` frontmatter must keep a stable `name` (`swiftlys2-toolkit`) and a vendor-neutral `description`; every `./`-relative path inside the skill must resolve inside this repository.
+- Do not add IDE-vendor-specific agent, prompt, instruction-file, handoff-button, tool-list, or chat-mode compatibility paths.
 
 ## Implementation rules
 
@@ -29,7 +28,6 @@ Public toolkit material may depend only on SwiftlyS2 official documentation, the
 
 Before committing toolkit changes:
 
-1. Validate `skills/swiftlys2-toolkit` with the installed `skill-creator` validator.
-2. Parse `.codex/config.toml` and every `.codex/agents/*.toml` with a TOML parser.
-3. Scan the tracked tree for legacy IDE-specific agent/prompt formats and broken paths.
-4. Re-read the full diff and keep generated metadata synchronized with `SKILL.md`.
+1. Validate `SKILL.md` frontmatter and that all `./`-relative paths resolve inside the repository.
+2. Scan the tracked tree for vendor-specific agent/prompt formats and broken paths.
+3. Re-read the full diff and keep `references/swiftlys2-asset-inventory.md` synchronized with `SKILL.md`.
