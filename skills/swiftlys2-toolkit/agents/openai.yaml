@@ -1,4 +1,0 @@
-interface:
-  display_name: "SwiftlyS2 Toolkit"
-  short_description: "Plan, build, audit, and review SwiftlyS2 plugins"
-  default_prompt: "Use $swiftlys2-toolkit to audit this SwiftlyS2 plugin and implement verified fixes."
