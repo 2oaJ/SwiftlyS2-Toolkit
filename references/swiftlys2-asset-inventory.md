@@ -18,6 +18,7 @@
 - `references/swiftlys2-kb-index.md`
 - `references/swiftlys2-official-docs-map.md`
 - `references/swiftlys2-current-capability-map.md`
+- `references/swiftlys2-custom-hud.md`
 - `references/swiftlys2-asset-inventory.md`
 
 ### Templates / Assets
@@ -71,11 +72,11 @@
 
 - Skill：1
 - Workflow References：3
-- Domain References：6
+- Domain References：7
 - Templates / Assets：41
 - Optional Workspace Layer：0
 
-**合计：51 个核心资产**
+**合计：52 个核心资产**
 
 ## 3. 分层原则
 

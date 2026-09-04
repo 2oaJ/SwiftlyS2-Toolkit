@@ -72,6 +72,7 @@ Examples:
 - `./references/swiftlys2-official-docs-map.md`
 - `./references/swiftlys2-asset-inventory.md`
 - `./references/swiftlys2-current-capability-map.md`
+- `./references/swiftlys2-custom-hud.md`
 - `./references/plan-workflow.md`
 - `./references/audit-workflow.md`
 - `./references/edit-workflow.md`
@@ -152,6 +153,7 @@ Open these first:
 - `./assets/README.md`
 - The template or checklist closest to the relevant subsystem
 - For performance optimization work, also open `./references/swiftlys2-performance-optimization-playbook.md` before editing.
+- For custom HUD work, also open `./references/swiftlys2-custom-hud.md` before editing.
 
 ### If the task is mainly “find reference entry points”
 

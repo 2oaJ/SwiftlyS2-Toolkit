@@ -39,6 +39,7 @@
 - Database：`https://swiftlys2.net/docs/development/database/`
 - Sound Events：`https://swiftlys2.net/docs/development/soundevents/`
 - Steamworks：`https://swiftlys2.net/docs/development/steamworks/`
+- Custom HUD：`https://swiftlys2.net/docs/development/custom-hud/`
 
 ### Resources 区主入口
 
@@ -210,6 +211,41 @@
 - 常见坑：
 	- 用手工刷新 `Text` 代替绑定
 	- 在绑定求值里塞重计算 / 重 IO
+
+### 我要做 Custom HUD
+
+#### 1）我要给玩家显示自定义 HUD 并由服务端更新状态
+
+- 先看官方：
+	1. `Custom HUD`
+	2. `Thread Safety`
+	3. `Entity`
+- 再看本地参考：
+	- `./swiftlys2-custom-hud.md`
+- 常用 API / 关键词：
+	- `CCSCustomHudLayout`
+	- `SetDialogVariableString(ForPlayer)` / `RemoveDialogVariableStringForPlayer`
+	- `SetHasClass(ForPlayer)` / `EHudPanelClassStatus_t`
+	- `StrLayout` / `StrLayoutUpdated`
+- 常见坑：
+	- 每 tick 无脏检查地全量写变量
+	- 后台任务直接调线程不安全 setter（应用 `Async` 变体）
+	- 误以为 `GetDialogVariableStringForPlayer` 会回退全局值
+	- map / 插件卸载不清理实体；点击事件订阅与退订不配对
+
+#### 2）我要让 Custom HUD 内按钮可点击
+
+- 先看官方：
+	1. `Custom HUD`（Input Capture / Handling Button Clicks）
+- 再看本地参考：
+	- `./swiftlys2-custom-hud.md`
+- 常用 API / 关键词：
+	- `SetInputCaptureEnabled(ForPlayer)`
+	- `Core.Event.OnCustomHudClicked`
+	- `IOnCustomHudClickedEvent`（`PlayerId` / `ButtonId` / `CustomHudLayout`）
+- 常见坑：
+	- 多个 layout 时未比对 `CustomHudLayout` 实体就处理 ButtonId
+	- 交互结束后忘关输入捕获，玩家光标被占用
 
 ### 我要写 Hook
 
@@ -419,6 +455,15 @@
 - `SliderMenuOption`
 - `SubmenuMenuOption`
 - `BindingText`
+
+### Custom HUD
+
+- `CCSCustomHudLayout`
+- `EHudPanelClassStatus_t`
+- `IOnCustomHudClickedEvent`
+- `SetDialogVariableStringForPlayer`
+- `SetHasClassForPlayer`
+- `SetInputCaptureEnabledForPlayer`
 
 ## 8. 使用建议
 

@@ -327,6 +327,20 @@
   - `SteamAPI` 完整签名查 API Reference
 - 适用场景：所有权校验、Workshop 下载、服务器信息上报。
 
+### 23. Custom HUD
+
+- 地址：`https://swiftlys2.net/docs/development/custom-hud/`
+- 定位：`custom_hud_layout` 实体实现玩家自定义 HUD（Panorama XML/CSS 界面 + 服务端状态更新）。
+- 关键点：
+  - 实体创建：`CreateEntity<CCSCustomHudLayout>` → `StrLayout` → `StrLayoutUpdated()` → `DispatchSpawn()`
+  - 动态字符串：`Set/Get/RemoveDialogVariableString(ForPlayer)`；玩家覆盖读取不回退全局值
+  - 动态 CSS 类：`Set/GetHasClass(ForPlayer)` + `EHudPanelClassStatus_t`（HasClass / DoesNotHaveClass / Undefined）
+  - 输入捕获：`SetInputCaptureEnabled(ForPlayer)`；按钮点击走 `Core.Event.OnCustomHudClicked`（`IOnCustomHudClickedEvent`：PlayerId / ButtonId / CustomHudLayout）
+  - 改状态方法线程不安全，后台任务用 `Async` 变体；Getter 保持同步
+  - 官方标注新且不稳定，Valve 可能引入破坏性变更
+- 本地参考：`swiftlys2-custom-hud.md`
+- 适用场景：玩家 HUD 状态更新、HUD 内交互按钮、按玩家差异化显示。
+
 ## Guides 区导航
 
 ### 1. Dependency Injection

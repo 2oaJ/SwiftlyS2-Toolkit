@@ -5,10 +5,9 @@
 ## 快照来源
 
 - URL：`https://swiftlys2.net/llms-full.txt`
-- 拉取时间：`2026-07-14`
-- HTTP `Last-Modified`：`2026-07-13T19:34:14Z`
-- 文件大小：`16,960,204` bytes
-- SHA-256：`C491BB1B58CFA420294AF83F652679F333CE7E0BFB89BDF54410AD6D71EF4E33`
+- 拉取时间：`2026-09-04`
+- 文件大小：`20,740,301` bytes
+- SHA-256：`99FFB2799F49FF87D665DDD8779683F150BCB738FD990C1C71D7373957E6EFCD`
 
 “新增”在本文件中仅表示**当前官方快照已经公开、而旧工具包未覆盖或表述失准**，不声称某 API 在哪个版本首次发布。
 
@@ -27,6 +26,7 @@
 | Configuration | JSONC/TOML、template init、options monitor、base path | `assets/development/configuration/` |
 | Convars | typed/string API、replication、client query、safe min/max/default | `assets/development/convars/convar-template.cs.md` |
 | Core Events | 生命周期、事件订阅/退订、高频事件边界 | `assets/development/core-events/` |
+| Custom HUD | `custom_hud_layout` 实体、dialog variable / CSS 类 / 输入捕获的按玩家状态、`OnCustomHudClicked` | `references/swiftlys2-custom-hud.md` |
 | Database | global config、`IDbConnection`、ADO.NET/ORM、secret handling | `assets/development/database/database-connection-template.cs.md` |
 | Entity | create/spawn、handles、input/output、schema boundary | `assets/development/entity/` |
 | Entity Key Values | typed key value container、dispose、spawn integration | `assets/development/entity/entity-key-values-guide.md` |
@@ -77,6 +77,7 @@
 - `Datamaps`、`Schemas`、`SchemaDefinitions`：native layout 和 generated schema 不能从旧示例推断。
 - `ProtobufDefinitions`、`NetMessages`：消息字段和 hook pipeline 以当前 API 为准。
 - `CommandLine`、`Engine`、`EntitySystem`、`Profiler`、`Trace`：过去本地导航容易漏掉的运行时诊断入口。
+- `CCSCustomHudLayout`、`EHudPanelClassStatus_t`、`IOnCustomHudClickedEvent`：Custom HUD 官方标注新且不稳定，schema 与事件面随 SDK 漂移风险最高，实施前先查当前 API 页。
 
 ## 4. 本次同步的高优先级差异
 
@@ -92,6 +93,7 @@
 | 旧 scheduler 示例假定 timer 自动绑定 map CTS | timer 自己返回 CTS，显式传给 `StopOnMapChange`；禁止 async scheduler lambda |
 | `GetPlayerBySteamId`、`.Valid()`、`SetStateChanged()` | 改为当前 `GetPlayerFromSteamId` / `GetPlayerFromSessionId`、`IsValid`、`Updated()` |
 | Resources 和若干 Development 页只有官方链接无本地入口 | 补数据库、Key Values、声音、Steamworks、Memory、迁移和运行维护资产 |
+| 官方新增 Custom HUD 开发页（2026-09-04 快照） | 新增 `references/swiftlys2-custom-hud.md`：实体创建链路、按玩家状态语义（覆盖不回退全局）、点击事件与 Async 边界 |
 
 ## 5. 未静态复制的范围
 
